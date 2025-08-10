@@ -1,0 +1,28 @@
+{
+  "name": "layoutlint",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cnobis/layoutlint.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cnobis/layoutlint/issues"
+  },
+  "homepage": "https://github.com/cnobis/layoutlint#readme",
+  "dependencies": {
+    "tree-sitter": "^0.25.0",
+    "tree-sitter-cli": "^0.25.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.1",
+    "typescript": "^5.9.2"
+  }
+}
