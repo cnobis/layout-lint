@@ -1,5 +1,5 @@
 {
-  "name": "layoutlint",
+  "name": "layout-lint",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,15 +8,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cnobis/layoutlint.git"
+    "url": "git+https://github.com/cnobis/layout-lint.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Christopher Nobis",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/cnobis/layoutlint/issues"
+    "url": "https://github.com/cnobis/layout-lint/issues"
   },
-  "homepage": "https://github.com/cnobis/layoutlint#readme",
+  "homepage": "https://github.com/cnobis/layout-lint#readme",
   "dependencies": {
     "tree-sitter": "^0.25.0"
   },
