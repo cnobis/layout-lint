@@ -18,11 +18,11 @@
   },
   "homepage": "https://github.com/cnobis/layoutlint#readme",
   "dependencies": {
-    "tree-sitter": "^0.25.0",
-    "tree-sitter-cli": "^0.25.8"
+    "tree-sitter": "^0.25.0"
   },
   "devDependencies": {
     "@types/node": "^24.2.1",
+    "tree-sitter-cli": "^0.25.8",
     "typescript": "^5.9.2"
   }
 }
