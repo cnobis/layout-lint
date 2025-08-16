@@ -7,8 +7,7 @@
       "title": "Layout Lint",
       "scope": "source.layout-lint",
       "file-types": [
-        "layoutlint",
-        "layout-lint"
+        "layout"
       ],
       "injection-regex": "^layout-lint$",
       "class-name": "TreeSitterLayoutLint"
