@@ -1,0 +1,5 @@
+@section header
+  #logo right-of #title 16-32px
+  #menu inside #nav
+  header exists
+  header background-color red
