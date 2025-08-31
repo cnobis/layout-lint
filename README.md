@@ -1,3 +1,4 @@
 # layout-lint
 
-<img width="1093" height="124" alt="layout-lint" src="https://github.com/user-attachments/assets/f3dfa627-ba7a-4c65-8ff7-2a67ce1c9a25" />
+<img width="1966" height="252" alt="logo" src="https://github.com/user-attachments/assets/cc27bec9-9574-49da-8880-8761a77bdce7" />
+
