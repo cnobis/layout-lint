@@ -1,0 +1,40 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "layout_lint",
+      "camelcase": "layoutLint",
+      "title": "layout-lint",
+      "scope": "source.layout_lint",
+      "file-types": [
+        "layout",
+	"llint"
+      ],
+      "injection-regex": "^layout_lint$",
+      "class-name": "TreeSitterLayoutLint"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "LayoutLint grammar for tree-sitter",
+    "authors": [
+      {
+        "name": "Christopher Nobis",
+        "email": "christophernobis.dev@icloud.com"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/cnobis/layout-lint"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": true,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": true,
+    "zig": false
+  }
+}
