@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>layout-lint demo</title>
+  <style>
+    body { font: 14px/1.4 system-ui, sans-serif; padding: 24px; }
+    #header { height: 60px; background: #e6f0ff; display: grid; place-items: center; }
+    #login { margin-top: 30px; }
+    .card { border: 1px solid #ddd; padding: 12px; margin-top: 16px; border-radius: 8px; }
+    .pass { color: #0a0; } .fail { color: #a00; }
+  </style>
+</head>
+<body>
+  <h1>layout-lint — MVP demo</h1>
+
+  <div id="header">Header</div>
+  <button id="login">Login</button>
+
+  <pre id="spec" hidden>
+login below header 20px
+  </pre>
+
+  <div id="report" class="card">Running…</div>
+
+  <script type="module">
+    import { runLayoutLint } from "./index.js";
+
+    // IMPORTANT: the runtime WASM must be served where web-tree-sitter expects it.
+    // easiest for the demo: copy `node_modules/web-tree-sitter/tree-sitter.wasm`
+    // into the *same folder* as this HTML file.
+    // then locateFile returns just the name, and fetch will hit ./tree-sitter.wasm
+    const locateFile = () => "tree-sitter.wasm";
+
+    const specText = document.getElementById("spec").textContent.trim();
+    const { results } = await runLayoutLint({
+      specText,
+      wasmUrl: "../layout_lint.wasm", // served next to the HTML
+      locateFile
+    });
+
+    document.getElementById("report").innerHTML =
+      results.map(r => {
+        const msg = `${r.element} ${r.relation} ${r.target} ≥ ${r.distancePx}px — actual ${Math.round(r.actual ?? NaN)}px`;
+        return `<div class="${r.pass ? 'pass' : 'fail'}">${r.pass ? '✅' : '❌'} ${msg}${r.reason ? ' — ' + r.reason : ''}</div>`;
+      }).join("");
+  </script>
+</body>
+</html>

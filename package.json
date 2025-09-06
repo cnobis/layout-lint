@@ -1,9 +1,10 @@
 {
   "name": "tree-sitter-layout-lint",
   "version": "0.1.0",
-  "description": "LayoutLint grammar for tree-sitter",
+  "description": "LayoutLint grammar + JS library for testing CSS layouts",
   "repository": "https://github.com/cnobis/layout-lint",
   "license": "MIT",
+  "type": "module",
   "author": {
     "name": "Christopher Nobis",
     "email": "christophernobis.dev@icloud.com"
@@ -24,7 +25,8 @@
     "bindings/node/*",
     "queries/*",
     "src/**",
-    "*.wasm"
+    "*.wasm",
+    "demo/**"
   ],
   "dependencies": {
     "node-addon-api": "^8.3.1",
@@ -47,6 +49,8 @@
     "install": "node-gyp-build",
     "prestart": "tree-sitter build --wasm",
     "start": "tree-sitter playground",
-    "test": "node --test bindings/node/*_test.js"
+    "test": "node --test bindings/node/*_test.js",
+    "build:wasm": "tree-sitter build --wasm -o layout_lint.wasm",
+    "serve": "npx http-server -c-1 . || npx serve -n ."
   }
 }
