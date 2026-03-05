@@ -10,39 +10,81 @@
       }
     },
     "rule": {
-      "type": "SEQ",
+      "type": "CHOICE",
       "members": [
         {
-          "type": "FIELD",
-          "name": "element",
-          "content": {
-            "type": "SYMBOL",
-            "name": "identifier"
-          }
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "element",
+              "content": {
+                "type": "SYMBOL",
+                "name": "identifier"
+              }
+            },
+            {
+              "type": "FIELD",
+              "name": "relation",
+              "content": {
+                "type": "SYMBOL",
+                "name": "relation"
+              }
+            },
+            {
+              "type": "FIELD",
+              "name": "target",
+              "content": {
+                "type": "SYMBOL",
+                "name": "identifier"
+              }
+            },
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "FIELD",
+                  "name": "distance",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "distance"
+                  }
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            }
+          ]
         },
         {
-          "type": "FIELD",
-          "name": "relation",
-          "content": {
-            "type": "SYMBOL",
-            "name": "relation"
-          }
-        },
-        {
-          "type": "FIELD",
-          "name": "target",
-          "content": {
-            "type": "SYMBOL",
-            "name": "identifier"
-          }
-        },
-        {
-          "type": "FIELD",
-          "name": "distance",
-          "content": {
-            "type": "SYMBOL",
-            "name": "distance"
-          }
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "element",
+              "content": {
+                "type": "SYMBOL",
+                "name": "identifier"
+              }
+            },
+            {
+              "type": "FIELD",
+              "name": "relation",
+              "content": {
+                "type": "SYMBOL",
+                "name": "relation"
+              }
+            },
+            {
+              "type": "FIELD",
+              "name": "distance",
+              "content": {
+                "type": "SYMBOL",
+                "name": "distance"
+              }
+            }
+          ]
         }
       ]
     },
@@ -64,6 +106,50 @@
         {
           "type": "STRING",
           "value": "right_of"
+        },
+        {
+          "type": "STRING",
+          "value": "aligned_top"
+        },
+        {
+          "type": "STRING",
+          "value": "aligned_bottom"
+        },
+        {
+          "type": "STRING",
+          "value": "aligned_left"
+        },
+        {
+          "type": "STRING",
+          "value": "aligned_right"
+        },
+        {
+          "type": "STRING",
+          "value": "contains"
+        },
+        {
+          "type": "STRING",
+          "value": "wider_than"
+        },
+        {
+          "type": "STRING",
+          "value": "taller_than"
+        },
+        {
+          "type": "STRING",
+          "value": "same_width"
+        },
+        {
+          "type": "STRING",
+          "value": "same_height"
+        },
+        {
+          "type": "STRING",
+          "value": "overlaps"
+        },
+        {
+          "type": "STRING",
+          "value": "distance_from_top"
         }
       ]
     },
