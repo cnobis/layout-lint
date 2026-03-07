@@ -62,7 +62,16 @@ export function evaluateRules(rules: Rule[], resolve: (id: string) => HTMLElemen
     }
     // For alignment relations (no distancePx), use 1px tolerance
     const isAlignment = r.relation.startsWith("aligned_");
-    const pass = isAlignment ? d <= 1 : d >= (r.distancePx ?? 0);
+    const isSemantic = ["contains", "overlaps"].includes(r.relation);
+    let pass: boolean;
+    if (isAlignment) {
+      pass = d <= 1;
+    } else if (isSemantic) {
+      // Semantic relations pass only when d === 0
+      pass = d === 0;
+    } else {
+      pass = d >= (r.distancePx ?? 0);
+    }
     return { ...r, actual: d, pass };
   });
 }

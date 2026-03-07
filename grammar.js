@@ -41,8 +41,8 @@ module.exports = grammar({
       "distance_from_top"
     ),
 
-    // identifiers = simple names (e.g. header, button, loginBtn)
-    identifier: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
+    // identifiers = simple names (e.g. header, button, loginBtn, featured-badge)
+    identifier: $ => /[a-zA-Z_][a-zA-Z0-9_-]*/,
 
     // distance = number + "px"
     distance: $ => /\d+px/,

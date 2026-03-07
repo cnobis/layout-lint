@@ -50,6 +50,7 @@
       display: flex;
       gap: 48px;
       align-items: center;
+      margin-bottom: 5px;
     }
 
     #nav a {
@@ -89,6 +90,13 @@
       padding: 64px;
       max-width: 1400px;
       margin: 0 auto;
+    }
+
+    /* Responsive: Stack on narrow viewports */
+    @media (max-width: 900px) {
+      #gallery {
+        grid-template-columns: 1fr;
+      }
     }
 
     .artwork {
@@ -154,13 +162,14 @@
       color: #666;
       letter-spacing: 0.08em;
       text-transform: uppercase;
+      margin-top: 50px;
     }
 
     /* LINT OUTPUT */
     .lint-report {
       position: fixed;
-      bottom: 32px;
-      right: 32px;
+      bottom: 16px;
+      right: 16px;
       width: 320px;
       max-height: 400px;
       overflow-y: auto;
@@ -170,7 +179,7 @@
       border-radius: 2px;
       font-family: 'Courier New', monospace;
       font-size: 11px;
-      z-index: 1000;
+      z-index: 100;
     }
 
     .lint-report div {
@@ -198,6 +207,40 @@
       border-left: 2px solid #555;
       padding-left: 10px;
     }
+
+    /* FEATURED BADGE: Floating element that overlaps gallery */
+    #featured-badge {
+      position: fixed;
+      top: 320px;
+      right: 64px;
+      width: 180px;
+      background: #1a1a1a;
+      border: 1px solid #666;
+      padding: 16px;
+      border-radius: 2px;
+      z-index: 500;
+      cursor: grab;
+      user-select: none;
+    }
+
+    #featured-badge.dragging {
+      cursor: grabbing;
+      opacity: 0.9;
+    }
+
+    #featured-badge .badge-title {
+      font-size: 11px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    #featured-badge .badge-content {
+      font-size: 12px;
+      color: #ddd;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -222,7 +265,7 @@
     <!-- Artwork 1 -->
     <article id="artwork-1" class="artwork">
       <div id="artwork-1-image" class="artwork-image">
-        <img src="../pictures/art-gallery/AE-06.jpg" alt="Abstract Geometry">
+        <img src="pictures/art-gallery/barbershop.jpeg" alt="Abstract Geometry">
       </div>
       <div id="artwork-1-info" class="artwork-info">
         <div class="artwork-title">Untitled Series #42</div>
@@ -234,7 +277,7 @@
     <!-- Artwork 2 -->
     <article id="artwork-2" class="artwork">
       <div id="artwork-2-image" class="artwork-image">
-        <img src="../pictures/art-gallery/AE-02.jpg" alt="Ethereal Light">
+        <img src="pictures/art-gallery/bluewithred.jpeg" alt="Ethereal Light">
       </div>
       <div id="artwork-2-info" class="artwork-info">
         <div class="artwork-title">Luminescence</div>
@@ -246,7 +289,7 @@
     <!-- Artwork 3 -->
     <article id="artwork-3" class="artwork">
       <div id="artwork-3-image" class="artwork-image">
-        <img src="../pictures/art-gallery/AE-05.jpg" alt="Chromatic Layers">
+        <img src="pictures/art-gallery/swimmer.jpeg" alt="Chromatic Layers">
       </div>
       <div id="artwork-3-info" class="artwork-info">
         <div class="artwork-title">Depth of Field</div>
@@ -257,6 +300,16 @@
 
   </section>
 
+  <!-- FEATURED BADGE: Floating element that overlaps gallery -->
+  <div id="featured-badge">
+    <div class="badge-title">Editor's Pick</div>
+    <div class="badge-content">
+      <strong>Luminescence</strong><br>
+      by James Whitfield<br>
+      €12,000
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <footer id="footer">
     © 2025 Galerie Nocturne — Proudly displaying exceptional contemporary art
@@ -264,16 +317,13 @@
 
   <!-- Hidden DSL rules: 10 Fundamental Layout Rules -->
   <pre id="spec" hidden>
-nav below header 0px
 header above nav 0px
-artwork-2 right_of artwork-1 48px
-artwork-1 left_of artwork-2 48px
-artwork-1-image aligned_top artwork-2-image
-header aligned_bottom nav
-artwork-1-info aligned_left artwork-2-info
-nav aligned_right header
-gallery contains artwork-1
-header overlaps footer
+gallery below nav 5px
+footer below gallery 50px
+featured-badge overlaps gallery
+artwork-2 right_of artwork-1 0px
+artwork-2 below artwork-1 0px
+artwork-3 below artwork-2 0px
   </pre>
 
   <!-- Lint Report Display -->
@@ -309,6 +359,61 @@ header overlaps footer
         }
         return `<div class="${r.pass ? 'pass' : 'fail'}">${r.pass ? '✓' : '✗'} ${msg}</div>`;
       }).join("");
+
+    // Make featured-badge draggable with real-time constraint updates
+    const badge = document.getElementById("featured-badge");
+    let isDragging = false;
+    let offsetX = 0, offsetY = 0;
+
+    const updateConstraints = async () => {
+      const { rules, results } = await runLayoutLint({
+        specText,
+        wasmUrl: "../layout_lint.wasm",
+        locateFile
+      });
+      document.getElementById("report").innerHTML = 
+        '<div class="title">Layout Verification</div>' +
+        results.map(r => {
+          const isAlignment = r.relation.startsWith("aligned_");
+          const isSemantic = ["contains", "overlaps"].includes(r.relation);
+          let msg;
+          if (isAlignment) {
+            msg = `${r.element} ${r.relation} ${r.target} (Δ${Math.abs(Math.round(r.actual ?? NaN))}px)`;
+          } else if (isSemantic) {
+            msg = `${r.element} ${r.relation} ${r.target}`;
+          } else {
+            msg = `${r.element} ${r.relation} ${r.target} ≥${r.distancePx}px (${Math.round(r.actual ?? NaN)}px)`;
+          }
+          return `<div class="${r.pass ? 'pass' : 'fail'}">${r.pass ? '✓' : '✗'} ${msg}</div>`;
+        }).join("");
+    };
+
+    badge.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      offsetX = e.clientX - badge.getBoundingClientRect().left;
+      offsetY = e.clientY - badge.getBoundingClientRect().top;
+      badge.classList.add("dragging");
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+      badge.style.left = (e.clientX - offsetX) + "px";
+      badge.style.right = "auto";
+      badge.style.top = (e.clientY - offsetY) + "px";
+      updateConstraints();
+    });
+
+    document.addEventListener("mouseup", () => {
+      isDragging = false;
+      badge.classList.remove("dragging");
+    });
+
+    // Update constraints when viewport resizes (debounced)
+    let resizeTimeout;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(updateConstraints, 100);
+    });
   </script>
 
 </body>
