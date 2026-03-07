@@ -10,7 +10,7 @@
     "fields": {
       "distance": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "distance",
@@ -40,7 +40,7 @@
       },
       "target": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "identifier",
@@ -71,12 +71,36 @@
     "named": false
   },
   {
+    "type": "aligned_bottom",
+    "named": false
+  },
+  {
+    "type": "aligned_left",
+    "named": false
+  },
+  {
+    "type": "aligned_right",
+    "named": false
+  },
+  {
+    "type": "aligned_top",
+    "named": false
+  },
+  {
     "type": "below",
+    "named": false
+  },
+  {
+    "type": "contains",
     "named": false
   },
   {
     "type": "distance",
     "named": true
+  },
+  {
+    "type": "distance_from_top",
+    "named": false
   },
   {
     "type": "identifier",
@@ -87,7 +111,27 @@
     "named": false
   },
   {
+    "type": "overlaps",
+    "named": false
+  },
+  {
     "type": "right_of",
+    "named": false
+  },
+  {
+    "type": "same_height",
+    "named": false
+  },
+  {
+    "type": "same_width",
+    "named": false
+  },
+  {
+    "type": "taller_than",
+    "named": false
+  },
+  {
+    "type": "wider_than",
     "named": false
   }
 ]

@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "declaration": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["src", "global.d.ts"],
+  "exclude": ["src/**/*.c", "src/**/*.h", "src/**/*.json"]
+}
