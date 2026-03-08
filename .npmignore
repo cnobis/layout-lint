@@ -1,0 +1,17 @@
+binding.gyp
+bindings/
+build/
+CMakeLists.txt
+Cargo.toml
+Makefile
+Package.swift
+pyproject.toml
+setup.py
+tree-sitter.json
+example.layout
+test.js
+tsconfig.json
+.github/
+.gitignore
+node_modules/
+*.log

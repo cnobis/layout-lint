@@ -1,6 +1,6 @@
 {
-  "name": "tree-sitter-layout-lint",
-  "version": "1.0.0",
+  "name": "layout-lint",
+  "version": "1.0.8",
   "description": "A declarative DSL for testing CSS layout constraints in the browser",
   "repository": "https://github.com/cnobis/layout-lint",
   "license": "MIT",
@@ -29,14 +29,9 @@
   ],
   "files": [
     "dist/**",
-    "layout_lint.wasm",
-    "demo/**",
-    "src/**",
-    "grammar.js"
+    "layout_lint.wasm"
   ],
   "dependencies": {
-    "node-addon-api": "^8.3.1",
-    "node-gyp-build": "^4.8.4",
     "web-tree-sitter": "^0.25.8"
   },
   "devDependencies": {
@@ -54,7 +49,7 @@
     }
   },
   "scripts": {
-    "install": "node-gyp-build",
+    "install": "echo 'Nothing to build - using prebuilt WASM'",
     "prestart": "tree-sitter build --wasm",
     "start": "tree-sitter playground",
     "test": "node --test test/*.test.js",
