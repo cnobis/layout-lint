@@ -1,7 +1,7 @@
 {
-  "name": "tree-sitter-layout-lint",
-  "version": "0.1.0",
-  "description": "LayoutLint grammar + JS library for testing CSS layouts",
+  "name": "layout-lint",
+  "version": "1.0.8",
+  "description": "A declarative DSL for testing CSS layout constraints in the browser",
   "repository": "https://github.com/cnobis/layout-lint",
   "license": "MIT",
   "type": "module",
@@ -9,29 +9,29 @@
     "name": "Christopher Nobis",
     "email": "christophernobis.dev@icloud.com"
   },
-  "main": "bindings/node",
-  "types": "bindings/node",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./layout_lint.wasm": "./layout_lint.wasm"
+  },
   "keywords": [
-    "incremental",
-    "parsing",
+    "layout",
+    "css",
+    "testing",
+    "dom",
     "tree-sitter",
-    "layout_lint"
+    "dsl",
+    "constraints"
   ],
   "files": [
     "dist/**",
-    "grammar.js",
-    "tree-sitter.json",
-    "binding.gyp",
-    "prebuilds/**",
-    "bindings/node/*",
-    "queries/*",
-    "src/**",
-    "*.wasm",
-    "demo/**"
+    "layout_lint.wasm"
   ],
   "dependencies": {
-    "node-addon-api": "^8.3.1",
-    "node-gyp-build": "^4.8.4",
     "web-tree-sitter": "^0.25.8"
   },
   "devDependencies": {
@@ -49,10 +49,10 @@
     }
   },
   "scripts": {
-    "install": "node-gyp-build",
+    "install": "echo 'Nothing to build - using prebuilt WASM'",
     "prestart": "tree-sitter build --wasm",
     "start": "tree-sitter playground",
-    "test": "node --test bindings/node/*_test.js",
+    "test": "node --test test/*.test.js",
     "build:wasm": "tree-sitter build --wasm -o layout_lint.wasm",
     "build:ts": "tsc",
     "serve": "npx http-server -c-1 . || npx serve -n ."
