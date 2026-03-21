@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { evaluateRules } from '../dist/evaluator.js';
 
-describe('LayoutLint Core', () => {
+describe('layout-lint Core', () => {
   
   describe('Rule Evaluation', () => {
     it('should pass when directional constraint is met', () => {

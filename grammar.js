@@ -1,5 +1,5 @@
 /**
- * @file LayoutLint grammar for tree-sitter
+ * @file layout-lint grammar for tree-sitter
  * @author Christopher Nobis <christophernobis.dev@icloud.com>
  * @license MIT
  */

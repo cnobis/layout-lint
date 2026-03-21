@@ -97,6 +97,100 @@ npm run build:ts && npm run build:wasm && npm run serve
 
 ---
 
+## Using the Devtools Layer
+
+### Integrating the Monitor + Widget
+
+For interactive development, use the devtools module to enable live constraint testing:
+
+```typescript
+import { createLayoutLintMonitor, createLayoutLintWidget, createConsoleReporter } from 'layout-lint/devtools';
+
+// Initialize live monitor with your spec
+const monitor = createLayoutLintMonitor({
+  specText: getSpecFromPage(),  // Your DSL spec
+  wasmUrl: './layout_lint.wasm',
+  reporters: [createConsoleReporter()],  // Optional console logging
+  observeResize: true,           // Re-evaluate on resize
+  observeMutations: true,        // Re-evaluate on DOM changes
+  debounceMs: 80                 // Debounce time
+});
+
+// Create the interactive widget (auto-mounts to document.body)
+const widget = createLayoutLintWidget(monitor, {
+  title: 'Layout Constraints',
+  initialPosition: { x: 24, y: 24 }
+});
+
+widget.setVisible(true);
+```
+
+### Subscribing to Monitor Updates
+
+Custom subscribers can listen to monitor changes:
+
+```typescript
+monitor.subscribe((results) => {
+  console.log('Constraints updated:', results);
+  // Update custom UI, logging, etc.
+});
+```
+
+### Customizing the Reporter
+
+Create a custom reporter for specialized logging:
+
+```typescript
+const customReporter = (results) => {
+  const passed = results.filter(r => r.pass).length;
+  const failed = results.length - passed;
+  console.log(`✓ ${passed} / ✗ ${failed}`);
+};
+
+const monitor = createLayoutLintMonitor({
+  specText: spec,
+  wasmUrl: './layout_lint.wasm',
+  reporters: [customReporter]  // Use custom reporter
+});
+```
+
+### Widget Options
+
+The widget accepts configuration:
+
+```typescript
+interface LayoutLintWidgetOptions {
+  title?: string;                    // Widget title (default: 'layout-lint')
+  initialPosition?: { x: number; y: number };  // Starting position
+}
+```
+
+### Widget Controller API (Quick Reference)
+
+`createLayoutLintWidget(...)` returns a controller with:
+
+```typescript
+interface LayoutLintWidgetController {
+  destroy(): void;                  // Unsubscribe and remove widget from DOM
+  setVisible(visible: boolean): void; // Show/hide widget
+}
+```
+
+Example:
+
+```typescript
+const widget = createLayoutLintWidget(monitor, {
+  title: 'Layout Constraints',
+  initialPosition: { x: 24, y: 24 }
+});
+
+widget.setVisible(false); // Hide
+widget.setVisible(true);  // Show
+// widget.destroy();      // Cleanup when done
+```
+
+---
+
 ## Common Pitfalls
 
 | Issue | Solution |
