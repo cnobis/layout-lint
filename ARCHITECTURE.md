@@ -130,7 +130,7 @@ An optional professional developer experience layer is available via a separate 
   });
   
   monitor.subscribe((results) => {
-    // Called whenever layout changes
+    // called whenever layout changes
   });
   ```
 
@@ -150,8 +150,8 @@ An optional professional developer experience layer is available via a separate 
     initialPosition: { x: 24, y: 24 }
   });
 
-  // Widget auto-mounts to document.body.
-  // Controller methods:
+  // widget auto-mounts to document.body.
+  // controller methods:
   widget.setVisible(true);
   // widget.destroy();
   ```

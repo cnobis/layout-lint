@@ -293,24 +293,24 @@ artwork-3 below artwork-2 0px
     const locateFile = () => "tree-sitter.wasm";
     const specText = document.getElementById("spec").textContent.trim();
 
-    // Create monitor with live re-evaluation
+    // create monitor with live re-evaluation
     const monitor = createLayoutLintMonitor({
       specText,
       wasmUrl: "../layout_lint.wasm",
       locateFile,
       reporters: [createConsoleReporter()],
       observeResize: true,
-      observeMutations: false,  // Disabled to prevent infinite loop with widget updates
+      observeMutations: false,  // disabled to prevent infinite loop with widget updates
       debounceMs: 100
     });
 
-    // Create draggable widget for constraint visualization (auto-mounts to body)
+    // create draggable widget for constraint visualization (auto-mounts to body)
     const widget = createLayoutLintWidget(monitor, {
       title: 'Layout Constraints (Live)',
       initialPosition: { x: window.innerWidth - 360, y: window.innerHeight - 400 }
     });
 
-    // Keep featured-badge draggable with manual handling
+    // keep featured-badge draggable with manual handling
     const badge = document.getElementById("featured-badge");
     let isDragging = false;
     let offsetX = 0, offsetY = 0;
@@ -328,7 +328,7 @@ artwork-3 below artwork-2 0px
       e.preventDefault();
       badge.style.left = (e.clientX - offsetX) + "px";
       badge.style.top = (e.clientY - offsetY) + "px";
-      // Manually trigger re-evaluation since mutation observer is disabled
+      // manually trigger re-evaluation since mutation observer is disabled
       monitor.evaluateNow();
     });
 

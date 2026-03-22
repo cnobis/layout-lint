@@ -7,13 +7,13 @@ function byId(name: string): HTMLElement | null {
 const rect = (el: HTMLElement | null) => (el ? el.getBoundingClientRect() : null);
 
 function measure(relation: string, a: HTMLElement | null, b: HTMLElement | null): number | null {
-  // Absolute rules don't need a target element
+  // absolute rules don't need a target element
   const isAbsolute = ["distance_from_top"].includes(relation);
   
   const A = rect(a);
-  if (!A) return null;  // Always need the main element
+  if (!A) return null;  // always need the main element
   
-  // For absolute rules, return early without checking B
+  // for absolute rules, return early without checking B
   if (isAbsolute) {
     switch (relation) {
       case "distance_from_top": return A.top;
@@ -21,7 +21,7 @@ function measure(relation: string, a: HTMLElement | null, b: HTMLElement | null)
     }
   }
   
-  // For relative rules, B is required
+  // for relative rules, B is required
   const B = rect(b);
   if (!B) return null;
   
@@ -53,21 +53,21 @@ export interface RuleResult extends Rule {
 export function evaluateRules(rules: Rule[], resolve: (id: string) => HTMLElement | null = byId): RuleResult[] {
   return rules.map(r => {
     const a = resolve(r.element);
-    // Only resolve target if it exists (absolute rules don't have targets)
+    // only resolve target if it exists (absolute rules don't have targets)
     const b = r.target ? resolve(r.target) : null;
     const d = measure(r.relation, a, b);
     if (d == null) {
       const missing = !a ? r.element : (!b && r.target ? r.target : "unknown");
       return { ...r, pass: false, actual: null, reason: !a ? `Element not found: ${missing}` : undefined };
     }
-    // For alignment relations (no distancePx), use 1px tolerance
+    // for alignment relations (no distancePx), use 1px tolerance
     const isAlignment = r.relation.startsWith("aligned_");
     const isSemantic = ["contains", "overlaps"].includes(r.relation);
     let pass: boolean;
     if (isAlignment) {
       pass = d <= 1;
     } else if (isSemantic) {
-      // Semantic relations pass only when d === 0
+      // semantic relations pass only when d === 0
       pass = d === 0;
     } else {
       pass = d >= (r.distancePx ?? 0);

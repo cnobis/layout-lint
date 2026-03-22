@@ -106,17 +106,17 @@ For interactive development, use the devtools module to enable live constraint t
 ```typescript
 import { createLayoutLintMonitor, createLayoutLintWidget, createConsoleReporter } from 'layout-lint/devtools';
 
-// Initialize live monitor with your spec
+// initialize live monitor with your spec
 const monitor = createLayoutLintMonitor({
-  specText: getSpecFromPage(),  // Your DSL spec
+  specText: getSpecFromPage(),  // your DSL spec
   wasmUrl: './layout_lint.wasm',
-  reporters: [createConsoleReporter()],  // Optional console logging
-  observeResize: true,           // Re-evaluate on resize
-  observeMutations: true,        // Re-evaluate on DOM changes
-  debounceMs: 80                 // Debounce time
+  reporters: [createConsoleReporter()],  // optional console logging
+  observeResize: true,           // re-evaluate on resize
+  observeMutations: true,        // re-evaluate on DOM changes
+  debounceMs: 80                 // debounce time
 });
 
-// Create the interactive widget (auto-mounts to document.body)
+// create the interactive widget (auto-mounts to document.body)
 const widget = createLayoutLintWidget(monitor, {
   title: 'Layout Constraints',
   initialPosition: { x: 24, y: 24 }
@@ -132,7 +132,7 @@ Custom subscribers can listen to monitor changes:
 ```typescript
 monitor.subscribe((results) => {
   console.log('Constraints updated:', results);
-  // Update custom UI, logging, etc.
+  // update custom UI, logging, etc.
 });
 ```
 

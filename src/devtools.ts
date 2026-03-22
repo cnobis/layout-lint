@@ -46,7 +46,7 @@ export function createConsoleReporter(options: ConsoleReporterOptions = {}): Lay
       const status = item.pass ? "PASS" : "FAIL";
       const target = item.target ? ` ${item.target}` : "";
       
-      // For semantic relations (contains, overlaps), don't show distance/actual
+      // for semantic relations (contains, overlaps), don't show distance/actual
       const isSemantic = ["contains", "overlaps"].includes(item.relation);
       if (isSemantic) {
         console.log(
@@ -233,12 +233,27 @@ export function createLayoutLintWidget(
   controls.style.alignItems = "center";
   controls.style.gap = "8px";
 
+  const pinStatus = document.createElement("span");
+  pinStatus.style.fontSize = "11px";
+  pinStatus.style.opacity = "0.9";
+  pinStatus.style.userSelect = "none";
+
   const updateToggleLabel = () => {
     highlightToggle.textContent = `highlight: ${highlightsEnabled ? "on" : "off"}`;
   };
+
+  const pinnedRuleKeys = new Set<string>();
+  const getRuleKey = (rule: RuleResult) => `${rule.element}::${rule.relation}::${rule.target ?? ""}`;
+
+  const updatePinStatus = () => {
+    pinStatus.textContent = `pin: ${pinnedRuleKeys.size}`;
+  };
+
+  updatePinStatus();
   updateToggleLabel();
 
   controls.appendChild(highlightToggle);
+  controls.appendChild(pinStatus);
   controls.appendChild(status);
   header.appendChild(controls);
 
@@ -260,9 +275,11 @@ export function createLayoutLintWidget(
 
   let latestResults: RuleResult[] = [];
   let activeRule: RuleResult | null = null;
+  let placedLabelRects: Array<{ left: number; top: number; right: number; bottom: number }> = [];
 
   const clearHighlights = () => {
     highlightLayer.innerHTML = "";
+    placedLabelRects = [];
   };
 
   const resolveElement = (identifier: string | undefined): HTMLElement | null => {
@@ -295,17 +312,246 @@ export function createLayoutLintWidget(
     highlightLayer.appendChild(box);
   };
 
+  const createOverlayLabel = (text: string, color: string, x: number, y: number) => {
+    const margin = 6;
+    const label = document.createElement("div");
+    label.style.position = "fixed";
+    label.style.left = `${x}px`;
+    label.style.top = `${y}px`;
+    label.style.maxWidth = "280px";
+    label.style.padding = "4px 7px";
+    label.style.border = `1px solid ${color}`;
+    label.style.borderRadius = "6px";
+    label.style.background = "rgba(255,255,255,0.96)";
+    label.style.color = "#111827";
+    label.style.font = "11px/1.35 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif";
+    label.style.whiteSpace = "nowrap";
+    label.style.overflow = "hidden";
+    label.style.textOverflow = "ellipsis";
+    label.textContent = text;
+    highlightLayer.appendChild(label);
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const labelWidth = label.offsetWidth;
+    const labelHeight = label.offsetHeight;
+
+    const clampX = (value: number) =>
+      Math.min(Math.max(margin, value), Math.max(margin, viewportWidth - labelWidth - margin));
+    const clampY = (value: number) =>
+      Math.min(Math.max(margin, value), Math.max(margin, viewportHeight - labelHeight - margin));
+
+    const intersectsPlaced = (left: number, top: number) => {
+      const right = left + labelWidth;
+      const bottom = top + labelHeight;
+      return placedLabelRects.some(
+        (rect) => left < rect.right && right > rect.left && top < rect.bottom && bottom > rect.top
+      );
+    };
+
+    let finalX = clampX(x);
+    let finalY = clampY(y);
+
+    if (intersectsPlaced(finalX, finalY)) {
+      const step = labelHeight + 6;
+      let found = false;
+
+      for (let i = 1; i <= 12; i++) {
+        const downY = clampY(y + step * i);
+        if (!intersectsPlaced(finalX, downY)) {
+          finalY = downY;
+          found = true;
+          break;
+        }
+
+        const upY = clampY(y - step * i);
+        if (!intersectsPlaced(finalX, upY)) {
+          finalY = upY;
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        for (let i = 1; i <= 8; i++) {
+          const rightX = clampX(x + i * 16);
+          if (!intersectsPlaced(rightX, finalY)) {
+            finalX = rightX;
+            found = true;
+            break;
+          }
+
+          const leftX = clampX(x - i * 16);
+          if (!intersectsPlaced(leftX, finalY)) {
+            finalX = leftX;
+            found = true;
+            break;
+          }
+        }
+      }
+    }
+
+    label.style.left = `${finalX}px`;
+    label.style.top = `${finalY}px`;
+
+    placedLabelRects.push({
+      left: finalX,
+      top: finalY,
+      right: finalX + labelWidth,
+      bottom: finalY + labelHeight,
+    });
+
+    return { width: labelWidth, height: labelHeight };
+  };
+
+  const createElementRoleLabel = (
+    text: string,
+    color: string,
+    rect: DOMRect,
+    preferAbove: boolean
+  ) => {
+    const gap = 8;
+    const viewportHeight = window.innerHeight;
+
+    const aboveY = rect.top - 28;
+    const belowY = rect.bottom + gap;
+    const hasAboveSpace = aboveY >= 6;
+    const hasBelowSpace = belowY <= viewportHeight - 6;
+
+    let y = preferAbove ? aboveY : belowY;
+    if (preferAbove && !hasAboveSpace && hasBelowSpace) y = belowY;
+    if (!preferAbove && !hasBelowSpace && hasAboveSpace) y = aboveY;
+
+    createOverlayLabel(text, color, rect.left, y);
+  };
+
+  const createConnector = (
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    color: string,
+    labelText: string
+  ) => {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const length = Math.hypot(dx, dy);
+    if (length < 1) return;
+
+    const line = document.createElement("div");
+    line.style.position = "fixed";
+    line.style.left = `${x1}px`;
+    line.style.top = `${y1}px`;
+    line.style.width = `${length}px`;
+    line.style.height = "2px";
+    line.style.background = color;
+    line.style.transformOrigin = "0 50%";
+    line.style.transform = `rotate(${Math.atan2(dy, dx) * (180 / Math.PI)}deg)`;
+    highlightLayer.appendChild(line);
+
+    const labelX = (x1 + x2) / 2 - 90;
+    const labelY = (y1 + y2) / 2 - 18;
+    createOverlayLabel(labelText, color, labelX, labelY);
+  };
+
+  const formatMeasurement = (value: number | null | undefined) => {
+    if (value == null) return "n/a";
+    return Number.isInteger(value) ? `${value}px` : `${value.toFixed(2)}px`;
+  };
+
+  const getDirectionalConnectorPoints = (
+    relation: string,
+    elementRect: DOMRect,
+    targetRect: DOMRect
+  ) => {
+    const elementCenterX = elementRect.left + elementRect.width / 2;
+    const elementCenterY = elementRect.top + elementRect.height / 2;
+    const targetCenterX = targetRect.left + targetRect.width / 2;
+    const targetCenterY = targetRect.top + targetRect.height / 2;
+
+    switch (relation) {
+      case "below":
+        return {
+          x1: targetCenterX,
+          y1: targetRect.bottom,
+          x2: elementCenterX,
+          y2: elementRect.top,
+        };
+      case "above":
+        return {
+          x1: targetCenterX,
+          y1: targetRect.top,
+          x2: elementCenterX,
+          y2: elementRect.bottom,
+        };
+      case "right_of":
+        return {
+          x1: targetRect.right,
+          y1: targetCenterY,
+          x2: elementRect.left,
+          y2: elementCenterY,
+        };
+      case "left_of":
+        return {
+          x1: elementRect.right,
+          y1: elementCenterY,
+          x2: targetRect.left,
+          y2: targetCenterY,
+        };
+      default:
+        return null;
+    }
+  };
+
   const renderActiveHighlight = () => {
     clearHighlights();
-    if (!highlightsEnabled || !activeRule || root.style.display === "none") return;
+    if (!highlightsEnabled || root.style.display === "none") return;
 
-    const color = activeRule.pass ? "#059669" : "#dc2626";
+    const pinnedRules = latestResults.filter((rule) => pinnedRuleKeys.has(getRuleKey(rule)));
+    const rulesToRender = pinnedRules.length > 0 ? pinnedRules : (activeRule ? [activeRule] : []);
+    if (rulesToRender.length === 0) return;
 
-    const primary = resolveElement(activeRule.element);
-    if (primary) createHighlightBox(primary, color);
+    const getRuleNumber = (rule: RuleResult) => {
+      const byReferenceIndex = latestResults.findIndex((candidate) => candidate === rule);
+      if (byReferenceIndex >= 0) return byReferenceIndex + 1;
 
-    const target = resolveElement(activeRule.target ?? undefined);
-    if (target) createHighlightBox(target, color, true);
+      const byKeyIndex = latestResults.findIndex((candidate) => getRuleKey(candidate) === getRuleKey(rule));
+      return byKeyIndex >= 0 ? byKeyIndex + 1 : null;
+    };
+
+    for (const rule of rulesToRender) {
+      const color = rule.pass ? "#059669" : "#dc2626";
+      const ruleNumber = getRuleNumber(rule);
+      const rulePrefix = ruleNumber == null ? "?" : `${ruleNumber}`;
+
+      const primary = resolveElement(rule.element);
+      const primaryRect = primary?.getBoundingClientRect() ?? null;
+      if (primary && primaryRect) {
+        createHighlightBox(primary, color);
+        createElementRoleLabel(`${rulePrefix} ${rule.element} • source`, color, primaryRect, true);
+      }
+
+      const target = resolveElement(rule.target ?? undefined);
+      const targetRect = target?.getBoundingClientRect() ?? null;
+      if (target && targetRect) {
+        createHighlightBox(target, color, true);
+        createElementRoleLabel(`${rulePrefix} ${rule.target} • target`, color, targetRect, true);
+      }
+
+      if (!primaryRect || !targetRect) continue;
+
+      const connectorPoints = getDirectionalConnectorPoints(rule.relation, primaryRect, targetRect);
+      if (!connectorPoints) continue;
+
+      createConnector(
+        connectorPoints.x1,
+        connectorPoints.y1,
+        connectorPoints.x2,
+        connectorPoints.y2,
+        color,
+        `${rulePrefix} actual: ${formatMeasurement(rule.actual)}`
+      );
+    }
   };
 
   let dragging = false;
@@ -348,8 +594,19 @@ export function createLayoutLintWidget(
     renderActiveHighlight();
   };
 
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key !== "Escape") return;
+    if (pinnedRuleKeys.size === 0) return;
+
+    pinnedRuleKeys.clear();
+    updatePinStatus();
+    renderRows(latestResults);
+    renderActiveHighlight();
+  };
+
   highlightToggle.addEventListener("pointerdown", onTogglePointerDown);
   highlightToggle.addEventListener("click", onToggleClick);
+  window.addEventListener("keydown", onKeyDown);
 
   const onViewportChange = () => {
     renderActiveHighlight();
@@ -369,24 +626,55 @@ export function createLayoutLintWidget(
     const passed = results.filter((r) => r.pass).length;
     status.textContent = `${passed}/${results.length}`;
 
-    for (const item of results) {
+    for (const [index, item] of results.entries()) {
       const row = document.createElement("div");
+      const rowKey = getRuleKey(item);
+      const isPinned = pinnedRuleKeys.has(rowKey);
+      const ruleNumber = index + 1;
       row.style.border = "1px solid #e5e7eb";
       row.style.borderRadius = "6px";
       row.style.padding = "6px 8px";
       row.style.marginBottom = "6px";
       row.style.background = item.pass ? "#ecfdf5" : "#fef2f2";
+      row.style.cursor = "pointer";
+      if (isPinned) {
+        row.style.borderColor = "#7a81ff";
+        row.style.boxShadow = "0 0 0 1px rgba(122,129,255,0.35)";
+      }
 
       const head = document.createElement("div");
-      head.style.fontWeight = "600";
-      head.style.color = item.pass ? "#065f46" : "#991b1b";
-      head.textContent = `${item.pass ? "✓" : "✗"} ${item.element} ${item.relation}${item.target ? ` ${item.target}` : ""}`;
+      head.style.display = "flex";
+      head.style.alignItems = "center";
+      head.style.gap = "6px";
+
+      const numberBadge = document.createElement("span");
+      numberBadge.style.display = "inline-flex";
+      numberBadge.style.alignItems = "center";
+      numberBadge.style.justifyContent = "center";
+      numberBadge.style.minWidth = "26px";
+      numberBadge.style.padding = "1px 7px";
+      numberBadge.style.borderRadius = "999px";
+      numberBadge.style.fontSize = "10px";
+      numberBadge.style.fontWeight = "700";
+      numberBadge.style.lineHeight = "1.3";
+      numberBadge.style.border = item.pass ? "1px solid #34d399" : "1px solid #f87171";
+      numberBadge.style.background = item.pass ? "#d1fae5" : "#fee2e2";
+      numberBadge.style.color = item.pass ? "#065f46" : "#991b1b";
+      numberBadge.textContent = `${ruleNumber}`;
+
+      const headText = document.createElement("span");
+      headText.style.fontWeight = "600";
+      headText.style.color = item.pass ? "#065f46" : "#991b1b";
+      headText.textContent = `${item.pass ? "✓" : "✗"} ${item.element} ${item.relation}${item.target ? ` ${item.target}` : ""}`;
+
+      head.appendChild(numberBadge);
+      head.appendChild(headText);
 
       const meta = document.createElement("div");
       meta.style.fontSize = "11px";
       meta.style.color = "#374151";
       
-      // For semantic relations (contains, overlaps), don't show actual value
+      // for semantic relations (contains, overlaps), don't show actual value
       const isSemantic = ["contains", "overlaps"].includes(item.relation);
       if (isSemantic) {
         meta.textContent = item.pass ? "constraint met" : "constraint not met";
@@ -395,17 +683,34 @@ export function createLayoutLintWidget(
       }
 
       const onRowEnter = () => {
+        if (pinnedRuleKeys.size > 0) return;
         activeRule = item;
         renderActiveHighlight();
       };
 
       const onRowLeave = () => {
+        if (pinnedRuleKeys.size > 0) return;
         activeRule = null;
+        renderActiveHighlight();
+      };
+
+      const onRowClick = () => {
+        if (pinnedRuleKeys.has(rowKey)) {
+          pinnedRuleKeys.delete(rowKey);
+          activeRule = pinnedRuleKeys.size === 0 ? item : activeRule;
+        } else {
+          pinnedRuleKeys.add(rowKey);
+          activeRule = item;
+        }
+
+        updatePinStatus();
+        renderRows(latestResults);
         renderActiveHighlight();
       };
 
       row.addEventListener("pointerenter", onRowEnter);
       row.addEventListener("pointerleave", onRowLeave);
+      row.addEventListener("click", onRowClick);
 
       row.appendChild(head);
       row.appendChild(meta);
@@ -416,14 +721,17 @@ export function createLayoutLintWidget(
   const unsubscribe = monitor.subscribe((result) => {
     latestResults = result.results;
 
-    if (activeRule) {
-      activeRule = latestResults.find(
-        (candidate) =>
-          candidate.element === activeRule?.element &&
-          candidate.relation === activeRule?.relation &&
-          candidate.target === activeRule?.target
-      ) ?? null;
+    const availableKeys = new Set(latestResults.map((candidate) => getRuleKey(candidate)));
+    for (const key of Array.from(pinnedRuleKeys)) {
+      if (!availableKeys.has(key)) pinnedRuleKeys.delete(key);
     }
+
+    if (activeRule) {
+      const activeKey = getRuleKey(activeRule);
+      activeRule = latestResults.find((candidate) => getRuleKey(candidate) === activeKey) ?? null;
+    }
+
+    updatePinStatus();
 
     renderRows(latestResults);
     renderActiveHighlight();
@@ -435,6 +743,7 @@ export function createLayoutLintWidget(
       header.removeEventListener("pointerdown", onPointerDown);
       highlightToggle.removeEventListener("pointerdown", onTogglePointerDown);
       highlightToggle.removeEventListener("click", onToggleClick);
+      window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("resize", onViewportChange);
       window.removeEventListener("scroll", onViewportChange, true);
       clearHighlights();

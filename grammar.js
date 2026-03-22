@@ -17,14 +17,14 @@ module.exports = grammar({
     // a rule looks like:  <element> <relation> <target> [<distance>]
     // or for absolute rules: <element> <relation> <distance>
     rule: $ => choice(
-      // Relative rules: element relation target [distance]
+      // relative rules: element relation target [distance]
       seq(
         field("element", $.identifier),
         field("relation", $.relation),
         field("target", $.identifier),
         optional(field("distance", $.distance))
       ),
-      // Absolute rules: element relation distance
+      // absolute rules: element relation distance
       seq(
         field("element", $.identifier),
         field("relation", $.relation),
