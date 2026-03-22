@@ -1,77 +1,44 @@
-# layout-lint — Demo
+# layout-lint demo
 
-This is the **MVP demo** for `layout-lint`, a JavaScript library + DSL for testing **CSS layout constraints** in web applications.
+This folder contains the interactive **art gallery demo** used to validate layout-lint and the devtools overlay workflow.
 
----
+## Current demo behavior
 
-## What it does
-- Defines layout rules in a small DSL (domain-specific language).  
-- Parses these rules with a **Tree-sitter** grammar compiled to WebAssembly.  
-- Evaluates them directly against the **live DOM**.  
-- Reports whether constraints are satisfied.  
+- parses DSL constraints with tree-sitter wasm
+- evaluates constraints against live DOM geometry
+- renders a draggable devtools widget with live pass/fail rows
+- supports hover highlight preview and multi-pin overlays
+- shows source/target labels and directional connector measurements
 
-Example rule in DSL:
+## Runtime notes
 
-```
-login below header 20px
-```
-→ Checks that the element `#login` is at least 20px below `#header`.
+- demo entry: `demo/index.html`
+- devtools runtime import: `../dist/devtools.js`
+- grammar wasm: `layout_lint.wasm` from project root
+- monitor in demo currently uses `observeMutations: false` to avoid self-trigger loops; manual re-evaluation is triggered during badge dragging
 
----
+## Run
 
-## Files in this folder
-
-```
-demo/
-├── index.html # Demo UI (simple page with header + login button)
-├── index.js # Runtime wrapper (parsing + evaluation logic)
-├── layout_lint.wasm # Compiled Tree-sitter grammar for layout-lint
-├── web-tree-sitter.js # Web Tree-sitter runtime (copied from node_modules)
-├── tree-sitter.wasm # Core Tree-sitter runtime (copied from node_modules)
-├── tree-sitter.js.map # Source map for debugging (optional)
-```
-
----
-
-## How it works
-1. **index.html** loads the runtime and a simple DOM (header + login button).  
-2. The `<pre id="spec">` element contains layout rules.  
-3. `index.js`:
-   - Loads `layout_lint.wasm` via WebAssembly.  
-   - Parses rules into AST (abstract syntax tree).  
-   - Resolves elements by their `id`.  
-   - Measures DOM distances using `getBoundingClientRect()`.  
-   - Compares with expected values.  
-   - Renders ✅ (pass) or ❌ (fail) results.  
-
----
-
-## Current features
-- Relations: `below`, `above`, `left_of`, `right_of`  
-- Distance comparison in pixels (e.g. `20px`)  
-- Resolves elements by `id`  
-- Pass/fail reporting in demo UI  
-
----
-
-## Next steps (planned)
-- More relations: `aligned-left`, `aligned-right`, `width`, `height`  
-- Multiple rules per spec file  
-- Tolerance (e.g. `≈ 20px`)  
-- Highlight failing elements in DOM  
-- Export results as JSON (CI/CD use case)  
-
----
-
-## Running the demo
-From the project root:
+From project root:
 
 ```bash
+npm run build:ts
 npm run serve
-````
-
-Then open:
-
 ```
+
+Open:
+
+```text
 http://localhost:8080/demo/
 ```
+
+## stabilization smoke checklist
+
+After opening the demo:
+
+1. drag the featured badge and confirm rows update live
+2. hover a row and confirm overlay preview appears
+3. click multiple rows and verify multi-pin overlays stack correctly
+4. press `esc` and verify all pins clear
+5. scroll and resize to verify labels stay visible and non-overlapping
+6. toggle `highlight` and verify overlays hide/show cleanly

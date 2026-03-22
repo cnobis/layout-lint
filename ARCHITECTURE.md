@@ -142,6 +142,9 @@ An optional professional developer experience layer is available via a separate 
   - Fixed positioning that follows user
   - Pass/fail color coding (#ecfdf5 for pass, #fef2f2 for fail)
   - Real-time updates via monitor subscription
+  - Hover overlay preview (source/target labels + connector measurements)
+  - Multi-pin via row click and `esc` clear-all
+  - Viewport-safe, collision-aware overlay labels
   - Inline styles for quick deployment
 - **Usage**:
   ```typescript
@@ -179,7 +182,8 @@ An optional professional developer experience layer is available via a separate 
 1. Read DSL from hidden `<pre id="spec">` block.
 2. Call `runLayoutLint({ specText, wasmUrl, locateFile })`.
 3. Parse and evaluate rules.
-4. Render each rule outcome to `#report`.
+4. Push results to reporters and the devtools widget.
+5. Render interactive overlays from widget hover/pin state.
 
 ### 5.3 Runtime Dependencies for Demo
 - Built JS runtime from `dist/`
