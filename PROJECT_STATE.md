@@ -1,4 +1,4 @@
-# LayoutLint: Project State & Development Guide
+# layout-lint: Project State & Development Guide
 
 **Last Updated:** 2026-03-07  
 **Version:** 1.0.0 (packaged, ready to ship)  
@@ -8,7 +8,7 @@
 
 ## 🎯 Project Summary
 
-LayoutLint is a declarative DSL for testing CSS layout constraints in browsers. It uses Tree-sitter for parsing and evaluates spatial relationships between DOM elements using `getBoundingClientRect()`.
+layout-lint is a declarative DSL for testing CSS layout constraints in browsers. It uses Tree-sitter for parsing and evaluates spatial relationships between DOM elements using `getBoundingClientRect()`.
 
 **Core Value Proposition:**
 - Write `gallery below nav 5px` instead of brittle DOM queries

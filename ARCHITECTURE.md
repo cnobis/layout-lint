@@ -97,18 +97,95 @@ Build command:
 
 ---
 
-## 4. Demo Application Flow
+## 4. Optional Developer Tools Layer (Devtools)
 
-### 4.1 Demo Entry
+An optional professional developer experience layer is available via a separate entrypoint (`layout-lint/devtools`). This layer builds on top of the core `runLayoutLint()` API and provides live monitoring and interactive UI.
+
+### 4.1 Console Reporter
+- **Module**: `src/devtools.ts` → `createConsoleReporter()`
+- **Purpose**: Opt-in grouped console logging of pass/fail results
+- **Usage**:
+  ```typescript
+  const reporter = createConsoleReporter();
+  reporter(results);  // Logs grouped summary to console
+  ```
+
+### 4.2 layout-lint Monitor
+- **Module**: `src/devtools.ts` → `createLayoutLintMonitor()`
+- **Purpose**: Live auto-re-evaluation on DOM changes
+- **Features**:
+  - `ResizeObserver` for viewport/element size changes
+  - `MutationObserver` for DOM structure changes
+  - Debounce queue to prevent excessive evaluations (80ms default)
+  - Subscriber pattern for real-time result updates
+- **Usage**:
+  ```typescript
+  const monitor = createLayoutLintMonitor({
+    specText: spec,
+    wasmUrl: './layout_lint.wasm',
+    reporters: [createConsoleReporter()],
+    observeResize: true,
+    observeMutations: true,
+    debounceMs: 80
+  });
+  
+  monitor.subscribe((results) => {
+    // called whenever layout changes
+  });
+  ```
+
+### 4.3 layout-lint Widget
+- **Module**: `src/devtools.ts` → `createLayoutLintWidget()`
+- **Purpose**: Draggable floating panel for real-time constraint visualization
+- **Features**:
+  - Pointer-event based dragging (no external dependencies)
+  - Fixed positioning that follows user
+  - Pass/fail color coding (#ecfdf5 for pass, #fef2f2 for fail)
+  - Real-time updates via monitor subscription
+  - Hover overlay preview (source/target labels + connector measurements)
+  - Multi-pin via row click and `esc` clear-all
+  - Viewport-safe, collision-aware overlay labels
+  - Inline styles for quick deployment
+- **Usage**:
+  ```typescript
+  const widget = createLayoutLintWidget(monitor, {
+    title: 'layout-lint Live',
+    initialPosition: { x: 24, y: 24 }
+  });
+
+  // widget auto-mounts to document.body.
+  // controller methods:
+  widget.setVisible(true);
+  // widget.destroy();
+  ```
+
+### 4.4 Devtools Export Entry
+- **Package Export**: `"./devtools"` in `package.json`
+- **Resolves to**: `dist/devtools.js` + `dist/devtools.d.ts`
+- **Installation**:
+  ```bash
+  npm install layout-lint
+  ```
+- **Usage**:
+  ```typescript
+  import { createLayoutLintMonitor, createLayoutLintWidget, createConsoleReporter } from 'layout-lint/devtools';
+  ```
+
+---
+
+## 5. Demo Application Flow
+
+### 5.1 Demo Entry
 - `demo/index.html`
 
-### 4.2 Runtime Sequence (in browser)
+### 5.2 Runtime Sequence (in browser)
 1. Read DSL from hidden `<pre id="spec">` block.
 2. Call `runLayoutLint({ specText, wasmUrl, locateFile })`.
 3. Parse and evaluate rules.
-4. Render each rule outcome to `#report`.
+4. Push results to reporters and the devtools widget.
+5. Render interactive overlays from widget hover/pin state.
 
-### 4.3 Runtime Dependencies for Demo
+### 5.3 Runtime Dependencies for Demo
 - Built JS runtime from `dist/`
 - `layout_lint.wasm` (grammar)
 - `demo/web-tree-sitter.js`
@@ -119,7 +196,7 @@ Local serving command:
 
 ---
 
-## 5. Binding/Packaging Surface Present in Repository
+## 6. Binding/Packaging Surface Present in Repository
 
 The repository already contains multi-language binding scaffolding:
 - Node: `bindings/node/*`, `binding.gyp`
@@ -133,7 +210,7 @@ For the MVP, the **active functional path** is browser runtime + demo. Packaging
 
 ---
 
-## 6. Current Strengths
+## 7. Current Strengths
 
 - Grammar and runtime are cleanly separated.
 - Rule extraction uses tree-sitter field names (stable and explicit).
@@ -143,7 +220,7 @@ For the MVP, the **active functional path** is browser runtime + demo. Packaging
 
 ---
 
-## 7. Known Technical Notes (MVP Context)
+## 8. Known Technical Notes (MVP Context)
 
 - Node test file currently reflects module-format mismatch under ESM package config.
 - Some manifests reference `queries/*`, while no `queries/` directory is currently present.
@@ -151,7 +228,7 @@ For the MVP, the **active functional path** is browser runtime + demo. Packaging
 
 ---
 
-## 8. Recommended Next Documentation (Optional)
+## 9. Recommended Next Documentation (Optional)
 
 If needed later, add:
 - `SEMANTICS.md` for formal rule math and edge cases.

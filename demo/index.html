@@ -165,49 +165,6 @@
       margin-top: 50px;
     }
 
-    /* LINT OUTPUT */
-    .lint-report {
-      position: fixed;
-      bottom: 16px;
-      right: 16px;
-      width: 320px;
-      max-height: 400px;
-      overflow-y: auto;
-      background: #1a1a1a;
-      border: 1px solid #333;
-      padding: 16px;
-      border-radius: 2px;
-      font-family: 'Courier New', monospace;
-      font-size: 11px;
-      z-index: 100;
-    }
-
-    .lint-report div {
-      margin-bottom: 8px;
-      padding: 6px 8px;
-      border-left: 2px solid #333;
-      padding-left: 10px;
-    }
-
-    .lint-report .pass {
-      border-left-color: #4a7c59;
-      color: #7aa876;
-    }
-
-    .lint-report .fail {
-      border-left-color: #7c4a4a;
-      color: #a87676;
-    }
-
-    .lint-report .title {
-      font-weight: bold;
-      color: #ccc;
-      margin-top: 12px;
-      margin-bottom: 8px;
-      border-left: 2px solid #555;
-      padding-left: 10px;
-    }
-
     /* FEATURED BADGE: Floating element that overlaps gallery */
     #featured-badge {
       position: fixed;
@@ -326,94 +283,61 @@ artwork-2 below artwork-1 0px
 artwork-3 below artwork-2 0px
   </pre>
 
-  <!-- Lint Report Display -->
-  <div id="report" class="lint-report"></div>
-
   <script type="module">
-    import { runLayoutLint } from "../dist/index.js";
+    import { 
+      createLayoutLintMonitor, 
+      createLayoutLintWidget, 
+      createConsoleReporter 
+    } from "../dist/devtools.js";
 
     const locateFile = () => "tree-sitter.wasm";
     const specText = document.getElementById("spec").textContent.trim();
 
-    const { rules, results } = await runLayoutLint({
+    // create monitor with live re-evaluation
+    const monitor = createLayoutLintMonitor({
       specText,
       wasmUrl: "../layout_lint.wasm",
-      locateFile
+      locateFile,
+      reporters: [createConsoleReporter()],
+      observeResize: true,
+      observeMutations: false,  // disabled to prevent infinite loop with widget updates
+      debounceMs: 100
     });
 
-    console.log("Parsed rules:", rules);
-    console.log("Results:", results);
+    // create draggable widget for constraint visualization (auto-mounts to body)
+    const widget = createLayoutLintWidget(monitor, {
+      title: 'Layout Constraints (Live)',
+      initialPosition: { x: window.innerWidth - 360, y: window.innerHeight - 400 }
+    });
 
-    document.getElementById("report").innerHTML = 
-      '<div class="title">Layout Verification</div>' +
-      results.map(r => {
-        const isAlignment = r.relation.startsWith("aligned_");
-        const isSemantic = ["contains", "overlaps"].includes(r.relation);
-        let msg;
-        if (isAlignment) {
-          msg = `${r.element} ${r.relation} ${r.target} (Δ${Math.abs(Math.round(r.actual ?? NaN))}px)`;
-        } else if (isSemantic) {
-          msg = `${r.element} ${r.relation} ${r.target}`;
-        } else {
-          msg = `${r.element} ${r.relation} ${r.target} ≥${r.distancePx}px (${Math.round(r.actual ?? NaN)}px)`;
-        }
-        return `<div class="${r.pass ? 'pass' : 'fail'}">${r.pass ? '✓' : '✗'} ${msg}</div>`;
-      }).join("");
-
-    // Make featured-badge draggable with real-time constraint updates
+    // keep featured-badge draggable with manual handling
     const badge = document.getElementById("featured-badge");
     let isDragging = false;
     let offsetX = 0, offsetY = 0;
 
-    const updateConstraints = async () => {
-      const { rules, results } = await runLayoutLint({
-        specText,
-        wasmUrl: "../layout_lint.wasm",
-        locateFile
-      });
-      document.getElementById("report").innerHTML = 
-        '<div class="title">Layout Verification</div>' +
-        results.map(r => {
-          const isAlignment = r.relation.startsWith("aligned_");
-          const isSemantic = ["contains", "overlaps"].includes(r.relation);
-          let msg;
-          if (isAlignment) {
-            msg = `${r.element} ${r.relation} ${r.target} (Δ${Math.abs(Math.round(r.actual ?? NaN))}px)`;
-          } else if (isSemantic) {
-            msg = `${r.element} ${r.relation} ${r.target}`;
-          } else {
-            msg = `${r.element} ${r.relation} ${r.target} ≥${r.distancePx}px (${Math.round(r.actual ?? NaN)}px)`;
-          }
-          return `<div class="${r.pass ? 'pass' : 'fail'}">${r.pass ? '✓' : '✗'} ${msg}</div>`;
-        }).join("");
-    };
-
-    badge.addEventListener("mousedown", (e) => {
+    badge.addEventListener("pointerdown", (e) => {
       isDragging = true;
       offsetX = e.clientX - badge.getBoundingClientRect().left;
       offsetY = e.clientY - badge.getBoundingClientRect().top;
       badge.classList.add("dragging");
-    });
-
-    document.addEventListener("mousemove", (e) => {
-      if (!isDragging) return;
-      badge.style.left = (e.clientX - offsetX) + "px";
       badge.style.right = "auto";
-      badge.style.top = (e.clientY - offsetY) + "px";
-      updateConstraints();
     });
 
-    document.addEventListener("mouseup", () => {
+    document.addEventListener("pointermove", (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      badge.style.left = (e.clientX - offsetX) + "px";
+      badge.style.top = (e.clientY - offsetY) + "px";
+      // manually trigger re-evaluation since mutation observer is disabled
+      monitor.evaluateNow();
+    });
+
+    document.addEventListener("pointerup", () => {
       isDragging = false;
       badge.classList.remove("dragging");
     });
 
-    // Update constraints when viewport resizes (debounced)
-    let resizeTimeout;
-    window.addEventListener("resize", () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(updateConstraints, 100);
-    });
+    console.log("layout-lint devtools initialized with live monitoring");
   </script>
 
 </body>

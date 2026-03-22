@@ -97,6 +97,131 @@ npm run build:ts && npm run build:wasm && npm run serve
 
 ---
 
+## Using the Devtools Layer
+
+### Integrating the Monitor + Widget
+
+For interactive development, use the devtools module to enable live constraint testing:
+
+```typescript
+import { createLayoutLintMonitor, createLayoutLintWidget, createConsoleReporter } from 'layout-lint/devtools';
+
+// initialize live monitor with your spec
+const monitor = createLayoutLintMonitor({
+  specText: getSpecFromPage(),  // your DSL spec
+  wasmUrl: './layout_lint.wasm',
+  reporters: [createConsoleReporter()],  // optional console logging
+  observeResize: true,           // re-evaluate on resize
+  observeMutations: true,        // re-evaluate on DOM changes
+  debounceMs: 80                 // debounce time
+});
+
+// create the interactive widget (auto-mounts to document.body)
+const widget = createLayoutLintWidget(monitor, {
+  title: 'Layout Constraints',
+  initialPosition: { x: 24, y: 24 }
+});
+
+widget.setVisible(true);
+```
+
+### Current widget behavior (stabilized)
+
+- Hovering a row previews highlight overlays for that rule.
+- Clicking rows toggles **multi-pin** mode (pin/unpin multiple constraints).
+- Press `esc` to clear all pins.
+- Header shows `pin: N` for pinned constraint count.
+- Header toggle `highlight: on/off` controls overlay visibility.
+- Overlay labels are viewport-clamped and collision-aware.
+
+### Subscribing to Monitor Updates
+
+Custom subscribers can listen to monitor changes:
+
+```typescript
+monitor.subscribe((results) => {
+  console.log('Constraints updated:', results);
+  // update custom UI, logging, etc.
+});
+```
+
+### Customizing the Reporter
+
+Create a custom reporter for specialized logging:
+
+```typescript
+const customReporter = (results) => {
+  const passed = results.filter(r => r.pass).length;
+  const failed = results.length - passed;
+  console.log(`✓ ${passed} / ✗ ${failed}`);
+};
+
+const monitor = createLayoutLintMonitor({
+  specText: spec,
+  wasmUrl: './layout_lint.wasm',
+  reporters: [customReporter]  // Use custom reporter
+});
+```
+
+### Widget Options
+
+The widget accepts configuration:
+
+```typescript
+interface LayoutLintWidgetOptions {
+  title?: string;                    // Widget title (default: 'layout-lint')
+  initialPosition?: { x: number; y: number };  // Starting position
+}
+```
+
+### Widget Controller API (Quick Reference)
+
+`createLayoutLintWidget(...)` returns a controller with:
+
+```typescript
+interface LayoutLintWidgetController {
+  destroy(): void;                  // Unsubscribe and remove widget from DOM
+  setVisible(visible: boolean): void; // Show/hide widget
+}
+```
+
+Example:
+
+```typescript
+const widget = createLayoutLintWidget(monitor, {
+  title: 'Layout Constraints',
+  initialPosition: { x: 24, y: 24 }
+});
+
+widget.setVisible(false); // Hide
+widget.setVisible(true);  // Show
+// widget.destroy();      // Cleanup when done
+```
+
+### Stabilization regression checklist
+
+Run this checklist before starting new language extensions:
+
+1. Build passes:
+  ```bash
+  npm run build:ts
+  ```
+2. Core tests pass:
+  ```bash
+  npm test
+  ```
+3. Demo smoke test (`npm run serve`, open `http://localhost:8080/demo/`):
+  - drag gallery badge and confirm live re-evaluation
+  - hover a row and confirm source/target/connector overlays
+  - pin multiple rows and verify all pinned overlays render together
+  - press `esc` and confirm all pins clear
+  - scroll/resize and confirm labels stay visible and non-overlapping
+  - toggle `highlight` off/on and confirm overlays hide/show cleanly
+
+Capture screenshots for thesis evidence after this pass.
+
+---
+
 ## Common Pitfalls
 
 | Issue | Solution |

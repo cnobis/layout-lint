@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Professional devtools layer (`layout-lint/devtools` entrypoint)
+- `createLayoutLintMonitor()` for live constraint evaluation with:
+  - ResizeObserver + MutationObserver for real-time updates
+  - Configurable debounce (default 80ms)
+  - Subscriber pattern for custom handling
+- `createLayoutLintWidget()` for interactive floating panel:
+  - Pointer-based dragging with no external dependencies
+  - Real-time pass/fail visualization
+  - Color-coded results (#ecfdf5 pass, #fef2f2 fail)
+- `createConsoleReporter()` for grouped console logging
+- Full TypeScript definitions for devtools APIs
+
 ## [1.0.8] - 2026-03-08
 
 ### Changed
@@ -54,3 +69,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [1.0.7]: https://github.com/cnobis/layout-lint/releases/tag/v1.0.7
 [1.0.5]: https://github.com/cnobis/layout-lint/releases/tag/v1.0.5
 [1.0.0]: https://github.com/cnobis/layout-lint/releases/tag/v1.0.0
+[Unreleased]: https://github.com/cnobis/layout-lint/compare/v1.0.8...HEAD
