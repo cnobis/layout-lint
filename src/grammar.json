@@ -73,6 +73,131 @@
               "name": "relation",
               "content": {
                 "type": "SYMBOL",
+                "name": "ternary_relation"
+              }
+            },
+            {
+              "type": "FIELD",
+              "name": "target",
+              "content": {
+                "type": "SYMBOL",
+                "name": "identifier"
+              }
+            },
+            {
+              "type": "FIELD",
+              "name": "target2",
+              "content": {
+                "type": "SYMBOL",
+                "name": "identifier"
+              }
+            },
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "FIELD",
+                  "name": "distance",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "distance"
+                  }
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "element",
+              "content": {
+                "type": "SYMBOL",
+                "name": "identifier"
+              }
+            },
+            {
+              "type": "FIELD",
+              "name": "relation",
+              "content": {
+                "type": "SYMBOL",
+                "name": "ternary_relation"
+              }
+            },
+            {
+              "type": "STRING",
+              "value": "["
+            },
+            {
+              "type": "FIELD",
+              "name": "chain_target",
+              "content": {
+                "type": "SYMBOL",
+                "name": "identifier"
+              }
+            },
+            {
+              "type": "FIELD",
+              "name": "chain_target",
+              "content": {
+                "type": "SYMBOL",
+                "name": "identifier"
+              }
+            },
+            {
+              "type": "REPEAT",
+              "content": {
+                "type": "FIELD",
+                "name": "chain_target",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "identifier"
+                }
+              }
+            },
+            {
+              "type": "STRING",
+              "value": "]"
+            },
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "FIELD",
+                  "name": "distance",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "distance"
+                  }
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "element",
+              "content": {
+                "type": "SYMBOL",
+                "name": "identifier"
+              }
+            },
+            {
+              "type": "FIELD",
+              "name": "relation",
+              "content": {
+                "type": "SYMBOL",
                 "name": "relation"
               }
             },
@@ -125,6 +250,14 @@
         },
         {
           "type": "STRING",
+          "value": "centered_x"
+        },
+        {
+          "type": "STRING",
+          "value": "centered_y"
+        },
+        {
+          "type": "STRING",
           "value": "contains"
         },
         {
@@ -150,6 +283,19 @@
         {
           "type": "STRING",
           "value": "distance_from_top"
+        }
+      ]
+    },
+    "ternary_relation": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "equal_gap_x"
+        },
+        {
+          "type": "STRING",
+          "value": "equal_gap_y"
         }
       ]
     },

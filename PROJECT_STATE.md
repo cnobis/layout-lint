@@ -196,7 +196,7 @@ git push origin v1.0.0
 
 ### 4. Demo Image Paths
 **Issue:** Initially used wrong relative paths  
-**Fixed:** Now uses `pictures/art-gallery/{barbershop,bluewithred,swimmer}.jpeg`  
+**Fixed:** Now uses `pictures/gallery/{barbershop,bluewithred,swimmer}.jpeg`  
 **Stable:** No further changes expected
 
 ---

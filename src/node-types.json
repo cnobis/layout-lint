@@ -8,6 +8,16 @@
     "type": "rule",
     "named": true,
     "fields": {
+      "chain_target": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
       "distance": {
         "multiple": false,
         "required": false,
@@ -35,10 +45,24 @@
           {
             "type": "relation",
             "named": true
+          },
+          {
+            "type": "ternary_relation",
+            "named": true
           }
         ]
       },
       "target": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "target2": {
         "multiple": false,
         "required": false,
         "types": [
@@ -67,6 +91,19 @@
     }
   },
   {
+    "type": "ternary_relation",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "[",
+    "named": false
+  },
+  {
+    "type": "]",
+    "named": false
+  },
+  {
     "type": "above",
     "named": false
   },
@@ -91,6 +128,14 @@
     "named": false
   },
   {
+    "type": "centered_x",
+    "named": false
+  },
+  {
+    "type": "centered_y",
+    "named": false
+  },
+  {
     "type": "contains",
     "named": false
   },
@@ -100,6 +145,14 @@
   },
   {
     "type": "distance_from_top",
+    "named": false
+  },
+  {
+    "type": "equal_gap_x",
+    "named": false
+  },
+  {
+    "type": "equal_gap_y",
     "named": false
   },
   {

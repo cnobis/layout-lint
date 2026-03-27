@@ -18,6 +18,7 @@ import { runLayoutLint } from 'layout-lint';
 const spec = `
   nav below header 20px
   sidebar left_of content
+  logo1 equal_gap_x logo2 logo3 logo4 2px
 `;
 
 const { results } = await runLayoutLint({
@@ -25,6 +26,25 @@ const { results } = await runLayoutLint({
   wasmUrl: './layout_lint.wasm'
 });
 ```
+
+## Equal gap chains
+
+`equal_gap_x` and `equal_gap_y` support chain syntax so one line can validate many adjacent gaps.
+
+```txt
+logo1 equal_gap_x logo2 logo3 logo4 logo5 2px
+```
+
+This expands internally to:
+
+- `logo1 equal_gap_x logo2 logo3 2px`
+- `logo2 equal_gap_x logo3 logo4 2px`
+- `logo3 equal_gap_x logo4 logo5 2px`
+
+Tolerance semantics:
+
+- Passes when `|gap1 - gap2| <= tolerance`
+- If omitted, tolerance defaults to `1px`
 
 ## License
 

@@ -31,6 +31,8 @@ export interface LayoutLintMonitorController {
   setSpecText(specText: string): void;
   getLatestResult(): RunLayoutLintResult | null;
   subscribe(listener: (result: RunLayoutLintResult) => void): () => void;
+  pauseObserver(): void;
+  resumeObserver(): void;
   destroy(): void;
 }
 
@@ -45,18 +47,19 @@ export function createConsoleReporter(options: ConsoleReporterOptions = {}): Lay
     for (const item of result.results) {
       const status = item.pass ? "PASS" : "FAIL";
       const target = item.target ? ` ${item.target}` : "";
+      const target2 = item.target2 ? ` ${item.target2}` : "";
       
       // for semantic relations (contains, overlaps), don't show distance/actual
       const isSemantic = ["contains", "overlaps"].includes(item.relation);
       if (isSemantic) {
         console.log(
-          `${status}: ${item.element} ${item.relation}${target} | ${item.pass ? "constraint met" : "constraint not met"}`,
+          `${status}: ${item.element} ${item.relation}${target}${target2} | ${item.pass ? "constraint met" : "constraint not met"}`,
           item
         );
       } else {
         const distance = item.distancePx == null ? "" : ` ${item.distancePx}px`;
         console.log(
-          `${status}: ${item.element} ${item.relation}${target}${distance} | actual=${item.actual ?? "n/a"}`,
+          `${status}: ${item.element} ${item.relation}${target}${target2}${distance} | actual=${item.actual ?? "n/a"}`,
           item
         );
       }
@@ -162,6 +165,23 @@ export function createLayoutLintMonitor(options: LayoutLintMonitorOptions): Layo
     listeners.clear();
   };
 
+  const pauseObserver = () => {
+    if (mutationObserver) {
+      mutationObserver.disconnect();
+    }
+  };
+
+  const resumeObserver = () => {
+    if (observeMutations && running && !mutationObserver) {
+      mutationObserver = new MutationObserver(() => queueEvaluation());
+      mutationObserver.observe(document.documentElement, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
+    }
+  };
+
   if (options.autoStart !== false) start();
 
   return {
@@ -171,6 +191,8 @@ export function createLayoutLintMonitor(options: LayoutLintMonitorOptions): Layo
     setSpecText,
     getLatestResult: () => latestResult,
     subscribe,
+    pauseObserver,
+    resumeObserver,
     destroy,
   };
 }
@@ -243,7 +265,14 @@ export function createLayoutLintWidget(
   };
 
   const pinnedRuleKeys = new Set<string>();
-  const getRuleKey = (rule: RuleResult) => `${rule.element}::${rule.relation}::${rule.target ?? ""}`;
+  const getRuleKey = (rule: RuleResult) => {
+    // for ternary rules (target2 present), include it in the key
+    if (rule.target2) {
+      return `${rule.element}::${rule.relation}::${rule.target ?? ""}::${rule.target2}`;
+    }
+    // for binary rules, use the original key
+    return `${rule.element}::${rule.relation}::${rule.target ?? ""}`;
+  };
 
   const updatePinStatus = () => {
     pinStatus.textContent = `pin: ${pinnedRuleKeys.size}`;
@@ -328,7 +357,27 @@ export function createLayoutLintWidget(
     label.style.whiteSpace = "nowrap";
     label.style.overflow = "hidden";
     label.style.textOverflow = "ellipsis";
-    label.textContent = text;
+
+    const segments = text.split(" • ");
+    const firstSegment = segments[0]?.trim() ?? "";
+    if (segments.length > 1 && /^(\?|\d+)$/.test(firstSegment)) {
+      const numberPart = document.createElement("span");
+      numberPart.style.fontWeight = "700";
+      numberPart.textContent = firstSegment;
+      label.appendChild(numberPart);
+
+      for (let i = 1; i < segments.length; i++) {
+        const delimiter = document.createTextNode(" • ");
+        label.appendChild(delimiter);
+
+        const part = document.createElement("span");
+        part.textContent = segments[i];
+        label.appendChild(part);
+      }
+    } else {
+      label.textContent = text;
+    }
+
     highlightLayer.appendChild(label);
 
     const viewportWidth = window.innerWidth;
@@ -431,7 +480,7 @@ export function createLayoutLintWidget(
     x2: number,
     y2: number,
     color: string,
-    labelText: string
+    labelText?: string
   ) => {
     const dx = x2 - x1;
     const dy = y2 - y1;
@@ -449,9 +498,11 @@ export function createLayoutLintWidget(
     line.style.transform = `rotate(${Math.atan2(dy, dx) * (180 / Math.PI)}deg)`;
     highlightLayer.appendChild(line);
 
-    const labelX = (x1 + x2) / 2 - 90;
-    const labelY = (y1 + y2) / 2 - 18;
-    createOverlayLabel(labelText, color, labelX, labelY);
+    if (labelText) {
+      const labelX = (x1 + x2) / 2 - 90;
+      const labelY = (y1 + y2) / 2 - 18;
+      createOverlayLabel(labelText, color, labelX, labelY);
+    }
   };
 
   const formatMeasurement = (value: number | null | undefined) => {
@@ -503,6 +554,53 @@ export function createLayoutLintWidget(
     }
   };
 
+  const getEqualGapConnectorPoints = (
+    relation: string,
+    sourceRect: DOMRect,
+    middleRect: DOMRect,
+    endRect: DOMRect
+  ) => {
+    if (relation === "equal_gap_x") {
+      const gapY1 = (sourceRect.top + sourceRect.bottom + middleRect.top + middleRect.bottom) / 4;
+      const gapY2 = (middleRect.top + middleRect.bottom + endRect.top + endRect.bottom) / 4;
+      return [
+        {
+          x1: sourceRect.right,
+          y1: gapY1,
+          x2: middleRect.left,
+          y2: gapY1,
+        },
+        {
+          x1: middleRect.right,
+          y1: gapY2,
+          x2: endRect.left,
+          y2: gapY2,
+        },
+      ];
+    }
+
+    if (relation === "equal_gap_y") {
+      const gapX1 = (sourceRect.left + sourceRect.right + middleRect.left + middleRect.right) / 4;
+      const gapX2 = (middleRect.left + middleRect.right + endRect.left + endRect.right) / 4;
+      return [
+        {
+          x1: gapX1,
+          y1: sourceRect.bottom,
+          x2: gapX1,
+          y2: middleRect.top,
+        },
+        {
+          x1: gapX2,
+          y1: middleRect.bottom,
+          x2: gapX2,
+          y2: endRect.top,
+        },
+      ];
+    }
+
+    return null;
+  };
+
   const renderActiveHighlight = () => {
     clearHighlights();
     if (!highlightsEnabled || root.style.display === "none") return;
@@ -528,14 +626,44 @@ export function createLayoutLintWidget(
       const primaryRect = primary?.getBoundingClientRect() ?? null;
       if (primary && primaryRect) {
         createHighlightBox(primary, color);
-        createElementRoleLabel(`${rulePrefix} ${rule.element} • source`, color, primaryRect, true);
+        createElementRoleLabel(`${rulePrefix} • ${rule.element} • source`, color, primaryRect, true);
       }
 
       const target = resolveElement(rule.target ?? undefined);
       const targetRect = target?.getBoundingClientRect() ?? null;
       if (target && targetRect) {
         createHighlightBox(target, color, true);
-        createElementRoleLabel(`${rulePrefix} ${rule.target} • target`, color, targetRect, true);
+        createElementRoleLabel(`${rulePrefix} • ${rule.target} • target`, color, targetRect, true);
+      }
+
+      const target2 = resolveElement(rule.target2 ?? undefined);
+      const target2Rect = target2?.getBoundingClientRect() ?? null;
+      if (target2 && target2Rect) {
+        createHighlightBox(target2, color, true);
+        createElementRoleLabel(`${rulePrefix} • ${rule.target2} • target 2`, color, target2Rect, false);
+      }
+
+      const equalGapPoints =
+        primaryRect && targetRect && target2Rect
+          ? getEqualGapConnectorPoints(rule.relation, primaryRect, targetRect, target2Rect)
+          : null;
+      if (equalGapPoints) {
+        createConnector(
+          equalGapPoints[0].x1,
+          equalGapPoints[0].y1,
+          equalGapPoints[0].x2,
+          equalGapPoints[0].y2,
+          color,
+          `${rulePrefix} • actual: ${formatMeasurement(rule.actual)}`
+        );
+        createConnector(
+          equalGapPoints[1].x1,
+          equalGapPoints[1].y1,
+          equalGapPoints[1].x2,
+          equalGapPoints[1].y2,
+          color
+        );
+        continue;
       }
 
       if (!primaryRect || !targetRect) continue;
@@ -558,14 +686,37 @@ export function createLayoutLintWidget(
   let offsetX = 0;
   let offsetY = 0;
 
+  const clampWidgetIntoViewport = () => {
+    const margin = 8;
+    const rect = root.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    const minLeft = margin;
+    const minTop = margin;
+    const maxLeft = Math.max(minLeft, viewportWidth - rect.width - margin);
+    const maxTop = Math.max(minTop, viewportHeight - rect.height - margin);
+
+    const currentLeft = Number.parseFloat(root.style.left || "0");
+    const currentTop = Number.parseFloat(root.style.top || "0");
+
+    const nextLeft = Math.min(Math.max(currentLeft, minLeft), maxLeft);
+    const nextTop = Math.min(Math.max(currentTop, minTop), maxTop);
+
+    root.style.left = `${nextLeft}px`;
+    root.style.top = `${nextTop}px`;
+  };
+
   const onPointerMove = (event: PointerEvent) => {
     if (!dragging) return;
     root.style.left = `${event.clientX - offsetX}px`;
     root.style.top = `${event.clientY - offsetY}px`;
+    clampWidgetIntoViewport();
   };
 
   const onPointerUp = () => {
     dragging = false;
+    clampWidgetIntoViewport();
     window.removeEventListener("pointermove", onPointerMove);
     window.removeEventListener("pointerup", onPointerUp);
   };
@@ -600,7 +751,9 @@ export function createLayoutLintWidget(
 
     pinnedRuleKeys.clear();
     updatePinStatus();
+    monitor.pauseObserver();
     renderRows(latestResults);
+    monitor.resumeObserver();
     renderActiveHighlight();
   };
 
@@ -609,11 +762,15 @@ export function createLayoutLintWidget(
   window.addEventListener("keydown", onKeyDown);
 
   const onViewportChange = () => {
+    clampWidgetIntoViewport();
     renderActiveHighlight();
   };
 
   window.addEventListener("resize", onViewportChange);
   window.addEventListener("scroll", onViewportChange, true);
+  window.requestAnimationFrame(() => {
+    clampWidgetIntoViewport();
+  });
 
   const renderRows = (results: RuleResult[]) => {
     body.innerHTML = "";
@@ -665,7 +822,7 @@ export function createLayoutLintWidget(
       const headText = document.createElement("span");
       headText.style.fontWeight = "600";
       headText.style.color = item.pass ? "#065f46" : "#991b1b";
-      headText.textContent = `${item.pass ? "✓" : "✗"} ${item.element} ${item.relation}${item.target ? ` ${item.target}` : ""}`;
+      headText.textContent = `${item.pass ? "✓" : "✗"} ${item.element} ${item.relation}${item.target ? ` ${item.target}` : ""}${item.target2 ? ` ${item.target2}` : ""}`;
 
       head.appendChild(numberBadge);
       head.appendChild(headText);
@@ -676,10 +833,20 @@ export function createLayoutLintWidget(
       
       // for semantic relations (contains, overlaps), don't show actual value
       const isSemantic = ["contains", "overlaps"].includes(item.relation);
+      const isAlignment =
+        item.relation.startsWith("aligned_") ||
+        item.relation === "centered_x" ||
+        item.relation === "centered_y";
+      const isEqualGap = item.relation === "equal_gap_x" || item.relation === "equal_gap_y";
       if (isSemantic) {
         meta.textContent = item.pass ? "constraint met" : "constraint not met";
+      } else if (isAlignment) {
+        meta.textContent = `actual offset: ${item.actual ?? "n/a"} | expected: <= 1px`;
+      } else if (isEqualGap) {
+        const tolerance = item.distancePx ?? 1;
+        meta.textContent = `actual gap delta: ${item.actual ?? "n/a"} | expected: <= ${tolerance}px`;
       } else {
-        meta.textContent = `actual: ${item.actual ?? "n/a"}${item.distancePx != null ? ` | expected: >= ${item.distancePx}` : ""}`;
+        meta.textContent = `actual distance: ${item.actual ?? "n/a"}${item.distancePx != null ? ` | expected: >= ${item.distancePx}px` : ""}`;
       }
 
       const onRowEnter = () => {
@@ -704,8 +871,16 @@ export function createLayoutLintWidget(
         }
 
         updatePinStatus();
-        renderRows(latestResults);
         renderActiveHighlight();
+        
+        // defer renderRows to ensure event listener isn't disrupted
+        requestAnimationFrame(() => {
+          // Temporarily pause the mutation observer to avoid feedback loop
+          // while rendering DOM updates
+          monitor.pauseObserver();
+          renderRows(latestResults);
+          monitor.resumeObserver();
+        });
       };
 
       row.addEventListener("pointerenter", onRowEnter);
@@ -716,6 +891,44 @@ export function createLayoutLintWidget(
       row.appendChild(meta);
       body.appendChild(row);
     }
+
+    // add evaluate button at the bottom
+    const buttonContainer = document.createElement("div");
+    buttonContainer.style.marginTop = "10px";
+    buttonContainer.style.paddingTop = "8px";
+    buttonContainer.style.borderTop = "1px solid #e5e7eb";
+
+    const evaluateBtn = document.createElement("button");
+    evaluateBtn.type = "button";
+    evaluateBtn.textContent = "Evaluate";
+    evaluateBtn.style.width = "100%";
+    evaluateBtn.style.padding = "6px 8px";
+    evaluateBtn.style.fontSize = "11px";
+    evaluateBtn.style.fontWeight = "600";
+    evaluateBtn.style.border = "1px solid #d1d5db";
+    evaluateBtn.style.borderRadius = "6px";
+    evaluateBtn.style.background = "#f3f4f6";
+    evaluateBtn.style.color = "#374151";
+    evaluateBtn.style.cursor = "pointer";
+    evaluateBtn.style.transition = "all 120ms ease";
+
+    evaluateBtn.addEventListener("pointerdown", (e) => e.stopPropagation());
+    evaluateBtn.addEventListener("click", () => {
+      void monitor.evaluateNow();
+    });
+
+    evaluateBtn.addEventListener("pointerenter", () => {
+      evaluateBtn.style.background = "#e5e7eb";
+      evaluateBtn.style.borderColor = "#9ca3af";
+    });
+
+    evaluateBtn.addEventListener("pointerleave", () => {
+      evaluateBtn.style.background = "#f3f4f6";
+      evaluateBtn.style.borderColor = "#d1d5db";
+    });
+
+    buttonContainer.appendChild(evaluateBtn);
+    body.appendChild(buttonContainer);
   };
 
   const unsubscribe = monitor.subscribe((result) => {
@@ -756,6 +969,7 @@ export function createLayoutLintWidget(
         clearHighlights();
         return;
       }
+      clampWidgetIntoViewport();
       renderActiveHighlight();
     },
   };

@@ -1,6 +1,25 @@
 # layout-lint demo
 
-This folder contains the interactive **art gallery demo** used to validate layout-lint and the devtools overlay workflow.
+This folder contains the demo set for validating layout-lint and the devtools overlay workflow.
+
+## demo catalog
+
+- catalog page: `demo/catalog.html`
+- root landing page: `demo/index.html`
+- active gallery demo: `demo/gallery/index.html`
+- scaffolded pages for expansion:
+	- `demo/dashboard/index.html`
+	- `demo/control-room/index.html`
+	- `demo/forms/index.html`
+	- `demo/editor/index.html`
+
+## active demo pages
+
+- `demo/gallery/index.html`
+- `demo/dashboard/index.html`
+- `demo/control-room/index.html`
+- `demo/forms/index.html`
+- `demo/editor/index.html`
 
 ## Current demo behavior
 
@@ -12,7 +31,8 @@ This folder contains the interactive **art gallery demo** used to validate layou
 
 ## Runtime notes
 
-- demo entry: `demo/index.html`
+- demo entry: `demo/catalog.html` (or `demo/index.html` landing)
+- gallery entry: `demo/gallery/index.html`
 - devtools runtime import: `../dist/devtools.js`
 - grammar wasm: `layout_lint.wasm` from project root
 - monitor in demo currently uses `observeMutations: false` to avoid self-trigger loops; manual re-evaluation is triggered during badge dragging
@@ -29,7 +49,7 @@ npm run serve
 Open:
 
 ```text
-http://localhost:8080/demo/
+http://localhost:8080/demo/catalog.html
 ```
 
 ## stabilization smoke checklist
@@ -42,3 +62,15 @@ After opening the demo:
 4. press `esc` and verify all pins clear
 5. scroll and resize to verify labels stay visible and non-overlapping
 6. toggle `highlight` and verify overlays hide/show cleanly
+
+## extension-driven workflow
+
+Yes, language work should be driven by concrete demo needs. use this cycle:
+
+1. pick one demo page and define the layout intent you cannot currently express
+2. write the desired DSL examples first (even if unsupported yet)
+3. extend grammar + parser + evaluator minimally to satisfy those examples
+4. validate on at least two demos before considering the extension stable
+5. add tests and capture demo screenshots as evidence
+
+This keeps extensions justified, avoids feature sprawl, and produces stronger thesis artifacts.

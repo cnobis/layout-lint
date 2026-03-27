@@ -164,5 +164,87 @@ describe('layout-lint Core', () => {
       assert.strictEqual(results[0].pass, true);
       assert.strictEqual(results[0].actual, 20); // 620 - 600 = 20px
     });
+
+    it('should pass centered_x with 1px tolerance', () => {
+      const rules = [{
+        element: 'cta',
+        relation: 'centered_x',
+        target: 'hero'
+      }];
+
+      const mockResolve = (id) => {
+        if (id === 'hero') return { getBoundingClientRect: () => ({ top: 0, bottom: 300, left: 100, right: 700 }) };
+        if (id === 'cta') return { getBoundingClientRect: () => ({ top: 200, bottom: 260, left: 300, right: 501 }) };
+        return null;
+      };
+
+      const results = evaluateRules(rules, mockResolve);
+
+      assert.strictEqual(results[0].pass, true);
+      assert.strictEqual(results[0].actual, 0.5);
+    });
+
+    it('should fail centered_x when horizontal center drifts', () => {
+      const rules = [{
+        element: 'cta',
+        relation: 'centered_x',
+        target: 'hero'
+      }];
+
+      const mockResolve = (id) => {
+        if (id === 'hero') return { getBoundingClientRect: () => ({ top: 0, bottom: 300, left: 100, right: 700 }) };
+        if (id === 'cta') return { getBoundingClientRect: () => ({ top: 200, bottom: 260, left: 360, right: 560 }) };
+        return null;
+      };
+
+      const results = evaluateRules(rules, mockResolve);
+
+      assert.strictEqual(results[0].pass, false);
+      assert.strictEqual(results[0].actual, 60);
+    });
+
+    it('should pass equal_gap_x with tolerance', () => {
+      const rules = [{
+        element: 'logo1',
+        relation: 'equal_gap_x',
+        target: 'logo2',
+        target2: 'logo3',
+        distancePx: 2
+      }];
+
+      const mockResolve = (id) => {
+        if (id === 'logo1') return { getBoundingClientRect: () => ({ top: 0, bottom: 20, left: 100, right: 180 }) };
+        if (id === 'logo2') return { getBoundingClientRect: () => ({ top: 0, bottom: 20, left: 195, right: 285 }) };
+        if (id === 'logo3') return { getBoundingClientRect: () => ({ top: 0, bottom: 20, left: 300, right: 390 }) };
+        return null;
+      };
+
+      const results = evaluateRules(rules, mockResolve);
+
+      assert.strictEqual(results[0].pass, true);
+      assert.strictEqual(results[0].actual, 0);
+    });
+
+    it('should fail equal_gap_x when gaps differ beyond tolerance', () => {
+      const rules = [{
+        element: 'logo1',
+        relation: 'equal_gap_x',
+        target: 'logo2',
+        target2: 'logo3',
+        distancePx: 2
+      }];
+
+      const mockResolve = (id) => {
+        if (id === 'logo1') return { getBoundingClientRect: () => ({ top: 0, bottom: 20, left: 100, right: 180 }) };
+        if (id === 'logo2') return { getBoundingClientRect: () => ({ top: 0, bottom: 20, left: 196, right: 286 }) };
+        if (id === 'logo3') return { getBoundingClientRect: () => ({ top: 0, bottom: 20, left: 314, right: 404 }) };
+        return null;
+      };
+
+      const results = evaluateRules(rules, mockResolve);
+
+      assert.strictEqual(results[0].pass, false);
+      assert.strictEqual(results[0].actual, 12);
+    });
   });
 });
