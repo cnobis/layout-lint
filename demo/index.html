@@ -1,344 +1,49 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Galerie Nocturne — Contemporary Art</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>layout-lint demo catalog</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Garamond', 'Georgia', serif;
-      background: #0a0a0a;
-      color: #e8e8e8;
-      line-height: 1.6;
-      letter-spacing: 0.05em;
-    }
-
-    /* HEADER: Gallery Title */
-    #header {
-      background: #000;
-      border-bottom: 1px solid #333;
-      padding: 48px 64px;
-      text-align: center;
-    }
-
-    #header h1 {
-      font-size: 48px;
-      font-weight: 300;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: #ccc;
-      margin-bottom: 12px;
-    }
-
-    #header p {
-      font-size: 14px;
-      color: #888;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-
-    /* NAVIGATION: Below header */
-    #nav {
-      background: #0f0f0f;
-      padding: 24px 64px;
-      border-bottom: 1px solid #222;
-      display: flex;
-      gap: 48px;
-      align-items: center;
-      margin-bottom: 5px;
-    }
-
-    #nav a {
-      font-size: 12px;
-      letter-spacing: 0.08em;
-      color: #aaa;
-      text-decoration: none;
-      text-transform: uppercase;
-      transition: color 0.3s ease;
-    }
-
-    #nav a:hover {
-      color: #e8e8e8;
-    }
-
-    #search-box {
-      margin-left: auto;
-      padding: 10px 16px;
-      background: #1a1a1a;
-      border: 1px solid #333;
-      color: #e8e8e8;
-      font-family: 'Garamond', serif;
-      font-size: 12px;
-      letter-spacing: 0.05em;
-      width: 200px;
-    }
-
-    #search-box::placeholder {
-      color: #666;
-    }
-
-    /* MAIN GALLERY GRID */
-    #gallery {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 48px;
-      padding: 64px;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    /* Responsive: Stack on narrow viewports */
-    @media (max-width: 900px) {
-      #gallery {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .artwork {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .artwork-image {
-      width: 100%;
-      aspect-ratio: 3/4;
-      background: #1a1a1a;
-      overflow: hidden;
-      border: 1px solid #222;
-    }
-
-    .artwork-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: opacity 0.4s ease;
-    }
-
-    .artwork-image img:hover {
-      opacity: 0.9;
-    }
-
-    .artwork-info {
-      padding: 16px 0;
-      border-bottom: 1px solid #222;
-      padding-bottom: 16px;
-    }
-
-    .artwork-title {
-      font-size: 16px;
-      color: #e8e8e8;
-      margin-bottom: 8px;
-      font-weight: 400;
-      letter-spacing: 0.03em;
-    }
-
-    .artwork-artist {
-      font-size: 12px;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 12px;
-    }
-
-    .artwork-price {
-      font-size: 13px;
-      color: #aaa;
-      letter-spacing: 0.05em;
-    }
-
-    /* FOOTER */
-    #footer {
-      background: #000;
-      border-top: 1px solid #222;
-      padding: 48px 64px;
-      text-align: center;
-      font-size: 12px;
-      color: #666;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-top: 50px;
-    }
-
-    /* FEATURED BADGE: Floating element that overlaps gallery */
-    #featured-badge {
-      position: fixed;
-      top: 320px;
-      right: 64px;
-      width: 180px;
-      background: #1a1a1a;
-      border: 1px solid #666;
-      padding: 16px;
-      border-radius: 2px;
-      z-index: 500;
-      cursor: grab;
-      user-select: none;
-    }
-
-    #featured-badge.dragging {
-      cursor: grabbing;
-      opacity: 0.9;
-    }
-
-    #featured-badge .badge-title {
-      font-size: 11px;
-      color: #aaa;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 8px;
-    }
-
-    #featured-badge .badge-content {
-      font-size: 12px;
-      color: #ddd;
-      line-height: 1.5;
-    }
+    body { margin: 0; font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0b1020; color: #e5e7eb; }
+    main { max-width: 960px; margin: 26px auto 40px; padding: 0 20px; }
+    .brand-banner { border: 1px solid #39417a; border-radius: 14px; background: #10152a; padding: 10px 12px; }
+    .brand-banner img { width: 100%; height: auto; display: block; }
+    h1 { margin: 14px 0 4px; color: #7a81ff; font-size: 26px; }
+    p { color: #c7d2fe; margin: 0; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 24px; }
+    a.card { display: block; text-decoration: none; color: inherit; border: 1px solid #374151; border-radius: 12px; padding: 14px; background: #111827; }
+    a.card:hover { border-color: #7a81ff; background: #1f2937; }
+    .name { font-weight: 700; margin-bottom: 6px; }
+    .tag { display: inline-block; margin-top: 8px; padding: 2px 8px; font-size: 12px; border-radius: 999px; background: #2b2f66; color: #dbe0ff; border: 1px solid #7a81ff; }
   </style>
 </head>
 <body>
-
-  <!-- HEADER: Gallery branding -->
-  <header id="header">
-    <h1>Galerie Nocturne</h1>
-    <p>Contemporary Art Encounters</p>
-  </header>
-
-  <!-- NAVIGATION: Testing `below` and `above` relationships -->
-  <nav id="nav">
-    <a href="#curated">Curated</a>
-    <a href="#artists">Artists</a>
-    <a href="#about">About</a>
-    <input id="search-box" type="text" placeholder="Search artworks...">
-  </nav>
-
-  <!-- MAIN GALLERY: Grid with artworks -->
-  <section id="gallery">
-    
-    <!-- Artwork 1 -->
-    <article id="artwork-1" class="artwork">
-      <div id="artwork-1-image" class="artwork-image">
-        <img src="pictures/art-gallery/barbershop.jpeg" alt="Abstract Geometry">
-      </div>
-      <div id="artwork-1-info" class="artwork-info">
-        <div class="artwork-title">Untitled Series #42</div>
-        <div class="artwork-artist">Marie Côté</div>
-        <div id="artwork-1-price" class="artwork-price">€8,500</div>
-      </div>
-    </article>
-
-    <!-- Artwork 2 -->
-    <article id="artwork-2" class="artwork">
-      <div id="artwork-2-image" class="artwork-image">
-        <img src="pictures/art-gallery/bluewithred.jpeg" alt="Ethereal Light">
-      </div>
-      <div id="artwork-2-info" class="artwork-info">
-        <div class="artwork-title">Luminescence</div>
-        <div class="artwork-artist">James Whitfield</div>
-        <div id="artwork-2-price" class="artwork-price">€12,000</div>
-      </div>
-    </article>
-
-    <!-- Artwork 3 -->
-    <article id="artwork-3" class="artwork">
-      <div id="artwork-3-image" class="artwork-image">
-        <img src="pictures/art-gallery/swimmer.jpeg" alt="Chromatic Layers">
-      </div>
-      <div id="artwork-3-info" class="artwork-info">
-        <div class="artwork-title">Depth of Field</div>
-        <div class="artwork-artist">Sophie Laurent</div>
-        <div id="artwork-3-price" class="artwork-price">€6,800</div>
-      </div>
-    </article>
-
-  </section>
-
-  <!-- FEATURED BADGE: Floating element that overlaps gallery -->
-  <div id="featured-badge">
-    <div class="badge-title">Editor's Pick</div>
-    <div class="badge-content">
-      <strong>Luminescence</strong><br>
-      by James Whitfield<br>
-      €12,000
+  <main>
+    <div class="brand-banner">
+      <img src="./pictures/logo.png" alt="layout-lint" />
     </div>
-  </div>
-
-  <!-- FOOTER -->
-  <footer id="footer">
-    © 2025 Galerie Nocturne — Proudly displaying exceptional contemporary art
-  </footer>
-
-  <!-- Hidden DSL rules: 10 Fundamental Layout Rules -->
-  <pre id="spec" hidden>
-header above nav 0px
-gallery below nav 5px
-footer below gallery 50px
-featured-badge overlaps gallery
-artwork-2 right_of artwork-1 0px
-artwork-2 below artwork-1 0px
-artwork-3 below artwork-2 0px
-  </pre>
-
-  <script type="module">
-    import { 
-      createLayoutLintMonitor, 
-      createLayoutLintWidget, 
-      createConsoleReporter 
-    } from "../dist/devtools.js";
-
-    const locateFile = () => "tree-sitter.wasm";
-    const specText = document.getElementById("spec").textContent.trim();
-
-    // create monitor with live re-evaluation
-    const monitor = createLayoutLintMonitor({
-      specText,
-      wasmUrl: "../layout_lint.wasm",
-      locateFile,
-      reporters: [createConsoleReporter()],
-      observeResize: true,
-      observeMutations: false,  // disabled to prevent infinite loop with widget updates
-      debounceMs: 100
-    });
-
-    // create draggable widget for constraint visualization (auto-mounts to body)
-    const widget = createLayoutLintWidget(monitor, {
-      title: 'Layout Constraints (Live)',
-      initialPosition: { x: window.innerWidth - 360, y: window.innerHeight - 400 }
-    });
-
-    // keep featured-badge draggable with manual handling
-    const badge = document.getElementById("featured-badge");
-    let isDragging = false;
-    let offsetX = 0, offsetY = 0;
-
-    badge.addEventListener("pointerdown", (e) => {
-      isDragging = true;
-      offsetX = e.clientX - badge.getBoundingClientRect().left;
-      offsetY = e.clientY - badge.getBoundingClientRect().top;
-      badge.classList.add("dragging");
-      badge.style.right = "auto";
-    });
-
-    document.addEventListener("pointermove", (e) => {
-      if (!isDragging) return;
-      e.preventDefault();
-      badge.style.left = (e.clientX - offsetX) + "px";
-      badge.style.top = (e.clientY - offsetY) + "px";
-      // manually trigger re-evaluation since mutation observer is disabled
-      monitor.evaluateNow();
-    });
-
-    document.addEventListener("pointerup", () => {
-      isDragging = false;
-      badge.classList.remove("dragging");
-    });
-
-    console.log("layout-lint devtools initialized with live monitoring");
-  </script>
-
+    <h1>Demo catalog</h1>
+    <p>Layout-lint is a browser-first DSL for validating layout relationships against real DOM geometry.</p>
+    <p>This page is the staged demo track used to develop and verify language features.</p>
+    <div class="grid">
+      <a class="card" href="./gallery/index.html">
+        <div class="name">Stage 1 — Gallery</div>
+        <div>Baseline constraints demo with live overlays; tests vertical flow, overlap, and two-column relations.</div>
+      </a>
+      <a class="card" href="./control-room/index.html">
+        <div class="name">Stage 2 — Control Room</div>
+        <div>Interactive command-deck demo; tests `centered_x` and equal-gap constraints with live spacing controls.</div>
+      </a>
+      <a class="card" href="./dashboard/index.html">
+        <div class="name">Stage 3 — Dashboard</div>
+        <div>Panel and card composition stage; tests grid rhythm, card adjacency, and cross-section spacing.</div>
+      </a>
+      <a class="card" href="./forms/index.html">
+        <div class="name">Stage 4 — Forms</div>
+        <div>Form layout stage; tests label-input alignment, section grouping, and action-row consistency.</div>
+      </a>
+    </div>
+  </main>
 </body>
 </html>

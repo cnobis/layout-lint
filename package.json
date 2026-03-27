@@ -4,7 +4,6 @@
   "description": "A declarative DSL for testing CSS layout constraints in the browser",
   "repository": "https://github.com/cnobis/layout-lint",
   "license": "MIT",
-  "type": "module",
   "author": {
     "name": "Christopher Nobis",
     "email": "christophernobis.dev@icloud.com"
@@ -60,5 +59,6 @@
     "build:wasm": "tree-sitter build --wasm -o layout_lint.wasm",
     "build:ts": "tsc",
     "serve": "npx http-server -c-1 . || npx serve -n ."
-  }
+  },
+  "type": "module"
 }

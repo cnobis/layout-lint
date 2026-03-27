@@ -3,6 +3,8 @@
 ## Quick Summary
 To add a new relation or feature, follow this sequence. The critical step is **removing/restoring `"type": "module"`** from `package.json` around tree-sitter generation.
 
+Bug tracking policy: document every bug and its solution in [BUGS.md](BUGS.md).
+
 ---
 
 ## 1. Add a New Relation to the Grammar
@@ -13,7 +15,7 @@ Edit [grammar.js](grammar.js) → `relation` rule, e.g.:
 relation: $ => choice(
   "below", "above", "left_of", "right_of",
   "aligned_top", "aligned_bottom", "aligned_left", "aligned_right",
-  "contains"  // ← new relation
+  "centered_x", "contains"  // ← new relation
 ),
 ```
 
@@ -64,15 +66,16 @@ Then **hard refresh the demo** (`Cmd+Shift+R`) to test.
 
 ---
 
-## 5. Add Test Cases to the Demo
+## 5. Add Test Cases to a Demo Page
 
-Edit [demo/index.html](demo/index.html) → `<pre id="spec">` section:
+Edit a dedicated demo page (for Stage 2 use [demo/control-room/index.html](demo/control-room/index.html)) → `<pre id="spec">` section:
 
 ```html
 <pre id="spec" hidden>
-login below header 20px
-login aligned_left header
-header contains login 0px
+hero-copy centered_x hero
+hero-cta centered_x hero
+hero-cta below hero-copy 32px
+trust-strip below hero 24px
 </pre>
 ```
 
@@ -87,7 +90,7 @@ tree-sitter generate
 
 # Restore "type": "module" to package.json
 # Edit src/evaluator.ts (if needed)
-# Edit demo/index.html (test cases)
+# Edit a target demo page (e.g. demo/control-room/index.html)
 npm run build:ts && npm run build:wasm && npm run serve
 
 # Hard refresh browser → test
@@ -210,8 +213,9 @@ Run this checklist before starting new language extensions:
   ```bash
   npm test
   ```
-3. Demo smoke test (`npm run serve`, open `http://localhost:8080/demo/`):
+3. Demo smoke test (`npm run serve`, open `http://localhost:8080/demo/catalog.html`):
   - drag gallery badge and confirm live re-evaluation
+  - open control-room demo and adjust spacing sliders to confirm `centered_x`/`equal_gap_x` pass/fail flips live
   - hover a row and confirm source/target/connector overlays
   - pin multiple rows and verify all pinned overlays render together
   - press `esc` and confirm all pins clear
