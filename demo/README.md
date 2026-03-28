@@ -2,15 +2,16 @@
 
 This folder contains the demo set for validating layout-lint and the devtools overlay workflow.
 
-## demo catalog
+## Playground
 
-- catalog page: `demo/catalog.html`
+- playground page: `demo/index.html`
 - root landing page: `demo/index.html`
 - active gallery demo: `demo/gallery/index.html`
 - scaffolded pages for expansion:
 	- `demo/dashboard/index.html`
 	- `demo/control-room/index.html`
 	- `demo/forms/index.html`
+	- `demo/jazz-club/index.html`
 	- `demo/editor/index.html`
 
 ## active demo pages
@@ -19,6 +20,7 @@ This folder contains the demo set for validating layout-lint and the devtools ov
 - `demo/dashboard/index.html`
 - `demo/control-room/index.html`
 - `demo/forms/index.html`
+- `demo/jazz-club/index.html`
 - `demo/editor/index.html`
 
 ## Current demo behavior
@@ -31,8 +33,9 @@ This folder contains the demo set for validating layout-lint and the devtools ov
 
 ## Runtime notes
 
-- demo entry: `demo/catalog.html` (or `demo/index.html` landing)
+- demo entry: `demo/index.html` (Playground landing)
 - gallery entry: `demo/gallery/index.html`
+- jazz club entry: `demo/jazz-club/index.html`
 - devtools runtime import: `../dist/devtools.js`
 - grammar wasm: `layout_lint.wasm` from project root
 - monitor in demo currently uses `observeMutations: false` to avoid self-trigger loops; manual re-evaluation is triggered during badge dragging
@@ -49,7 +52,7 @@ npm run serve
 Open:
 
 ```text
-http://localhost:8080/demo/catalog.html
+http://localhost:8080/demo/index.html
 ```
 
 ## stabilization smoke checklist

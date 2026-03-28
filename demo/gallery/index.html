@@ -192,9 +192,39 @@
       color: #ddd;
       line-height: 1.5;
     }
+
+    #demo-exit {
+      position: fixed;
+      top: 12px;
+      right: 14px;
+      z-index: 900;
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(122, 129, 255, 0.58);
+      background: rgba(122, 129, 255, 0.24);
+      color: #eceeff;
+      text-decoration: none;
+      font-size: 10px;
+      font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease;
+      backdrop-filter: blur(2px);
+    }
+
+    #demo-exit:hover,
+    #demo-exit:focus-visible {
+      background: rgba(122, 129, 255, 0.36);
+      border-color: rgba(122, 129, 255, 0.78);
+      color: #f7f8ff;
+      outline: none;
+    }
   </style>
 </head>
 <body>
+
+  <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT</a>
 
   <header id="header">
     <h1>Galerie Nocturne</h1>
@@ -260,8 +290,18 @@
 header above nav 0px
 gallery below nav 5px
 footer below gallery 50px
-featured-badge overlaps gallery
-artwork-2 right_of artwork-1 0px
+featured-badge inside gallery
+featured-badge not inside header
+featured-badge partially inside gallery
+featured-badge width 180px
+featured-badge width < 181px
+featured-badge height > 60px
+featured-badge height < 220px
+artwork-1-image width 100% of artwork-1/width
+artwork-2-image width 100% of artwork-2/width
+artwork-1-info width 95 to 100% of artwork-1/width
+artwork-1-image height < 100% of artwork-1/height
+artwork-2 right-of artwork-1 0px
 artwork-2 below artwork-1 0px
 artwork-3 below artwork-2 0px
   </pre>
@@ -287,7 +327,6 @@ artwork-3 below artwork-2 0px
     });
 
     createLayoutLintWidget(monitor, {
-      title: 'Layout Constraints',
       initialPosition: { x: window.innerWidth - 360, y: window.innerHeight - 400 }
     });
 

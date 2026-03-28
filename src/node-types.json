@@ -1,5 +1,112 @@
 [
   {
+    "type": "aligned_axis",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "aligned_mode",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "comparator",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "direction",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "distance",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "number",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "inside_clause",
+    "named": true,
+    "fields": {
+      "distance": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "signed_distance",
+            "named": true
+          }
+        ]
+      },
+      "side": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "inside_side",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "inside_side",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "near_clause",
+    "named": true,
+    "fields": {
+      "direction": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "direction",
+            "named": true
+          }
+        ]
+      },
+      "distance": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "distance",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "percentage",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "number",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "relation",
     "named": true,
     "fields": {}
@@ -8,12 +115,42 @@
     "type": "rule",
     "named": true,
     "fields": {
+      "aligned_axis": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "aligned_axis",
+            "named": true
+          }
+        ]
+      },
+      "aligned_mode": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "aligned_mode",
+            "named": true
+          }
+        ]
+      },
       "chain_target": {
         "multiple": true,
         "required": false,
         "types": [
           {
             "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "comparator": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "comparator",
             "named": true
           }
         ]
@@ -38,9 +175,39 @@
           }
         ]
       },
+      "inside_clause": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "inside_clause",
+            "named": true
+          }
+        ]
+      },
+      "near_clause": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "near_clause",
+            "named": true
+          }
+        ]
+      },
+      "negated": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "not",
+            "named": false
+          }
+        ]
+      },
       "relation": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "relation",
@@ -48,6 +215,36 @@
           },
           {
             "type": "ternary_relation",
+            "named": true
+          }
+        ]
+      },
+      "size_distance_pct": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "percentage",
+            "named": true
+          }
+        ]
+      },
+      "size_distance_px": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "distance",
+            "named": true
+          }
+        ]
+      },
+      "size_property": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "size_property",
             "named": true
           }
         ]
@@ -71,8 +268,38 @@
             "named": true
           }
         ]
+      },
+      "target_size_property": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "size_property",
+            "named": true
+          }
+        ]
       }
     }
+  },
+  {
+    "type": "signed_distance",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "signed_number",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "size_property",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "source_file",
@@ -96,6 +323,34 @@
     "fields": {}
   },
   {
+    "type": "%",
+    "named": false
+  },
+  {
+    "type": ",",
+    "named": false
+  },
+  {
+    "type": "/",
+    "named": false
+  },
+  {
+    "type": "<",
+    "named": false
+  },
+  {
+    "type": "<=",
+    "named": false
+  },
+  {
+    "type": ">",
+    "named": false
+  },
+  {
+    "type": ">=",
+    "named": false
+  },
+  {
     "type": "[",
     "named": false
   },
@@ -108,19 +363,27 @@
     "named": false
   },
   {
-    "type": "aligned_bottom",
+    "type": "aligned",
     "named": false
   },
   {
-    "type": "aligned_left",
+    "type": "aligned-bottom",
     "named": false
   },
   {
-    "type": "aligned_right",
+    "type": "aligned-left",
     "named": false
   },
   {
-    "type": "aligned_top",
+    "type": "aligned-right",
+    "named": false
+  },
+  {
+    "type": "aligned-top",
+    "named": false
+  },
+  {
+    "type": "all",
     "named": false
   },
   {
@@ -128,31 +391,39 @@
     "named": false
   },
   {
-    "type": "centered_x",
+    "type": "bottom",
     "named": false
   },
   {
-    "type": "centered_y",
+    "type": "centered",
     "named": false
   },
   {
-    "type": "contains",
+    "type": "centered-x",
     "named": false
   },
   {
-    "type": "distance",
-    "named": true
-  },
-  {
-    "type": "distance_from_top",
+    "type": "centered-y",
     "named": false
   },
   {
-    "type": "equal_gap_x",
+    "type": "distance-from-top",
     "named": false
   },
   {
-    "type": "equal_gap_y",
+    "type": "equal-gap-x",
+    "named": false
+  },
+  {
+    "type": "equal-gap-y",
+    "named": false
+  },
+  {
+    "type": "height",
+    "named": false
+  },
+  {
+    "type": "horizontally",
     "named": false
   },
   {
@@ -160,31 +431,83 @@
     "named": true
   },
   {
-    "type": "left_of",
+    "type": "inside",
     "named": false
   },
   {
-    "type": "overlaps",
+    "type": "left",
     "named": false
   },
   {
-    "type": "right_of",
+    "type": "left-of",
     "named": false
   },
   {
-    "type": "same_height",
+    "type": "near",
     "named": false
   },
   {
-    "type": "same_width",
+    "type": "not",
     "named": false
   },
   {
-    "type": "taller_than",
+    "type": "number",
+    "named": true
+  },
+  {
+    "type": "of",
     "named": false
   },
   {
-    "type": "wider_than",
+    "type": "partially",
+    "named": false
+  },
+  {
+    "type": "px",
+    "named": false
+  },
+  {
+    "type": "right",
+    "named": false
+  },
+  {
+    "type": "right-of",
+    "named": false
+  },
+  {
+    "type": "same-height",
+    "named": false
+  },
+  {
+    "type": "same-width",
+    "named": false
+  },
+  {
+    "type": "signed_number",
+    "named": true
+  },
+  {
+    "type": "taller-than",
+    "named": false
+  },
+  {
+    "type": "to",
+    "named": false
+  },
+  {
+    "type": "top",
+    "named": false
+  },
+  {
+    "type": "vertically",
+    "named": false
+  },
+  {
+    "type": "wider-than",
+    "named": false
+  },
+  {
+    "type": "width",
     "named": false
   }
 ]
