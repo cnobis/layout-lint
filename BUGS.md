@@ -53,4 +53,16 @@ Use this format for every new bug:
 - **Verification**: Accepted fix after repeated Safari refresh checks; grid remains visible and does not disappear.
 - **General principle**: For Safari resilience, prefer explicit DOM/SVG layers for decorative grids over CSS gradient/compositing effects.
 
+## 4) Safari: Jazz Club page background flickers/glitches
+
+- **Symptom**: On Safari, the Jazz Club demo background appears glitchy/inconsistent during refresh and repaint, while Chromium browsers look stable.
+- **Root cause**: Multi-layer CSS gradient backgrounds on the page root can render unreliably in Safari repaint/restore paths.
+- **Fix applied**:
+  - Replaced complex `body` gradient stack with an explicit **solid base** (`background-color` + `background-image: none`).
+  - Added a dedicated DOM texture layer (`#page-texture`) using a repeated inline-SVG pattern.
+  - Kept the texture as a simple fixed overlay with `pointer-events: none` and no runtime repaint workaround.
+- **Where**: `demo/jazz-club/index.html`.
+- **Verification**: Local build passes and visual approach now follows the same Safari-safe pattern used in prior control-room fixes.
+- **General principle**: For Safari compatibility, prefer solid page backgrounds plus explicit DOM/SVG texture layers over stacked CSS gradient backgrounds on root elements.
+
 

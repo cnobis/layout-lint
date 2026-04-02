@@ -1,5 +1,132 @@
 [
   {
+    "type": "aligned_axis",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "aligned_mode",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "centered_axis",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "centered_scope",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "comparator",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "count_scope",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "css_match_mode",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "direction",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "distance",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "number",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "inside_clause",
+    "named": true,
+    "fields": {
+      "distance": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "signed_distance",
+            "named": true
+          }
+        ]
+      },
+      "side": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "inside_side",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "inside_side",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "near_clause",
+    "named": true,
+    "fields": {
+      "direction": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "direction",
+            "named": true
+          }
+        ]
+      },
+      "distance": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "distance",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "percentage",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "number",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "relation",
     "named": true,
     "fields": {}
@@ -8,12 +135,152 @@
     "type": "rule",
     "named": true,
     "fields": {
+      "aligned_axis": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "aligned_axis",
+            "named": true
+          }
+        ]
+      },
+      "aligned_mode": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "aligned_mode",
+            "named": true
+          }
+        ]
+      },
+      "centered_axis": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "centered_axis",
+            "named": true
+          }
+        ]
+      },
+      "centered_scope": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "centered_scope",
+            "named": true
+          }
+        ]
+      },
       "chain_target": {
         "multiple": true,
         "required": false,
         "types": [
           {
             "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "comparator": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "comparator",
+            "named": true
+          }
+        ]
+      },
+      "count_comparator": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "comparator",
+            "named": true
+          }
+        ]
+      },
+      "count_exact": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "number",
+            "named": true
+          }
+        ]
+      },
+      "count_max": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "number",
+            "named": true
+          }
+        ]
+      },
+      "count_min": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "number",
+            "named": true
+          }
+        ]
+      },
+      "count_pattern": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "object_pattern",
+            "named": true
+          }
+        ]
+      },
+      "count_scope": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "count_scope",
+            "named": true
+          }
+        ]
+      },
+      "css_match_mode": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "css_match_mode",
+            "named": true
+          }
+        ]
+      },
+      "css_property": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "css_property",
+            "named": true
+          }
+        ]
+      },
+      "css_value": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "quoted_text",
             "named": true
           }
         ]
@@ -30,7 +297,7 @@
       },
       "element": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "identifier",
@@ -38,9 +305,39 @@
           }
         ]
       },
+      "inside_clause": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "inside_clause",
+            "named": true
+          }
+        ]
+      },
+      "near_clause": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "near_clause",
+            "named": true
+          }
+        ]
+      },
+      "negated": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "not",
+            "named": false
+          }
+        ]
+      },
       "relation": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "relation",
@@ -48,6 +345,36 @@
           },
           {
             "type": "ternary_relation",
+            "named": true
+          }
+        ]
+      },
+      "size_distance_pct": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "percentage",
+            "named": true
+          }
+        ]
+      },
+      "size_distance_px": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "distance",
+            "named": true
+          }
+        ]
+      },
+      "size_property": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "size_property",
             "named": true
           }
         ]
@@ -71,8 +398,78 @@
             "named": true
           }
         ]
+      },
+      "target_size_property": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "size_property",
+            "named": true
+          }
+        ]
+      },
+      "text_match_mode": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "text_match_mode",
+            "named": true
+          }
+        ]
+      },
+      "text_operation": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "text_operation",
+            "named": true
+          }
+        ]
+      },
+      "text_value": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "quoted_text",
+            "named": true
+          }
+        ]
+      },
+      "visibility_relation": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "visibility_relation",
+            "named": true
+          }
+        ]
       }
     }
+  },
+  {
+    "type": "signed_distance",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "signed_number",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "size_property",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "source_file",
@@ -96,6 +493,49 @@
     "fields": {}
   },
   {
+    "type": "text_match_mode",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "text_operation",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "visibility_relation",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "%",
+    "named": false
+  },
+  {
+    "type": ",",
+    "named": false
+  },
+  {
+    "type": "/",
+    "named": false
+  },
+  {
+    "type": "<",
+    "named": false
+  },
+  {
+    "type": "<=",
+    "named": false
+  },
+  {
+    "type": ">",
+    "named": false
+  },
+  {
+    "type": ">=",
+    "named": false
+  },
+  {
     "type": "[",
     "named": false
   },
@@ -108,19 +548,35 @@
     "named": false
   },
   {
-    "type": "aligned_bottom",
+    "type": "absent",
     "named": false
   },
   {
-    "type": "aligned_left",
+    "type": "aligned",
     "named": false
   },
   {
-    "type": "aligned_right",
+    "type": "aligned-bottom",
     "named": false
   },
   {
-    "type": "aligned_top",
+    "type": "aligned-left",
+    "named": false
+  },
+  {
+    "type": "aligned-right",
+    "named": false
+  },
+  {
+    "type": "aligned-top",
+    "named": false
+  },
+  {
+    "type": "all",
+    "named": false
+  },
+  {
+    "type": "any",
     "named": false
   },
   {
@@ -128,11 +584,11 @@
     "named": false
   },
   {
-    "type": "centered_x",
+    "type": "bottom",
     "named": false
   },
   {
-    "type": "centered_y",
+    "type": "centered",
     "named": false
   },
   {
@@ -140,19 +596,39 @@
     "named": false
   },
   {
-    "type": "distance",
+    "type": "count",
+    "named": false
+  },
+  {
+    "type": "css",
+    "named": false
+  },
+  {
+    "type": "css_property",
     "named": true
   },
   {
-    "type": "distance_from_top",
+    "type": "distance-from-top",
     "named": false
   },
   {
-    "type": "equal_gap_x",
+    "type": "ends",
     "named": false
   },
   {
-    "type": "equal_gap_y",
+    "type": "equal-gap-x",
+    "named": false
+  },
+  {
+    "type": "equal-gap-y",
+    "named": false
+  },
+  {
+    "type": "height",
+    "named": false
+  },
+  {
+    "type": "horizontally",
     "named": false
   },
   {
@@ -160,31 +636,123 @@
     "named": true
   },
   {
-    "type": "left_of",
+    "type": "inside",
     "named": false
   },
   {
-    "type": "overlaps",
+    "type": "is",
     "named": false
   },
   {
-    "type": "right_of",
+    "type": "left",
     "named": false
   },
   {
-    "type": "same_height",
+    "type": "left-of",
     "named": false
   },
   {
-    "type": "same_width",
+    "type": "lowercase",
     "named": false
   },
   {
-    "type": "taller_than",
+    "type": "matches",
     "named": false
   },
   {
-    "type": "wider_than",
+    "type": "near",
+    "named": false
+  },
+  {
+    "type": "not",
+    "named": false
+  },
+  {
+    "type": "number",
+    "named": true
+  },
+  {
+    "type": "object_pattern",
+    "named": true
+  },
+  {
+    "type": "of",
+    "named": false
+  },
+  {
+    "type": "partially",
+    "named": false
+  },
+  {
+    "type": "px",
+    "named": false
+  },
+  {
+    "type": "quoted_text",
+    "named": true
+  },
+  {
+    "type": "right",
+    "named": false
+  },
+  {
+    "type": "right-of",
+    "named": false
+  },
+  {
+    "type": "same-height",
+    "named": false
+  },
+  {
+    "type": "same-width",
+    "named": false
+  },
+  {
+    "type": "signed_number",
+    "named": true
+  },
+  {
+    "type": "singleline",
+    "named": false
+  },
+  {
+    "type": "starts",
+    "named": false
+  },
+  {
+    "type": "taller-than",
+    "named": false
+  },
+  {
+    "type": "text",
+    "named": false
+  },
+  {
+    "type": "to",
+    "named": false
+  },
+  {
+    "type": "top",
+    "named": false
+  },
+  {
+    "type": "uppercase",
+    "named": false
+  },
+  {
+    "type": "vertically",
+    "named": false
+  },
+  {
+    "type": "visible",
+    "named": false
+  },
+  {
+    "type": "wider-than",
+    "named": false
+  },
+  {
+    "type": "width",
     "named": false
   }
 ]

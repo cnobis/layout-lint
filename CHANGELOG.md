@@ -48,11 +48,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial public release
 - Tree-sitter grammar for layout constraint DSL
 - 14 spatial relations:
-  - Directional: `below`, `above`, `left_of`, `right_of`
-  - Alignment: `aligned_top`, `aligned_bottom`, `aligned_left`, `aligned_right`
+  - Directional: `below`, `above`, `left-of`, `right-of`
+  - Alignment: `aligned-top`, `aligned-bottom`, `aligned-left`, `aligned-right`
   - Semantic: `contains`, `overlaps`
-  - Size comparison: `wider_than`, `taller_than`, `same_width`, `same_height`
-  - Absolute positioning: `distance_from_top`
+  - Size comparison: `wider-than`, `taller-than`, `same-width`, `same-height`
+  - Absolute positioning: `distance-from-top`
 - `runLayoutLint()` API for parsing and evaluating layout specs
 - Interactive demo with:
   - Draggable elements for real-time constraint testing

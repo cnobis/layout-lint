@@ -46,20 +46,21 @@ export function createConsoleReporter(options: ConsoleReporterOptions = {}): Lay
     console.groupCollapsed(`${prefix} ${passed}/${total} passed (${failed} failed)`);
     for (const item of result.results) {
       const status = item.pass ? "PASS" : "FAIL";
+      const negation = item.negated ? "not " : "";
       const target = item.target ? ` ${item.target}` : "";
       const target2 = item.target2 ? ` ${item.target2}` : "";
       
-      // for semantic relations (contains, overlaps), don't show distance/actual
-      const isSemantic = ["contains", "overlaps"].includes(item.relation);
+      // for inside relations, show semantic status without generic distance threshold text
+      const isSemantic = ["inside", "partially-inside"].includes(item.relation);
       if (isSemantic) {
         console.log(
-          `${status}: ${item.element} ${item.relation}${target}${target2} | ${item.pass ? "constraint met" : "constraint not met"}`,
+          `${status}: ${item.element} ${negation}${item.relation}${target}${target2} | ${item.pass ? "constraint met" : "constraint not met"}`,
           item
         );
       } else {
         const distance = item.distancePx == null ? "" : ` ${item.distancePx}px`;
         console.log(
-          `${status}: ${item.element} ${item.relation}${target}${target2}${distance} | actual=${item.actual ?? "n/a"}`,
+          `${status}: ${item.element} ${negation}${item.relation}${target}${target2}${distance} | actual=${item.actual ?? "n/a"}`,
           item
         );
       }
@@ -505,8 +506,9 @@ export function createLayoutLintWidget(
     }
   };
 
-  const formatMeasurement = (value: number | null | undefined) => {
+  const formatMeasurement = (value: number | string | null | undefined) => {
     if (value == null) return "n/a";
+    if (typeof value === "string") return value;
     return Number.isInteger(value) ? `${value}px` : `${value.toFixed(2)}px`;
   };
 
@@ -535,14 +537,14 @@ export function createLayoutLintWidget(
           x2: elementCenterX,
           y2: elementRect.bottom,
         };
-      case "right_of":
+      case "right-of":
         return {
           x1: targetRect.right,
           y1: targetCenterY,
           x2: elementRect.left,
           y2: elementCenterY,
         };
-      case "left_of":
+      case "left-of":
         return {
           x1: elementRect.right,
           y1: elementCenterY,
@@ -560,7 +562,7 @@ export function createLayoutLintWidget(
     middleRect: DOMRect,
     endRect: DOMRect
   ) => {
-    if (relation === "equal_gap_x") {
+    if (relation === "equal-gap-x") {
       const gapY1 = (sourceRect.top + sourceRect.bottom + middleRect.top + middleRect.bottom) / 4;
       const gapY2 = (middleRect.top + middleRect.bottom + endRect.top + endRect.bottom) / 4;
       return [
@@ -579,7 +581,7 @@ export function createLayoutLintWidget(
       ];
     }
 
-    if (relation === "equal_gap_y") {
+    if (relation === "equal-gap-y") {
       const gapX1 = (sourceRect.left + sourceRect.right + middleRect.left + middleRect.right) / 4;
       const gapX2 = (middleRect.left + middleRect.right + endRect.left + endRect.right) / 4;
       return [
@@ -772,11 +774,18 @@ export function createLayoutLintWidget(
     clampWidgetIntoViewport();
   });
 
+  const scheduleClampWidgetIntoViewport = () => {
+    window.requestAnimationFrame(() => {
+      clampWidgetIntoViewport();
+    });
+  };
+
   const renderRows = (results: RuleResult[]) => {
     body.innerHTML = "";
     if (results.length === 0) {
       body.textContent = "No rules";
       status.textContent = "0/0";
+      scheduleClampWidgetIntoViewport();
       return;
     }
 
@@ -784,95 +793,141 @@ export function createLayoutLintWidget(
     status.textContent = `${passed}/${results.length}`;
 
     for (const [index, item] of results.entries()) {
-      const row = document.createElement("div");
-      const rowKey = getRuleKey(item);
-      const isPinned = pinnedRuleKeys.has(rowKey);
-      const ruleNumber = index + 1;
-      row.style.border = "1px solid #e5e7eb";
-      row.style.borderRadius = "6px";
-      row.style.padding = "6px 8px";
-      row.style.marginBottom = "6px";
-      row.style.background = item.pass ? "#ecfdf5" : "#fef2f2";
-      row.style.cursor = "pointer";
-      if (isPinned) {
-        row.style.borderColor = "#7a81ff";
-        row.style.boxShadow = "0 0 0 1px rgba(122,129,255,0.35)";
-      }
-
-      const head = document.createElement("div");
-      head.style.display = "flex";
-      head.style.alignItems = "center";
-      head.style.gap = "6px";
-
-      const numberBadge = document.createElement("span");
-      numberBadge.style.display = "inline-flex";
-      numberBadge.style.alignItems = "center";
-      numberBadge.style.justifyContent = "center";
-      numberBadge.style.minWidth = "26px";
-      numberBadge.style.padding = "1px 7px";
-      numberBadge.style.borderRadius = "999px";
-      numberBadge.style.fontSize = "10px";
-      numberBadge.style.fontWeight = "700";
-      numberBadge.style.lineHeight = "1.3";
-      numberBadge.style.border = item.pass ? "1px solid #34d399" : "1px solid #f87171";
-      numberBadge.style.background = item.pass ? "#d1fae5" : "#fee2e2";
-      numberBadge.style.color = item.pass ? "#065f46" : "#991b1b";
-      numberBadge.textContent = `${ruleNumber}`;
-
-      const headText = document.createElement("span");
-      headText.style.fontWeight = "600";
-      headText.style.color = item.pass ? "#065f46" : "#991b1b";
-      headText.textContent = `${item.pass ? "✓" : "✗"} ${item.element} ${item.relation}${item.target ? ` ${item.target}` : ""}${item.target2 ? ` ${item.target2}` : ""}`;
-
-      head.appendChild(numberBadge);
-      head.appendChild(headText);
-
-      const meta = document.createElement("div");
-      meta.style.fontSize = "11px";
-      meta.style.color = "#374151";
-      
-      // for semantic relations (contains, overlaps), don't show actual value
-      const isSemantic = ["contains", "overlaps"].includes(item.relation);
-      const isAlignment =
-        item.relation.startsWith("aligned_") ||
-        item.relation === "centered_x" ||
-        item.relation === "centered_y";
-      const isEqualGap = item.relation === "equal_gap_x" || item.relation === "equal_gap_y";
-      if (isSemantic) {
-        meta.textContent = item.pass ? "constraint met" : "constraint not met";
-      } else if (isAlignment) {
-        meta.textContent = `actual offset: ${item.actual ?? "n/a"} | expected: <= 1px`;
-      } else if (isEqualGap) {
-        const tolerance = item.distancePx ?? 1;
-        meta.textContent = `actual gap delta: ${item.actual ?? "n/a"} | expected: <= ${tolerance}px`;
-      } else {
-        meta.textContent = `actual distance: ${item.actual ?? "n/a"}${item.distancePx != null ? ` | expected: >= ${item.distancePx}px` : ""}`;
-      }
-
-      const onRowEnter = () => {
-        if (pinnedRuleKeys.size > 0) return;
-        activeRule = item;
-        renderActiveHighlight();
-      };
-
-      const onRowLeave = () => {
-        if (pinnedRuleKeys.size > 0) return;
-        activeRule = null;
-        renderActiveHighlight();
-      };
-
-      const onRowClick = () => {
-        if (pinnedRuleKeys.has(rowKey)) {
-          pinnedRuleKeys.delete(rowKey);
-          activeRule = pinnedRuleKeys.size === 0 ? item : activeRule;
-        } else {
-          pinnedRuleKeys.add(rowKey);
-          activeRule = item;
+        const row = document.createElement("div");
+        const rowKey = getRuleKey(item);
+        const isPinned = pinnedRuleKeys.has(rowKey);
+        const ruleNumber = index + 1;
+        row.style.border = "1px solid #e5e7eb";
+        row.style.borderRadius = "6px";
+        row.style.padding = "6px 8px";
+        row.style.marginBottom = "6px";
+        row.style.background = item.pass ? "#ecfdf5" : "#fef2f2";
+        row.style.cursor = "pointer";
+        if (isPinned) {
+          row.style.borderColor = "#7a81ff";
+          row.style.boxShadow = "0 0 0 1px rgba(122,129,255,0.35)";
         }
 
-        updatePinStatus();
-        renderActiveHighlight();
-        
+        const head = document.createElement("div");
+        head.style.display = "flex";
+        head.style.alignItems = "center";
+        head.style.gap = "6px";
+
+        const numberBadge = document.createElement("span");
+        numberBadge.style.display = "inline-flex";
+        numberBadge.style.alignItems = "center";
+        numberBadge.style.justifyContent = "center";
+        numberBadge.style.minWidth = "26px";
+        numberBadge.style.padding = "1px 7px";
+        numberBadge.style.borderRadius = "999px";
+        numberBadge.style.fontSize = "10px";
+        numberBadge.style.fontWeight = "700";
+        numberBadge.style.lineHeight = "1.3";
+        numberBadge.style.border = item.pass ? "1px solid #34d399" : "1px solid #f87171";
+        numberBadge.style.background = item.pass ? "#d1fae5" : "#fee2e2";
+        numberBadge.style.color = item.pass ? "#065f46" : "#991b1b";
+        numberBadge.textContent = `${ruleNumber}`;
+
+        const headText = document.createElement("span");
+        headText.style.fontWeight = "600";
+        headText.style.color = item.pass ? "#065f46" : "#991b1b";
+
+        const isSizeRule = item.relation === "width" || item.relation === "height";
+        const hasPercentDistance =
+          item.distancePct != null || item.distanceMinPct != null || item.distanceMaxPct != null;
+        const comparatorPrefix = item.comparator ? `${item.comparator} ` : "";
+        const sizeExpected = hasPercentDistance
+          ? (item.distancePct != null
+              ? `${item.distancePct}%`
+              : `${item.distanceMinPct} to ${item.distanceMaxPct}%`)
+          : (item.distancePx != null
+              ? `${item.distancePx}px`
+              : `${item.distanceMinPx} to ${item.distanceMaxPx}px`);
+
+        if (isSizeRule) {
+          const sizeTarget = hasPercentDistance && item.target && item.targetProperty
+            ? ` of ${item.target}/${item.targetProperty}`
+            : "";
+          headText.textContent = `${item.pass ? "✓" : "✗"} ${item.element} ${item.negated ? "not " : ""}${item.relation} ${comparatorPrefix}${sizeExpected}${sizeTarget}`;
+        } else {
+          headText.textContent = `${item.pass ? "✓" : "✗"} ${item.element} ${item.negated ? "not " : ""}${item.relation}${item.target ? ` ${item.target}` : ""}${item.target2 ? ` ${item.target2}` : ""}`;
+        }
+
+        head.appendChild(numberBadge);
+        head.appendChild(headText);
+
+        const meta = document.createElement("div");
+        meta.style.fontSize = "11px";
+        meta.style.color = "#374151";
+
+        const isSemantic = ["inside", "partially-inside"].includes(item.relation);
+        const isAlignment =
+          item.relation.startsWith("aligned-") ||
+          item.relation === "centered-x" ||
+          item.relation === "centered-y";
+        const isEqualGap = item.relation === "equal-gap-x" || item.relation === "equal-gap-y";
+        if (isSemantic) {
+          const label = item.relation === "partially-inside" ? "partially inside" : "inside";
+          meta.textContent = item.pass ? `${label}: constraint met` : `${label}: constraint not met`;
+        } else if (isSizeRule) {
+          const unit = hasPercentDistance ? "%" : "px";
+          const actualText =
+            typeof item.actual !== "number"
+              ? "n/a"
+              : `${Number(item.actual.toFixed(2))}${unit}`;
+
+          let expectedText = "";
+          if (item.comparator && (item.distancePx != null || item.distancePct != null)) {
+            expectedText = `${item.comparator} ${item.distancePct ?? item.distancePx}${unit}`;
+          } else if (hasPercentDistance) {
+            expectedText = item.distancePct != null
+              ? `${item.distancePct}%`
+              : `${item.distanceMinPct} to ${item.distanceMaxPct}%`;
+          } else if (item.distanceMinPx != null && item.distanceMaxPx != null) {
+            expectedText = `${item.distanceMinPx} to ${item.distanceMaxPx}px`;
+          } else if (item.distancePx != null) {
+            expectedText = `${item.distancePx}px`;
+          }
+
+          const targetBasis = hasPercentDistance && item.target && item.targetProperty
+            ? ` of ${item.target}/${item.targetProperty}`
+            : "";
+
+          meta.textContent = `actual ${item.relation}: ${actualText}${expectedText ? ` | expected: ${expectedText}${targetBasis}` : ""}`;
+        } else if (isAlignment) {
+          meta.textContent = `actual offset: ${item.actual ?? "n/a"} | expected: <= 1px`;
+        } else if (isEqualGap) {
+          const tolerance = item.distancePx ?? 1;
+          meta.textContent = `actual gap delta: ${item.actual ?? "n/a"} | expected: <= ${tolerance}px`;
+        } else {
+          meta.textContent = `actual distance: ${item.actual ?? "n/a"}${item.distancePx != null ? ` | expected: >= ${item.distancePx}px` : ""}`;
+        }
+
+        const onRowEnter = () => {
+          if (pinnedRuleKeys.size > 0) return;
+          activeRule = item;
+          renderActiveHighlight();
+        };
+
+        const onRowLeave = () => {
+          if (pinnedRuleKeys.size > 0) return;
+          activeRule = null;
+          renderActiveHighlight();
+        };
+
+        const onRowPointerDown = (event: PointerEvent) => {
+          event.preventDefault();
+          if (pinnedRuleKeys.has(rowKey)) {
+            pinnedRuleKeys.delete(rowKey);
+            activeRule = pinnedRuleKeys.size === 0 ? item : activeRule;
+          } else {
+            pinnedRuleKeys.add(rowKey);
+            activeRule = item;
+          }
+
+          updatePinStatus();
+          renderActiveHighlight();
+
         // defer renderRows to ensure event listener isn't disrupted
         requestAnimationFrame(() => {
           // Temporarily pause the mutation observer to avoid feedback loop
@@ -881,16 +936,16 @@ export function createLayoutLintWidget(
           renderRows(latestResults);
           monitor.resumeObserver();
         });
-      };
+        };
 
-      row.addEventListener("pointerenter", onRowEnter);
-      row.addEventListener("pointerleave", onRowLeave);
-      row.addEventListener("click", onRowClick);
+        row.addEventListener("pointerenter", onRowEnter);
+        row.addEventListener("pointerleave", onRowLeave);
+        row.addEventListener("pointerdown", onRowPointerDown);
 
-      row.appendChild(head);
-      row.appendChild(meta);
-      body.appendChild(row);
-    }
+        row.appendChild(head);
+        row.appendChild(meta);
+        body.appendChild(row);
+      }
 
     // add evaluate button at the bottom
     const buttonContainer = document.createElement("div");
@@ -929,6 +984,7 @@ export function createLayoutLintWidget(
 
     buttonContainer.appendChild(evaluateBtn);
     body.appendChild(buttonContainer);
+    scheduleClampWidgetIntoViewport();
   };
 
   const unsubscribe = monitor.subscribe((result) => {
@@ -947,6 +1003,7 @@ export function createLayoutLintWidget(
     updatePinStatus();
 
     renderRows(latestResults);
+    clampWidgetIntoViewport();
     renderActiveHighlight();
   });
 

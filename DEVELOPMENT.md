@@ -13,9 +13,9 @@ Edit [grammar.js](grammar.js) → `relation` rule, e.g.:
 
 ```javascript
 relation: $ => choice(
-  "below", "above", "left_of", "right_of",
-  "aligned_top", "aligned_bottom", "aligned_left", "aligned_right",
-  "centered_x", "contains"  // ← new relation
+  "below", "above", "left-of", "right-of",
+  "aligned-top", "aligned-bottom", "aligned-left", "aligned-right",
+  "centered-x", "contains"  // ← new relation
 ),
 ```
 
@@ -72,8 +72,8 @@ Edit a dedicated demo page (for Stage 2 use [demo/control-room/index.html](demo/
 
 ```html
 <pre id="spec" hidden>
-hero-copy centered_x hero
-hero-cta centered_x hero
+hero-copy centered-x hero
+hero-cta centered-x hero
 hero-cta below hero-copy 32px
 trust-strip below hero 24px
 </pre>
@@ -213,9 +213,9 @@ Run this checklist before starting new language extensions:
   ```bash
   npm test
   ```
-3. Demo smoke test (`npm run serve`, open `http://localhost:8080/demo/catalog.html`):
+3. Demo smoke test (`npm run serve`, open `http://localhost:8080/demo/index.html`):
   - drag gallery badge and confirm live re-evaluation
-  - open control-room demo and adjust spacing sliders to confirm `centered_x`/`equal_gap_x` pass/fail flips live
+  - open control-room demo and adjust spacing sliders to confirm `centered-x`/`equal-gap-x` pass/fail flips live
   - hover a row and confirm source/target/connector overlays
   - pin multiple rows and verify all pinned overlays render together
   - press `esc` and confirm all pins clear

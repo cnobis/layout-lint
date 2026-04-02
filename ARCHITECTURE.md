@@ -30,7 +30,7 @@ The demo page then renders those results.
 ### 2.2 Rule Shape
 A rule is parsed as:
 - `element` (identifier)
-- `relation` (one of `below`, `above`, `left_of`, `right_of`)
+- `relation` (one of `below`, `above`, `left-of`, `right-of`)
 - `target` (identifier)
 - `distance` (`\d+px`)
 
@@ -82,8 +82,8 @@ Output contract:
 - Relation math:
   - `below`: `A.top - B.bottom`
   - `above`: `B.top - A.bottom`
-  - `right_of`: `A.left - B.right`
-  - `left_of`: `B.left - A.right`
+  - `right-of`: `A.left - B.right`
+  - `left-of`: `B.left - A.right`
 - Pass condition: `actual >= distancePx`
 - Missing elements produce `pass: false` with reason text
 

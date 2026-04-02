@@ -34,6 +34,34 @@
       padding: 0 18px;
     }
 
+    #demo-exit {
+      position: fixed;
+      top: 12px;
+      right: 14px;
+      z-index: 900;
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(122, 129, 255, 0.58);
+      background: rgba(122, 129, 255, 0.24);
+      color: #eceeff;
+      text-decoration: none;
+      font-size: 10px;
+      font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+      backdrop-filter: blur(2px);
+    }
+
+    #demo-exit:hover,
+    #demo-exit:focus-visible {
+      background: rgba(122, 129, 255, 0.36);
+      border-color: rgba(122, 129, 255, 0.78);
+      color: #f7f8ff;
+      outline: none;
+    }
+
     h1 {
       margin: 0 0 10px;
       font-size: clamp(36px, 6vw, 78px);
@@ -71,8 +99,6 @@
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: #263243;
-      width: 100%;
-      flex-basis: 100%;
     }
 
     #trust-strip {
@@ -82,12 +108,15 @@
       border-bottom-right-radius: 0;
       background: var(--panel-dark);
       padding: 12px;
+      margin-bottom: 0;
+    }
+
+    #trust-plates {
       display: flex;
       align-items: center;
       justify-content: center;
       flex-wrap: wrap;
       gap: 0;
-      margin-bottom: 0;
     }
 
     .plate {
@@ -185,39 +214,9 @@
     }
 
     #chain-toggle {
-      appearance: none;
-      -webkit-appearance: none;
-      border: 2px solid var(--reset-edge);
-      border-radius: 7px;
-      background-color: var(--reset-face);
-      background-image: none;
-      color: #fff2f2;
-      -webkit-text-fill-color: #fff2f2;
-      font: inherit;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 0.11em;
-      text-transform: uppercase;
-      padding: 8px 14px;
-      min-width: 108px;
-      cursor: pointer;
-      box-shadow: 0 2px 0 #541d1d;
-      opacity: 1;
-      filter: none;
-    }
-
-    #chain-toggle:hover,
-    #chain-toggle:focus,
-    #chain-toggle:focus-visible,
-    #chain-toggle:active {
-      border-color: var(--reset-edge);
-      background-color: var(--reset-face);
-      background-image: none;
-      color: #fff2f2;
-      -webkit-text-fill-color: #fff2f2;
-      opacity: 1;
-      filter: none;
-      outline: none;
+      min-width: 180px;
+      justify-content: space-between;
+      flex: 0 0 auto;
     }
 
     .plate-static {
@@ -244,6 +243,411 @@
       background: #b4beca;
     }
 
+    #alignment-lab {
+      margin-top: 10px;
+      padding: 12px;
+      background: #b4beca;
+    }
+
+    #alignment-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: nowrap;
+    }
+
+    #alignment-title {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #253141;
+    }
+
+    #alignment-controls {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      min-width: 340px;
+    }
+
+    #alignment-case-wrap {
+      position: relative;
+      min-width: 200px;
+    }
+
+    #alignment-case-trigger {
+      border: 2px solid #4e5a6d;
+      border-radius: 7px;
+      background: #c4ccd7;
+      color: #1f2a38;
+      font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      line-height: 1.15;
+      padding: 7px 28px 7px 10px;
+      min-width: 200px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 1px 0 rgba(36, 47, 62, 0.24);
+      width: 100%;
+      text-align: left;
+      position: relative;
+      cursor: pointer;
+    }
+
+    #alignment-case-trigger::after {
+      content: "▾";
+      position: absolute;
+      right: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #2b3647;
+      font-size: 10px;
+      pointer-events: none;
+    }
+
+    #alignment-case-trigger:focus,
+    #alignment-case-trigger:focus-visible {
+      outline: 2px solid rgba(122, 129, 255, 0.58);
+      outline-offset: 1px;
+    }
+
+    #alignment-case-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      border: 2px solid #4e5a6d;
+      border-radius: 8px;
+      background: #c4ccd7;
+      box-shadow: 0 6px 12px rgba(29, 38, 50, 0.26);
+      padding: 4px;
+      z-index: 20;
+    }
+
+    #alignment-case-menu[hidden] {
+      display: none;
+    }
+
+    .alignment-case-item {
+      display: block;
+      width: 100%;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: #1f2a38;
+      font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 7px 8px;
+      cursor: pointer;
+    }
+
+    .alignment-case-item:hover,
+    .alignment-case-item:focus-visible {
+      background: rgba(74, 98, 129, 0.2);
+      outline: none;
+    }
+
+    .alignment-case-item[aria-selected="true"] {
+      background: rgba(74, 98, 129, 0.3);
+    }
+
+    #alignment-stage {
+      position: relative;
+      border: 2px solid #2d4a3a;
+      border-radius: 10px;
+      background-color: #06140d;
+      background-image: none;
+      box-shadow: inset 0 0 20px rgba(38, 181, 112, 0.2), inset 0 0 4px rgba(122, 255, 186, 0.18);
+      height: 220px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+
+    #alignment-grid {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .alignment-item {
+      position: absolute;
+      min-width: 0;
+      min-height: 0;
+      width: 92px;
+      height: 42px;
+      padding: 8px 10px;
+      font-size: 12px;
+      z-index: 1;
+      left: 0;
+      top: 0;
+    }
+
+    #align-item-1 {
+      background-color: #10261b;
+      border-color: #4a5667;
+      color: #b7ffd8;
+      box-shadow: inset 0 0 8px rgba(107, 255, 174, 0.14), 0 0 8px rgba(35, 158, 99, 0.22);
+    }
+
+    #align-item-2,
+    #align-item-3 {
+      background-color: #173626;
+      border-style: dashed;
+      border-color: #425062;
+      color: #deffec;
+      box-shadow: inset 0 0 10px rgba(123, 255, 187, 0.16), 0 0 10px rgba(59, 212, 136, 0.28);
+    }
+
+    #alignment-spec-card {
+      border: 2px solid #2d4a3a;
+      border-radius: 10px;
+      background-color: #06140d;
+      background-image:
+        linear-gradient(rgba(92,255,170,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(92,255,170,0.07) 1px, transparent 1px);
+      background-size: 18px 18px;
+      box-shadow: inset 0 0 14px rgba(38, 181, 112, 0.18), inset 0 0 3px rgba(122, 255, 186, 0.14);
+      padding: 10px 12px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+
+    #alignment-spec-line {
+      color: #b7ffd8;
+      font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      line-height: 1.2;
+      text-transform: uppercase;
+      text-shadow: 0 0 8px rgba(59, 212, 136, 0.2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    #near-lab {
+      margin-top: 10px;
+      padding: 12px;
+      background: #b4beca;
+    }
+
+    #near-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: nowrap;
+    }
+
+    #near-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    #near-case-wrap {
+      position: relative;
+      min-width: 174px;
+    }
+
+    #near-case-trigger {
+      border: 2px solid #4e5a6d;
+      border-radius: 7px;
+      background: #c4ccd7;
+      color: #1f2a38;
+      font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      line-height: 1.15;
+      padding: 7px 28px 7px 10px;
+      min-width: 174px;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 1px 0 rgba(36, 47, 62, 0.24);
+      width: 100%;
+      text-align: left;
+      position: relative;
+    }
+
+    #near-case-trigger::after {
+      content: "▾";
+      position: absolute;
+      right: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #2b3647;
+      font-size: 10px;
+      pointer-events: none;
+    }
+
+    #near-case-trigger:focus,
+    #near-case-trigger:focus-visible {
+      outline: 2px solid rgba(122, 129, 255, 0.58);
+      outline-offset: 1px;
+    }
+
+    #near-case-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      border: 2px solid #4e5a6d;
+      border-radius: 8px;
+      background: #c4ccd7;
+      box-shadow: 0 6px 12px rgba(29, 38, 50, 0.26);
+      padding: 4px;
+      z-index: 20;
+    }
+
+    #near-case-menu[hidden] {
+      display: none;
+    }
+
+    .near-case-item {
+      display: block;
+      width: 100%;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: #1f2a38;
+      font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 7px 8px;
+      cursor: pointer;
+    }
+
+    .near-case-item:hover,
+    .near-case-item:focus-visible {
+      background: rgba(74, 98, 129, 0.2);
+      outline: none;
+    }
+
+    .near-case-item[aria-selected="true"] {
+      background: rgba(74, 98, 129, 0.3);
+    }
+
+    #near-title {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #253141;
+    }
+
+    #near-stage {
+      position: relative;
+      border: 2px solid #2d4a3a;
+      border-radius: 10px;
+      background-color: #06140d;
+      background-image: none;
+      box-shadow: inset 0 0 20px rgba(38, 181, 112, 0.2), inset 0 0 4px rgba(122, 255, 186, 0.18);
+      height: 180px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+
+    #near-spec-card {
+      border: 2px solid #2d4a3a;
+      border-radius: 10px;
+      background-color: #06140d;
+      background-image:
+        linear-gradient(rgba(92,255,170,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(92,255,170,0.07) 1px, transparent 1px);
+      background-size: 18px 18px;
+      box-shadow: inset 0 0 14px rgba(38, 181, 112, 0.18), inset 0 0 3px rgba(122, 255, 186, 0.14);
+      padding: 10px 12px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+
+    #near-spec-line {
+      color: #b7ffd8;
+      font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      line-height: 1.2;
+      text-transform: uppercase;
+      text-shadow: 0 0 8px rgba(59, 212, 136, 0.2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    #near-grid {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #textfield,
+    #button {
+      position: absolute;
+      left: 0;
+      top: 0;
+      min-width: 152px;
+      min-height: 52px;
+      padding: 8px 12px;
+      font-size: 12px;
+      z-index: 1;
+    }
+
+    #textfield {
+      transform: translate(var(--textfield-x, 32px), var(--textfield-y, 64px));
+      background-color: #173626;
+      border-style: dashed;
+      border-color: #425062;
+      color: #deffec;
+      box-shadow: inset 0 0 10px rgba(123, 255, 187, 0.16), 0 0 10px rgba(59, 212, 136, 0.28);
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+    }
+
+    #button {
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #10261b;
+      border-color: #4a5667;
+      color: #b7ffd8;
+      box-shadow: inset 0 0 8px rgba(107, 255, 174, 0.14), 0 0 8px rgba(35, 158, 99, 0.22);
+      z-index: 1;
+    }
+
     #centering-header {
       display: flex;
       align-items: center;
@@ -260,42 +664,6 @@
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: #253141;
-    }
-
-    #center-reset {
-      appearance: none;
-      -webkit-appearance: none;
-      border: 2px solid var(--reset-edge);
-      border-radius: 7px;
-      background-color: var(--reset-face);
-      background-image: none;
-      color: #fff2f2;
-      -webkit-text-fill-color: #fff2f2;
-      font: inherit;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 0.11em;
-      text-transform: uppercase;
-      padding: 8px 14px;
-      min-width: 108px;
-      cursor: pointer;
-      box-shadow: 0 2px 0 #541d1d;
-      opacity: 1;
-      filter: none;
-    }
-
-    #center-reset:hover,
-    #center-reset:focus,
-    #center-reset:focus-visible,
-    #center-reset:active {
-      border-color: var(--reset-edge);
-      background-color: var(--reset-face);
-      background-image: none;
-      color: #fff2f2;
-      -webkit-text-fill-color: #fff2f2;
-      opacity: 1;
-      filter: none;
-      outline: none;
     }
 
     #centering-stage {
@@ -406,7 +774,7 @@
     .switch-slider::before {
       content: "";
       position: absolute;
-      top: 2px;
+      top: 50%;
       left: 2px;
       width: 18px;
       height: 18px;
@@ -414,6 +782,7 @@
       border: 1px solid #536074;
       background: #d4dbe4;
       box-shadow: 0 1px 2px rgba(0,0,0,0.35);
+      transform: translateY(-50%);
       transition: transform 120ms linear;
     }
 
@@ -422,7 +791,7 @@
     }
 
     .switch-toggle input:checked + .switch-slider::before {
-      transform: translateX(20px);
+      transform: translate(20px, -50%);
     }
 
     #controls-header {
@@ -588,18 +957,52 @@
         align-items: flex-start;
       }
 
+      #alignment-header {
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+
+      #alignment-controls {
+        width: 100%;
+        min-width: 0;
+        justify-content: flex-start;
+      }
+
+      #alignment-case-wrap {
+        width: 100%;
+        min-width: 100%;
+      }
+
+      #near-header {
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+
+      #near-controls {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      #near-case-wrap {
+        min-width: 100%;
+      }
+
+      #near-grid {
+        grid-template-columns: 1fr;
+      }
+
       #static-header {
         flex-wrap: wrap;
         align-items: flex-start;
       }
 
-      #trust-strip {
+      #trust-plates {
         justify-content: flex-start;
         flex-wrap: nowrap;
         overflow-x: auto;
       }
 
-      #trust-strip .plate {
+      #trust-plates .plate {
         flex: 0 0 auto;
         min-width: 150px;
         min-height: 52px;
@@ -639,6 +1042,7 @@
   </style>
 </head>
 <body>
+  <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT DEMO</a>
   <main>
     <h1>Control Room</h1>
 
@@ -648,7 +1052,13 @@
           <div>
             <h3 id="static-checks-title">Recursive chain</h3>
           </div>
-          <button id="chain-toggle" type="button">Break chain</button>
+          <label id="chain-toggle" class="switch-card" for="chain-break">
+            <span class="switch-label">Break chain</span>
+            <span class="switch-toggle">
+              <input id="chain-break" type="checkbox" />
+              <span class="switch-slider"></span>
+            </span>
+          </label>
         </div>
         <section id="static-strip-chain">
           <span id="chain-1" class="plate plate-static">Chain 1</span>
@@ -662,10 +1072,12 @@
 
       <section id="trust-strip">
         <h2 id="bench-title">Moving plates</h2>
-        <span id="logo-1" class="plate">Logo 1</span>
-        <span id="logo-2" class="plate">Logo 2</span>
-        <span id="logo-3" class="plate">Logo 3 </span>
-        <span id="logo-4" class="plate">Logo 4</span>
+        <div id="trust-plates">
+          <span id="logo-1" class="plate">Logo 1</span>
+          <span id="logo-2" class="plate">Logo 2</span>
+          <span id="logo-3" class="plate">Logo 3 </span>
+          <span id="logo-4" class="plate">Logo 4</span>
+        </div>
       </section>
 
       <section id="controls" class="panel">
@@ -700,7 +1112,6 @@
       <section id="centering-lab" class="panel">
         <div id="centering-header">
           <h3 id="centering-title">Centering lab</h3>
-          <button id="center-reset" type="button">RESET</button>
         </div>
 
         <section id="centering-stage">
@@ -718,7 +1129,7 @@
 
         <div id="center-switches">
           <label class="switch-card">
-            <span class="switch-label">Break centered_x</span>
+            <span class="switch-label">Break centered-x</span>
             <span class="switch-toggle">
               <input id="center-break-x" type="checkbox" />
               <span class="switch-slider"></span>
@@ -726,7 +1137,7 @@
           </label>
 
           <label class="switch-card">
-            <span class="switch-label">Break centered_y</span>
+            <span class="switch-label">Break centered-y</span>
             <span class="switch-toggle">
               <input id="center-break-y" type="checkbox" />
               <span class="switch-slider"></span>
@@ -734,13 +1145,93 @@
           </label>
         </div>
       </section>
+
+      <section id="alignment-lab" class="panel">
+        <div id="alignment-header">
+          <h3 id="alignment-title">Alignment Galen Syntax</h3>
+          <div id="alignment-controls">
+            <div id="alignment-case-wrap">
+              <button id="alignment-case-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">HORIZONTALLY ALL</button>
+              <div id="alignment-case-menu" role="listbox" aria-label="Alignment preset" hidden>
+                <button class="alignment-case-item" role="option" data-value="h-all" aria-selected="true">HORIZONTALLY ALL</button>
+                <button class="alignment-case-item" role="option" data-value="h-top" aria-selected="false">HORIZONTALLY TOP</button>
+                <button class="alignment-case-item" role="option" data-value="h-bottom" aria-selected="false">HORIZONTALLY BOTTOM</button>
+                <button class="alignment-case-item" role="option" data-value="h-centered" aria-selected="false">HORIZONTALLY CENTERED</button>
+                <button class="alignment-case-item" role="option" data-value="v-all" aria-selected="false">VERTICALLY ALL</button>
+                <button class="alignment-case-item" role="option" data-value="v-left" aria-selected="false">VERTICALLY LEFT</button>
+                <button class="alignment-case-item" role="option" data-value="v-right" aria-selected="false">VERTICALLY RIGHT</button>
+                <button class="alignment-case-item" role="option" data-value="v-centered" aria-selected="false">VERTICALLY CENTERED</button>
+                <button class="alignment-case-item" role="option" data-value="h-all-1px" aria-selected="false">H ALL 1PX TOLERANCE</button>
+              </div>
+            </div>
+            <label class="switch-card">
+              <span class="switch-label">Break rule</span>
+              <span class="switch-toggle">
+                <input id="alignment-break" type="checkbox" />
+                <span class="switch-slider"></span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <section id="alignment-stage">
+          <svg id="alignment-grid" aria-hidden="true" viewBox="0 0 360 220" preserveAspectRatio="none">
+            <defs>
+              <pattern id="alignment-grid-pattern" width="18" height="18" patternUnits="userSpaceOnUse">
+                <path d="M 18 0 L 0 0 0 18" fill="none" stroke="rgba(92,255,170,0.24)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="0" y="0" width="100%" height="100%" fill="url(#alignment-grid-pattern)" />
+          </svg>
+          <span id="align-item-1" class="plate alignment-item">Item 1</span>
+          <span id="align-item-2" class="plate alignment-item">Item 2</span>
+          <span id="align-item-3" class="plate alignment-item">Item 3</span>
+        </section>
+
+        <div id="alignment-spec-card"><span id="alignment-spec-line">align-item-1 aligned horizontally all align-item-2</span></div>
+      </section>
+
+      <section id="near-lab" class="panel">
+        <div id="near-header">
+          <h3 id="near-title">Near relations</h3>
+          <div id="near-controls">
+            <div id="near-case-wrap">
+              <button id="near-case-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">10PX LEFT</button>
+              <div id="near-case-menu" role="listbox" aria-label="Near preset" hidden>
+                <button class="near-case-item" role="option" data-value="left10" aria-selected="true">10PX LEFT</button>
+                <button class="near-case-item" role="option" data-value="left-range" aria-selected="false">5 TO 15PX LEFT</button>
+                <button class="near-case-item" role="option" data-value="top5" aria-selected="false">5PX TOP</button>
+                <button class="near-case-item" role="option" data-value="bottom-left5" aria-selected="false">5PX BOTTOM LEFT</button>
+                <button class="near-case-item" role="option" data-value="top5-left10" aria-selected="false">5PX TOP, 10PX LEFT</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <section id="near-stage">
+          <svg id="near-grid" aria-hidden="true" viewBox="0 0 360 180" preserveAspectRatio="none">
+            <defs>
+              <pattern id="near-grid-pattern" width="18" height="18" patternUnits="userSpaceOnUse">
+                <path d="M 18 0 L 0 0 0 18" fill="none" stroke="rgba(92,255,170,0.24)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="0" y="0" width="100%" height="100%" fill="url(#near-grid-pattern)" />
+          </svg>
+          <span id="textfield" class="plate">Textfield</span>
+          <span id="button" class="plate">Button</span>
+        </section>
+
+        <div id="near-spec-card"><span id="near-spec-line">textfield near button 10px left</span></div>
+      </section>
     </section>
 
     <pre id="spec" hidden>
-  chain-1 equal_gap_x [chain-2 chain-3 chain-4 chain-5 chain-6] 2px
-  logo-1 equal_gap_x [logo-2 logo-3 logo-4] 0px
-  center-test centered_x center-ref
-  center-test centered_y center-ref
+  chain-1 equal-gap-x [chain-2 chain-3 chain-4 chain-5 chain-6] 2px
+  logo-1 equal-gap-x [logo-2 logo-3 logo-4] 0px
+  center-test centered horizontally inside center-ref
+  center-test centered vertically inside center-ref
+  align-item-1 aligned horizontally all align-item-2
+  textfield near button 10px left
     </pre>
   </main>
 
@@ -778,10 +1269,207 @@
     const gapReset = document.getElementById("gap-reset");
     const centerBreakX = document.getElementById("center-break-x");
     const centerBreakY = document.getElementById("center-break-y");
-    const centerReset = document.getElementById("center-reset");
     const centeringStage = document.getElementById("centering-stage");
-    const chainToggle = document.getElementById("chain-toggle");
+    const alignmentCaseTrigger = document.getElementById("alignment-case-trigger");
+    const alignmentCaseMenu = document.getElementById("alignment-case-menu");
+    const alignmentCaseItems = Array.from(document.querySelectorAll(".alignment-case-item"));
+    const alignmentBreak = document.getElementById("alignment-break");
+    const alignmentSpecLine = document.getElementById("alignment-spec-line");
+    const alignItem1 = document.getElementById("align-item-1");
+    const alignItem2 = document.getElementById("align-item-2");
+    const alignItem3 = document.getElementById("align-item-3");
+    const nearStage = document.getElementById("near-stage");
+    const nearCaseTrigger = document.getElementById("near-case-trigger");
+    const nearCaseMenu = document.getElementById("near-case-menu");
+    const nearCaseItems = Array.from(document.querySelectorAll(".near-case-item"));
+    const nearSpecLine = document.getElementById("near-spec-line");
+    const textfield = document.getElementById("textfield");
+    const nearButton = document.getElementById("button");
+    const chainBreak = document.getElementById("chain-break");
     const chain4 = document.getElementById("chain-4");
+
+    const baseSpec = [
+      "chain-1 equal-gap-x [chain-2 chain-3 chain-4 chain-5 chain-6] 2px",
+      "logo-1 equal-gap-x [logo-2 logo-3 logo-4] 0px",
+      "center-test centered horizontally inside center-ref",
+      "center-test centered vertically inside center-ref"
+    ].join("\n");
+
+    const nearPresets = {
+      "left10": {
+        label: "10PX LEFT",
+        rule: "textfield near button 10px left",
+        clauses: [
+          { directions: ["left"], target: 10 }
+        ]
+      },
+      "left-range": {
+        label: "5 TO 15PX LEFT",
+        rule: "textfield near button 5 to 15px left",
+        clauses: [
+          { directions: ["left"], min: 5, max: 15 }
+        ]
+      },
+      "top5": {
+        label: "5PX TOP",
+        rule: "textfield near button 5px top",
+        clauses: [
+          { directions: ["top"], target: 5 }
+        ]
+      },
+      "bottom-left5": {
+        label: "5PX BOTTOM LEFT",
+        rule: "textfield near button 5px bottom left",
+        clauses: [
+          { directions: ["bottom", "left"], target: 5 }
+        ]
+      },
+      "top5-left10": {
+        label: "5PX TOP, 10PX LEFT",
+        rule: "textfield near button 5px top, 10px left",
+        clauses: [
+          { directions: ["top"], target: 5 },
+          { directions: ["left"], target: 10 }
+        ]
+      }
+    };
+
+    const alignmentPresets = {
+      "h-all": {
+        rule: "align-item-1 aligned horizontally all align-item-2",
+        pass: {
+          item1: { x: 34, y: 36, w: 92, h: 42 },
+          item2: { x: 142, y: 36, w: 92, h: 42 },
+          item3: { x: 250, y: 36, w: 92, h: 42 }
+        },
+        fail: {
+          item1: { x: 34, y: 36, w: 92, h: 42 },
+          item2: { x: 142, y: 58, w: 92, h: 42 },
+          item3: { x: 250, y: 36, w: 92, h: 42 }
+        }
+      },
+      "h-top": {
+        rule: "align-item-1 aligned horizontally top align-item-2",
+        pass: {
+          item1: { x: 34, y: 34, w: 92, h: 42 },
+          item2: { x: 142, y: 34, w: 92, h: 64 },
+          item3: { x: 250, y: 34, w: 92, h: 36 }
+        },
+        fail: {
+          item1: { x: 34, y: 34, w: 92, h: 42 },
+          item2: { x: 142, y: 52, w: 92, h: 64 },
+          item3: { x: 250, y: 34, w: 92, h: 36 }
+        }
+      },
+      "h-bottom": {
+        rule: "align-item-1 aligned horizontally bottom align-item-2",
+        pass: {
+          item1: { x: 34, y: 38, w: 92, h: 42 },
+          item2: { x: 142, y: 18, w: 92, h: 62 },
+          item3: { x: 250, y: 46, w: 92, h: 34 }
+        },
+        fail: {
+          item1: { x: 34, y: 38, w: 92, h: 42 },
+          item2: { x: 142, y: 26, w: 92, h: 62 },
+          item3: { x: 250, y: 46, w: 92, h: 34 }
+        }
+      },
+      "h-centered": {
+        rule: "align-item-1 aligned horizontally centered align-item-2",
+        pass: {
+          item1: { x: 34, y: 28, w: 92, h: 40 },
+          item2: { x: 142, y: 14, w: 92, h: 68 },
+          item3: { x: 250, y: 36, w: 92, h: 24 }
+        },
+        fail: {
+          item1: { x: 34, y: 28, w: 92, h: 40 },
+          item2: { x: 142, y: 26, w: 92, h: 68 },
+          item3: { x: 250, y: 36, w: 92, h: 24 }
+        }
+      },
+      "v-all": {
+        rule: "align-item-1 aligned vertically all align-item-2",
+        pass: {
+          item1: { x: 48, y: 20, w: 92, h: 42 },
+          item2: { x: 48, y: 86, w: 92, h: 42 },
+          item3: { x: 48, y: 152, w: 92, h: 42 }
+        },
+        fail: {
+          item1: { x: 48, y: 20, w: 92, h: 42 },
+          item2: { x: 64, y: 86, w: 92, h: 42 },
+          item3: { x: 48, y: 152, w: 92, h: 42 }
+        }
+      },
+      "v-left": {
+        rule: "align-item-1 aligned vertically left align-item-2",
+        pass: {
+          item1: { x: 48, y: 20, w: 84, h: 42 },
+          item2: { x: 48, y: 86, w: 128, h: 42 },
+          item3: { x: 48, y: 152, w: 70, h: 42 }
+        },
+        fail: {
+          item1: { x: 48, y: 20, w: 84, h: 42 },
+          item2: { x: 64, y: 86, w: 128, h: 42 },
+          item3: { x: 48, y: 152, w: 70, h: 42 }
+        }
+      },
+      "v-right": {
+        rule: "align-item-1 aligned vertically right align-item-2",
+        pass: {
+          item1: { x: 48, y: 20, w: 84, h: 42 },
+          item2: { x: 16, y: 86, w: 116, h: 42 },
+          item3: { x: 68, y: 152, w: 64, h: 42 }
+        },
+        fail: {
+          item1: { x: 48, y: 20, w: 84, h: 42 },
+          item2: { x: 22, y: 86, w: 116, h: 42 },
+          item3: { x: 68, y: 152, w: 64, h: 42 }
+        }
+      },
+      "v-centered": {
+        rule: "align-item-1 aligned vertically centered align-item-2",
+        pass: {
+          item1: { x: 48, y: 20, w: 84, h: 42 },
+          item2: { x: 22, y: 86, w: 136, h: 42 },
+          item3: { x: 58, y: 152, w: 64, h: 42 }
+        },
+        fail: {
+          item1: { x: 48, y: 20, w: 84, h: 42 },
+          item2: { x: 30, y: 86, w: 136, h: 42 },
+          item3: { x: 58, y: 152, w: 64, h: 42 }
+        }
+      },
+      "h-all-1px": {
+        rule: "align-item-1 aligned horizontally all align-item-2 1px",
+        pass: {
+          item1: { x: 34, y: 36, w: 92, h: 42 },
+          item2: { x: 142, y: 37, w: 92, h: 40 },
+          item3: { x: 250, y: 36, w: 92, h: 42 }
+        },
+        fail: {
+          item1: { x: 34, y: 36, w: 92, h: 42 },
+          item2: { x: 142, y: 40, w: 92, h: 38 },
+          item3: { x: 250, y: 36, w: 92, h: 42 }
+        }
+      }
+    };
+
+    let activeNearPreset = "left10";
+    let activeAlignmentPreset = "h-all";
+
+    const getActiveAlignmentRule = () => {
+      const preset = alignmentPresets[activeAlignmentPreset] || alignmentPresets["h-all"];
+      return preset.rule;
+    };
+
+    const getActiveNearRule = () => {
+      const preset = nearPresets[activeNearPreset] || nearPresets.left10;
+      return preset.rule;
+    };
+
+    const applyControlRoomSpec = () => {
+      monitor.setSpecText(`${baseSpec}\n${getActiveAlignmentRule()}\n${getActiveNearRule()}`);
+    };
 
     const applyGapState = () => {
       trustStrip.style.setProperty("--gap-12", `${gap12.value}px`);
@@ -812,18 +1500,255 @@
       void monitor.evaluateNow();
     };
 
+    const setAlignmentRect = (el, rect) => {
+      el.style.left = `${rect.x}px`;
+      el.style.top = `${rect.y}px`;
+      el.style.width = `${rect.w}px`;
+      el.style.height = `${rect.h}px`;
+    };
+
+    const applyAlignmentState = () => {
+      const preset = alignmentPresets[activeAlignmentPreset] || alignmentPresets["h-all"];
+      const layout = alignmentBreak.checked ? preset.fail : preset.pass;
+      setAlignmentRect(alignItem1, layout.item1);
+      setAlignmentRect(alignItem2, layout.item2);
+      setAlignmentRect(alignItem3, layout.item3);
+      alignmentSpecLine.textContent = preset.rule;
+      applyControlRoomSpec();
+      void monitor.evaluateNow();
+    };
+
+    const applyAlignmentPreset = (presetKey) => {
+      activeAlignmentPreset = presetKey in alignmentPresets ? presetKey : "h-all";
+      const selectedItem = alignmentCaseItems.find((item) => item.dataset.value === activeAlignmentPreset);
+      alignmentCaseTrigger.textContent = selectedItem ? selectedItem.textContent : "HORIZONTALLY ALL";
+      alignmentCaseItems.forEach((item) => {
+        item.setAttribute("aria-selected", item.dataset.value === activeAlignmentPreset ? "true" : "false");
+      });
+      applyAlignmentState();
+    };
+
     centerBreakX.addEventListener("change", applyCenterState);
     centerBreakY.addEventListener("change", applyCenterState);
-
-    centerReset.addEventListener("click", () => {
-      centerBreakX.checked = false;
-      centerBreakY.checked = false;
-      applyCenterState();
+    alignmentCaseTrigger.addEventListener("click", () => {
+      const isOpen = !alignmentCaseMenu.hasAttribute("hidden");
+      if (isOpen) {
+        alignmentCaseMenu.setAttribute("hidden", "");
+        alignmentCaseTrigger.setAttribute("aria-expanded", "false");
+      } else {
+        alignmentCaseMenu.removeAttribute("hidden");
+        alignmentCaseTrigger.setAttribute("aria-expanded", "true");
+      }
     });
 
-    chainToggle.addEventListener("click", () => {
-      chain4.classList.toggle("broken");
-      chainToggle.textContent = chain4.classList.contains("broken") ? "Fix chain" : "Break chain";
+    alignmentCaseItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        applyAlignmentPreset(item.dataset.value || "h-all");
+        alignmentCaseMenu.setAttribute("hidden", "");
+        alignmentCaseTrigger.setAttribute("aria-expanded", "false");
+      });
+    });
+
+    alignmentBreak.addEventListener("change", applyAlignmentState);
+
+    let dragPointerId = null;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
+    const getNearPosition = () => ({
+      x: Number.parseFloat(nearStage.style.getPropertyValue("--textfield-x") || "32"),
+      y: Number.parseFloat(nearStage.style.getPropertyValue("--textfield-y") || "64")
+    });
+
+    const setNearPosition = (x, y) => {
+      nearStage.style.setProperty("--textfield-x", `${x}px`);
+      nearStage.style.setProperty("--textfield-y", `${y}px`);
+    };
+
+    const applyNearState = () => {
+      void monitor.evaluateNow();
+    };
+
+    const clampNearPosition = (x, y) => {
+      const stageRect = nearStage.getBoundingClientRect();
+      const tfRect = textfield.getBoundingClientRect();
+      const maxX = Math.max(0, stageRect.width - tfRect.width);
+      const maxY = Math.max(0, stageRect.height - tfRect.height);
+
+      return {
+        x: Math.max(0, Math.min(maxX, x)),
+        y: Math.max(0, Math.min(maxY, y))
+      };
+    };
+
+    const measureDirectionalGap = (direction) => {
+      const tfRect = textfield.getBoundingClientRect();
+      const btnRect = nearButton.getBoundingClientRect();
+
+      if (direction === "left") return Math.max(0, btnRect.left - tfRect.right);
+      if (direction === "right") return Math.max(0, tfRect.left - btnRect.right);
+      if (direction === "top") return Math.max(0, btnRect.top - tfRect.bottom);
+      if (direction === "bottom") return Math.max(0, tfRect.top - btnRect.bottom);
+      return 0;
+    };
+
+    const snapNearPresetToPassingPosition = (presetKey) => {
+      const preset = nearPresets[presetKey] || nearPresets.left10;
+      let { x, y } = getNearPosition();
+
+      for (const clause of preset.clauses || []) {
+        const desired = clause.target != null
+          ? clause.target
+          : Math.round(((clause.min ?? 0) + (clause.max ?? 0)) / 2);
+
+        for (const direction of clause.directions) {
+          const currentGap = measureDirectionalGap(direction);
+          const delta = currentGap - desired;
+
+          if (direction === "left") {
+            x += delta;
+          } else if (direction === "right") {
+            x -= delta;
+          } else if (direction === "top") {
+            y += delta;
+          } else if (direction === "bottom") {
+            y -= delta;
+          }
+        }
+      }
+
+      const clamped = clampNearPosition(x, y);
+      setNearPosition(clamped.x, clamped.y);
+    };
+
+    const computeNearPresetPosition = (presetKey) => {
+      const stageRect = nearStage.getBoundingClientRect();
+      const buttonRect = nearButton.getBoundingClientRect();
+      const tfRect = textfield.getBoundingClientRect();
+
+      const buttonX = buttonRect.left - stageRect.left;
+      const buttonY = buttonRect.top - stageRect.top;
+
+      let x = buttonX - tfRect.width - 10;
+      let y = buttonY;
+
+      if (presetKey === "top5") {
+        x = buttonX;
+        y = buttonY - tfRect.height - 5;
+      } else if (presetKey === "bottom-left5") {
+        x = buttonX - tfRect.width - 5;
+        y = buttonY + buttonRect.height + 5;
+      } else if (presetKey === "top5-left10") {
+        x = buttonX - tfRect.width - 10;
+        y = buttonY - tfRect.height - 5;
+      } else if (presetKey === "left-range") {
+        x = buttonX - tfRect.width - 10;
+        y = buttonY;
+      }
+
+      return clampNearPosition(x, y);
+    };
+
+    const applyNearPreset = (presetKey, resetPosition = true) => {
+      const preset = nearPresets[presetKey] || nearPresets.left10;
+      activeNearPreset = presetKey in nearPresets ? presetKey : "left10";
+      nearCaseTrigger.textContent = preset.label;
+      nearCaseItems.forEach((item) => {
+        item.setAttribute("aria-selected", item.dataset.value === activeNearPreset ? "true" : "false");
+      });
+      nearSpecLine.textContent = preset.rule;
+      applyControlRoomSpec();
+      if (resetPosition) {
+        const start = computeNearPresetPosition(activeNearPreset);
+        setNearPosition(start.x, start.y);
+        snapNearPresetToPassingPosition(activeNearPreset);
+      }
+      applyNearState();
+    };
+
+    textfield.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      dragPointerId = event.pointerId;
+      const stageRect = nearStage.getBoundingClientRect();
+      const { x, y } = getNearPosition();
+      dragOffsetX = event.clientX - (stageRect.left + x);
+      dragOffsetY = event.clientY - (stageRect.top + y);
+      textfield.setPointerCapture(event.pointerId);
+      textfield.style.cursor = "grabbing";
+    });
+
+    textfield.addEventListener("pointermove", (event) => {
+      if (dragPointerId !== event.pointerId) return;
+
+      const stageRect = nearStage.getBoundingClientRect();
+      const tfRect = textfield.getBoundingClientRect();
+      const maxX = Math.max(0, stageRect.width - tfRect.width);
+      const maxY = Math.max(0, stageRect.height - tfRect.height);
+
+      const rawX = event.clientX - stageRect.left - dragOffsetX;
+      const rawY = event.clientY - stageRect.top - dragOffsetY;
+      const clampedX = Math.max(0, Math.min(maxX, rawX));
+      const clampedY = Math.max(0, Math.min(maxY, rawY));
+
+      setNearPosition(clampedX, clampedY);
+      applyNearState();
+    });
+
+    const endNearDrag = (event) => {
+      if (dragPointerId !== event.pointerId) return;
+      dragPointerId = null;
+      textfield.style.cursor = "grab";
+      if (textfield.hasPointerCapture(event.pointerId)) {
+        textfield.releasePointerCapture(event.pointerId);
+      }
+      applyNearState();
+    };
+
+    textfield.addEventListener("pointerup", endNearDrag);
+    textfield.addEventListener("pointercancel", endNearDrag);
+
+    nearCaseTrigger.addEventListener("click", () => {
+      const isOpen = !nearCaseMenu.hasAttribute("hidden");
+      if (isOpen) {
+        nearCaseMenu.setAttribute("hidden", "");
+        nearCaseTrigger.setAttribute("aria-expanded", "false");
+      } else {
+        nearCaseMenu.removeAttribute("hidden");
+        nearCaseTrigger.setAttribute("aria-expanded", "true");
+      }
+    });
+
+    nearCaseItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        applyNearPreset(item.dataset.value || "left10", true);
+        nearCaseMenu.setAttribute("hidden", "");
+        nearCaseTrigger.setAttribute("aria-expanded", "false");
+      });
+    });
+
+    document.addEventListener("pointerdown", (event) => {
+      if (!nearCaseMenu.contains(event.target) && event.target !== nearCaseTrigger) {
+        nearCaseMenu.setAttribute("hidden", "");
+        nearCaseTrigger.setAttribute("aria-expanded", "false");
+      }
+
+      if (!alignmentCaseMenu.contains(event.target) && event.target !== alignmentCaseTrigger) {
+        alignmentCaseMenu.setAttribute("hidden", "");
+        alignmentCaseTrigger.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        nearCaseMenu.setAttribute("hidden", "");
+        nearCaseTrigger.setAttribute("aria-expanded", "false");
+        alignmentCaseMenu.setAttribute("hidden", "");
+        alignmentCaseTrigger.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    chainBreak.addEventListener("change", () => {
+      chain4.classList.toggle("broken", chainBreak.checked);
       requestAnimationFrame(() => {
         void monitor.evaluateNow();
       });
@@ -831,6 +1756,8 @@
 
     applyGapState();
     applyCenterState();
+    applyAlignmentPreset(activeAlignmentPreset);
+    applyNearPreset(activeNearPreset, true);
   </script>
 </body>
 </html>

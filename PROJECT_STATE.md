@@ -73,11 +73,11 @@ npm test              # Run test suite
 
 | Category | Relations | Example |
 |----------|-----------|---------|
-| **Directional** | `below`, `above`, `left_of`, `right_of` | `nav below header 10px` |
-| **Alignment** | `aligned_top`, `aligned_bottom`, `aligned_left`, `aligned_right` | `logo aligned_left nav` |
+| **Directional** | `below`, `above`, `left-of`, `right-of` | `nav below header 10px` |
+| **Alignment** | `aligned-top`, `aligned-bottom`, `aligned-left`, `aligned-right` | `logo aligned-left nav` |
 | **Semantic** | `contains`, `overlaps` | `modal overlaps page` |
-| **Size** | `wider_than`, `taller_than`, `same_width`, `same_height` | `sidebar wider_than 200px` |
-| **Absolute** | `distance_from_top` | `header distance_from_top 0px` |
+| **Size** | `wider-than`, `taller-than`, `same-width`, `same-height` | `sidebar wider-than 200px` |
+| **Absolute** | `distance-from-top` | `header distance-from-top 0px` |
 
 ### Evaluation Logic (src/evaluator.ts)
 - **Directional:** Pass if `actual >= threshold` (distance in px)
@@ -94,7 +94,7 @@ npm test              # Run test suite
 
 **Interactive Features:**
 1. **Draggable Badge** - Drag "Editor's Pick" badge to test overlap constraint in real-time
-2. **Responsive Testing** - Resize viewport to toggle `right_of` ↔ `below` constraints (breakpoint: 900px)
+2. **Responsive Testing** - Resize viewport to toggle `right-of` ↔ `below` constraints (breakpoint: 900px)
 3. **Live Verification Widget** - Shows all constraint results with actual measurements
 4. **Auto-updates** - Constraints re-evaluate on:
    - Element drag (mousemove)
@@ -108,7 +108,7 @@ footer below gallery 50px
 header above nav 0px
 nav above gallery 5px
 featured-badge overlaps gallery
-artwork-2 right_of artwork-1 0px    # Wide view
+artwork-2 right-of artwork-1 0px    # Wide view
 artwork-2 below artwork-1 0px       # Narrow view
 artwork-3 below artwork-2 0px
 ```
@@ -125,9 +125,9 @@ artwork-3 below artwork-2 0px
 **Current:** 8 tests in `test/basic.test.js` using Node.js native test runner.
 
 **Coverage:**
-- Directional relations (below, right_of)
+- Directional relations (below, right-of)
 - Semantic relations (overlaps)
-- Alignment relations (aligned_left)
+- Alignment relations (aligned-left)
 - Edge cases (missing elements, multiple rules)
 
 **To Add Tests:**

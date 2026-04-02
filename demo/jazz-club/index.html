@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jazz Club — layout-lint demo</title>
+  <style>
+    :root {
+      --bg: #2b231a;
+      --paper: #3c2f22;
+      --panel: #4b3928;
+      --panel-soft: #5b4630;
+      --ink: #f4ead6;
+      --muted: #d9c0a0;
+      --accent: #ffcc78;
+      --edge: #947250;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      position: relative;
+      margin: 0;
+      background-color: #2b231a;
+      background-image: none;
+      color: var(--ink);
+      font: 14px/1.35 "MS PGothic", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif;
+      transition: background 180ms ease, color 180ms ease;
+    }
+
+    body.mode-night {
+      --paper: #2a261f;
+      --panel: #353027;
+      --panel-soft: #433b2f;
+      --ink: #efe4d0;
+      --muted: #cdb08f;
+      --accent: #ffdba5;
+      --edge: #8e7b60;
+      background-color: #252017;
+      background-image: none;
+    }
+
+    #page-texture {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.36;
+      background-color: transparent;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Crect width='22' height='22' fill='none'/%3E%3Cpath d='M0 0 H22 M0 0 V22' stroke='%2370583f' stroke-width='0.8' stroke-opacity='0.35'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 22px 22px;
+    }
+
+    body.mode-night #page-texture {
+      opacity: 0.28;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='none'/%3E%3Cpath d='M0 0 H20 M0 0 V20' stroke='%236e604d' stroke-width='0.8' stroke-opacity='0.32'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 20px 20px;
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 1120px;
+      margin: 28px auto 40px;
+      padding: 0 18px;
+    }
+
+    #demo-exit {
+      position: fixed;
+      top: 12px;
+      right: 14px;
+      z-index: 20;
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(122, 129, 255, 0.58);
+      background: rgba(122, 129, 255, 0.24);
+      color: #eceeff;
+      text-decoration: none;
+      font-size: 10px;
+      font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease;
+      backdrop-filter: blur(2px);
+    }
+
+    #demo-exit:hover,
+    #demo-exit:focus-visible {
+      background: rgba(122, 129, 255, 0.36);
+      border-color: rgba(122, 129, 255, 0.78);
+      color: #f7f8ff;
+      outline: none;
+    }
+
+    .panel {
+      border: 1px solid var(--edge);
+      border-radius: 0;
+      background: linear-gradient(180deg, var(--panel), var(--paper));
+      box-shadow: none;
+    }
+
+    #lounge-header {
+      padding: 14px 16px 10px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      border-top: 3px double #d3ae7f;
+      border-bottom: 3px double #d3ae7f;
+    }
+
+    #shop-name {
+      margin: 0;
+      font-size: clamp(26px, 5vw, 48px);
+      line-height: 0.95;
+      letter-spacing: 0.02em;
+      text-transform: none;
+      font-weight: 800;
+      color: var(--accent);
+      text-shadow: 1px 1px 0 #20170f;
+    }
+
+    #shop-tagline {
+      margin: 6px 0 0;
+      font-size: 11px;
+      letter-spacing: 0.03em;
+      text-transform: none;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    #status-pill {
+      margin-top: 2px;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      background: rgba(49, 35, 22, 0.75);
+      border-radius: 0;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: none;
+      white-space: nowrap;
+    }
+
+    #lounge-main {
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 58% 42%;
+      gap: 12px;
+      align-items: start;
+    }
+
+    #now-playing-panel,
+    #menu-panel {
+      border: 1px solid var(--edge);
+      border-radius: 0;
+      background: var(--panel-soft);
+      padding: 10px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: none;
+      color: var(--muted);
+      font-weight: 800;
+      border-bottom: 1px dotted #b89467;
+      padding-bottom: 3px;
+    }
+
+    #now-playing {
+      margin: 8px 0 0;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      color: var(--accent);
+    }
+
+    #setlist {
+      margin: 12px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 6px;
+    }
+
+    #setlist li {
+      border: 1px dashed rgba(255, 216, 176, 0.35);
+      border-radius: 0;
+      padding: 5px 7px;
+      font-size: 13px;
+      color: #fae5c6;
+      background: rgba(33, 23, 13, 0.46);
+    }
+
+    .info-row {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .info-card {
+      border: 1px solid rgba(255, 210, 156, 0.35);
+      background: rgba(22, 15, 8, 0.48);
+      padding: 7px;
+    }
+
+    .info-title {
+      margin: 0;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      font-weight: 800;
+      border-bottom: 1px dotted rgba(255, 216, 176, 0.3);
+      padding-bottom: 3px;
+    }
+
+    .personnel-list {
+      list-style: none;
+      margin: 6px 0 0;
+      padding: 0;
+      display: grid;
+      gap: 4px;
+    }
+
+    .personnel-line {
+      font-size: 12px;
+      color: #fae5c6;
+      letter-spacing: 0.01em;
+    }
+
+    .record-name {
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    .record-meta {
+      margin: 4px 0 0;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      line-height: 1.35;
+    }
+
+    .photo-strip {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .photo-frame {
+      border: 1px solid rgba(255, 210, 156, 0.42);
+      background: rgba(22, 15, 8, 0.48);
+      padding: 5px;
+    }
+
+    .photo-label {
+      margin: 4px 0 0;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.03em;
+      text-transform: none;
+      font-weight: 700;
+    }
+
+    .pixel-photo {
+      width: 100%;
+      display: block;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      filter: sepia(0.36) contrast(1.08) saturate(0.82);
+      transform: scale(1.01);
+      transform-origin: center;
+      border: 1px solid rgba(147, 116, 79, 0.6);
+    }
+
+    #vinyl-frame {
+      margin-top: 10px;
+    }
+
+    .menu-grid {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+
+    .menu-group {
+      border: 1px solid rgba(255, 207, 154, 0.32);
+      background: rgba(25, 18, 10, 0.42);
+      padding: 7px 8px;
+    }
+
+    .menu-group-title {
+      margin: 0;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      font-weight: 800;
+      border-bottom: 1px dotted rgba(255, 216, 176, 0.35);
+      padding-bottom: 3px;
+    }
+
+    .menu-list {
+      list-style: none;
+      margin: 8px 0 0;
+      padding: 0;
+      display: grid;
+      gap: 7px;
+    }
+
+    .menu-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: start;
+      border-bottom: 1px dotted rgba(255, 216, 176, 0.2);
+      padding-bottom: 6px;
+    }
+
+    .menu-jp {
+      margin: 0;
+      font-size: 12px;
+      color: #fae5c6;
+      letter-spacing: 0.01em;
+      font-weight: 700;
+    }
+
+    .menu-en {
+      margin: 2px 0 0;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
+    .menu-price {
+      margin: 0;
+      font-size: 12px;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .menu-card {
+      border: 1px solid rgba(255, 207, 154, 0.32);
+      border-radius: 0;
+      padding: 7px 8px;
+      background: rgba(25, 18, 10, 0.42);
+    }
+
+    .menu-label {
+      font-size: 10px;
+      text-transform: none;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .menu-line {
+      margin-top: 4px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    #text-lab {
+      margin-top: 12px;
+      padding: 14px;
+      border: 1px solid var(--edge);
+      border-radius: 0;
+      background: var(--panel-soft);
+      background-image: repeating-linear-gradient(0deg, rgba(255, 232, 194, 0.05) 0 1px, transparent 1px 18px);
+    }
+
+    #welcome-line {
+      margin: 8px 0 0;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    #greeting-line {
+      margin: 8px 0 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    #quote-line {
+      margin: 8px 0 0;
+      padding: 8px 10px;
+      border-left: 3px solid var(--accent);
+      border-top: 1px dotted rgba(255, 217, 166, 0.42);
+      border-bottom: 1px dotted rgba(255, 217, 166, 0.42);
+      background: rgba(24, 17, 10, 0.42);
+      border-radius: 0;
+      font-size: 13px;
+      line-height: 1.4;
+      white-space: pre-line;
+    }
+
+    #css-sample {
+      margin-top: 20px;
+      border: 1px solid rgba(255, 214, 165, 0.36);
+      border-radius: 0;
+      padding: 10px;
+      background: rgba(23, 16, 9, 0.42);
+      font-family: "MS Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+      font-size: 18px;
+      letter-spacing: 0.02em;
+      color: #ffdba5;
+      text-transform: none;
+    }
+
+    #chip-row {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .chip {
+      border: 1px solid var(--edge);
+      border-radius: 0;
+      background: rgba(26, 18, 10, 0.45);
+      color: var(--ink);
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: none;
+    }
+
+    #controls {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .control-btn {
+      border: 1px solid var(--edge);
+      border-radius: 0;
+      background: var(--panel-soft);
+      color: var(--ink);
+      padding: 6px 8px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: none;
+      cursor: pointer;
+    }
+
+    .control-btn:hover,
+    .control-btn:focus-visible {
+      outline: none;
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    @media (max-width: 920px) {
+      #lounge-main {
+        grid-template-columns: 1fr;
+      }
+
+      #chip-row,
+      #controls {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="page-texture" aria-hidden="true"></div>
+  <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT DEMO</a>
+
+  <main>
+    <section id="lounge-header" class="panel">
+      <div>
+        <h1 id="shop-name">Jazz Club</h1>
+        <p id="shop-tagline">After-hours listening room · measured like an instrument</p>
+      </div>
+      <div id="status-pill">Open · Listening Session</div>
+    </section>
+
+    <section id="lounge-main" class="panel">
+      <article id="now-playing-panel">
+        <h2 class="section-title">Now Playing</h2>
+        <div id="now-playing">Ryo Fukui — Scenery</div>
+        <ul id="setlist">
+          <li id="set-1">Set 1 · Late Train</li>
+          <li id="set-2">Set 2 · Cedar Rain</li>
+          <li id="set-3">Set 3 · Blue Tatami</li>
+          <li id="set-4">Set 4 · Night Signal</li>
+          <li id="set-5">Set 5 · Neon Steam</li>
+        </ul>
+
+        <div class="info-row" aria-label="Tonight details">
+          <section class="info-card" aria-label="Tonight personnel">
+            <h3 class="info-title">Tonight’s Personnel</h3>
+            <ul class="personnel-list">
+              <li class="personnel-line">Piano · M. Sato</li>
+              <li class="personnel-line">Bass · K. Hayashi</li>
+              <li class="personnel-line">Drums · T. Mori</li>
+            </ul>
+          </section>
+
+          <section class="info-card" aria-label="Record of the night">
+            <h3 class="info-title">Record of the Night</h3>
+            <p class="record-name">Mellow Dream</p>
+            <p class="record-meta">Ryo Fukui · 1977<br />Trio Records</p>
+          </section>
+        </div>
+
+        <div class="photo-strip" aria-label="Jazz club photo strip">
+          <figure id="catclub-frame" class="photo-frame">
+            <img
+              id="catclub-photo"
+              class="pixel-photo"
+              src="../pictures/jazz-club/vinyl.jpg"
+              alt="Pixelized vinyl records on a shelf"
+            />
+            <figcaption class="photo-label">Archive Shelf · Side B</figcaption>
+          </figure>
+
+          <figure id="saxplayer-frame" class="photo-frame">
+            <img
+              id="saxplayer-photo"
+              class="pixel-photo"
+              src="../pictures/jazz-club/saxplayer.jpg"
+              alt="Pixelized saxophone player on stage"
+            />
+            <figcaption class="photo-label">Late Set Solo</figcaption>
+          </figure>
+        </div>
+      </article>
+
+      <article id="menu-panel">
+        <h2 class="section-title">Service Board</h2>
+        <div class="menu-grid">
+          <section id="drink-card" class="menu-group">
+            <h3 class="menu-group-title">Drinks · 飲み物</h3>
+            <ul class="menu-list">
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">ザ・プレミアム・モルツ（中生）</p>
+                  <p class="menu-en">The Premium Malt’s Draft</p>
+                </div>
+                <p class="menu-price">¥502</p>
+              </li>
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">角ハイボール</p>
+                  <p class="menu-en">The Kaku Highball</p>
+                </div>
+                <p class="menu-price">¥471</p>
+              </li>
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">ゆず蜜サワー</p>
+                  <p class="menu-en">Yuzu Honey Sour</p>
+                </div>
+                <p class="menu-price">¥418</p>
+              </li>
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">ジントニック</p>
+                  <p class="menu-en">Gin and Tonic</p>
+                </div>
+                <p class="menu-price">¥523</p>
+              </li>
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">ウーロン茶</p>
+                  <p class="menu-en">Oolong Tea</p>
+                </div>
+                <p class="menu-price">¥208</p>
+              </li>
+            </ul>
+          </section>
+
+          <section id="dessert-card" class="menu-group">
+            <h3 class="menu-group-title">Small Plates · おつまみ</h3>
+            <ul class="menu-list">
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">国産有機大豆の寄せ豆腐</p>
+                  <p class="menu-en">Organic Soybean Yose Dofu</p>
+                </div>
+                <p class="menu-price">¥313</p>
+              </li>
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">鶏の唐揚</p>
+                  <p class="menu-en">Fried Chicken</p>
+                </div>
+                <p class="menu-price">¥418</p>
+              </li>
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">鉄鍋餃子</p>
+                  <p class="menu-en">Iron Skillet Pot Stickers</p>
+                </div>
+                <p class="menu-price">¥313</p>
+              </li>
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">厳選！お刺身盛り合わせ</p>
+                  <p class="menu-en">Assorted Seasonal Sashimi</p>
+                </div>
+                <p class="menu-price">¥1,363</p>
+              </li>
+            </ul>
+          </section>
+        </div>
+
+        <figure id="vinyl-frame" class="photo-frame">
+          <img
+            id="vinyl-photo"
+            class="pixel-photo"
+            src="../pictures/jazz-club/catclub.jpg"
+            alt="Pixelized cat near jazz club sign"
+          />
+          <figcaption class="photo-label">Back Alley Mascot</figcaption>
+        </figure>
+      </article>
+    </section>
+
+    <section id="text-lab" class="panel">
+      <h2 class="section-title">Text and CSS playground</h2>
+      <p id="welcome-line">Welcome to the late set, traveler.</p>
+      <p id="greeting-line">Please enjoy the room as if it were your own vinyl shelf.</p>
+      <p id="quote-line">Quiet cups,
+steady bass,
+one more record before dawn.</p>
+
+      <div id="css-sample">Shinjuku Basement Session Log</div>
+
+      <div id="chip-row">
+        <span id="chip-a" class="chip">Text checks</span>
+        <span id="chip-b" class="chip">CSS checks</span>
+        <span id="chip-c" class="chip">Future if blocks</span>
+        <span id="chip-d" class="chip">Future for loops</span>
+      </div>
+
+      <div id="controls">
+        <button id="mode-btn" class="control-btn" type="button">Toggle mode</button>
+        <button id="case-btn" class="control-btn" type="button">Toggle case</button>
+        <button id="font-btn" class="control-btn" type="button">Toggle font</button>
+      </div>
+    </section>
+
+    <pre id="spec" hidden>
+lounge-main below lounge-header 0px
+menu-panel right-of now-playing-panel 28px
+menu-panel aligned-top now-playing-panel
+greeting-line below welcome-line 8px
+quote-line below greeting-line 8px
+css-sample below quote-line 20px
+chip-row below css-sample 12px
+welcome-line text starts "Welcome"
+css-sample text is "Shinjuku Basement Session Log"
+css-sample css text-transform is "none"
+css-sample css text-transform starts "no"
+css-sample css text-transform ends "one"
+css-sample css text-transform contains "on"
+css-sample css text-transform matches "n.ne"
+css-sample css font-family contains "Mincho"
+welcome-line text lowercase starts "welcome"
+greeting-line text uppercase contains "VINYL SHELF"
+quote-line text singleline lowercase contains "steady bass"
+quote-line text singleline lowercase matches "quiet cups, steady bass, one more record before dawn\."
+    </pre>
+  </main>
+
+  <script type="module">
+    import {
+      createLayoutLintMonitor,
+      createLayoutLintWidget,
+      createConsoleReporter
+    } from "../../dist/devtools.js";
+
+    const locateFile = () => "../tree-sitter.wasm";
+    const specText = document.getElementById("spec").textContent.trim();
+
+    const monitor = createLayoutLintMonitor({
+      specText,
+      wasmUrl: "../../layout_lint.wasm",
+      locateFile,
+      reporters: [createConsoleReporter({ prefix: "[layout-lint jazz-club]" })],
+      observeResize: true,
+      observeMutations: true,
+      debounceMs: 100
+    });
+
+    createLayoutLintWidget(monitor, {
+      initialPosition: { x: window.innerWidth - 360, y: window.innerHeight - 400 }
+    });
+
+    const body = document.body;
+    const nowPlaying = document.getElementById("now-playing");
+    const welcomeLine = document.getElementById("welcome-line");
+    const greetingLine = document.getElementById("greeting-line");
+    const quoteLine = document.getElementById("quote-line");
+    const cssSample = document.getElementById("css-sample");
+
+    const modeBtn = document.getElementById("mode-btn");
+    const caseBtn = document.getElementById("case-btn");
+    const fontBtn = document.getElementById("font-btn");
+
+    let modeNight = false;
+    let upperCase = false;
+    let altFont = false;
+
+    modeBtn.addEventListener("click", () => {
+      modeNight = !modeNight;
+      body.classList.toggle("mode-night", modeNight);
+      nowPlaying.textContent = modeNight ? "Tsuyoshi Yamamoto — Midnight Sugar" : "Ryo Fukui — Scenery";
+      void monitor.evaluateNow();
+    });
+
+    caseBtn.addEventListener("click", () => {
+      upperCase = !upperCase;
+      if (upperCase) {
+        welcomeLine.textContent = "WELCOME TO THE LATE SET, TRAVELER.";
+        greetingLine.textContent = "PLEASE ENJOY THE ROOM AS IF IT WERE YOUR OWN VINYL SHELF.";
+        quoteLine.textContent = "QUIET CUPS,\nSTEADY BASS,\nONE MORE RECORD BEFORE DAWN.";
+      } else {
+        welcomeLine.textContent = "Welcome to the late set, traveler.";
+        greetingLine.textContent = "Please enjoy the room as if it were your own vinyl shelf.";
+        quoteLine.textContent = "Quiet cups,\nsteady bass,\none more record before dawn.";
+      }
+      void monitor.evaluateNow();
+    });
+
+    fontBtn.addEventListener("click", () => {
+      altFont = !altFont;
+      cssSample.style.fontFamily = altFont
+        ? '"MS PGothic", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif'
+        : '"MS Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif';
+      cssSample.style.letterSpacing = altFont ? "0.08em" : "0.02em";
+      cssSample.style.textTransform = altFont ? "uppercase" : "none";
+      cssSample.style.background = altFont ? "rgba(84, 62, 39, 0.45)" : "rgba(23, 16, 9, 0.42)";
+      cssSample.textContent = altFont ? "SHINJUKU BASEMENT SESSION LOG" : "Shinjuku Basement Session Log";
+      void monitor.evaluateNow();
+    });
+  </script>
+</body>
+</html>
