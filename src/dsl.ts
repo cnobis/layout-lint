@@ -4,6 +4,14 @@ export interface Rule {
   element: string;
   negated?: boolean;
   relation: string;
+  textExpected?: string;
+  textOperations?: Array<"lowercase" | "uppercase" | "singleline">;
+  cssProperty?: string;
+  cssExpected?: string;
+  countPattern?: string;
+  countExpected?: number;
+  countMin?: number;
+  countMax?: number;
   comparator?: "<" | "<=" | ">" | ">=";
   target?: string;  // optional for absolute rules like distance-from-top
   target2?: string; // optional for ternary rules like equal-gap-x/equal-gap-y
@@ -76,6 +84,18 @@ export function parsePercentageToken(token: string): {
   return {};
 }
 
+function parseQuotedTextToken(token: string): string {
+  const normalized = token.trim();
+  if (normalized.startsWith('"') && normalized.endsWith('"')) {
+    try {
+      return JSON.parse(normalized);
+    } catch {
+      return normalized.slice(1, -1);
+    }
+  }
+  return normalized;
+}
+
 export function extractRules(tree: Tree | null, source: string): Rule[] {
   if (!tree) return []; // return empty array if tree is null
 
@@ -100,6 +120,72 @@ export function extractRules(tree: Tree | null, source: string): Rule[] {
     const comparatorToken = txt(node.childForFieldName("comparator"));
     const alignedAxis = txt(node.childForFieldName("aligned_axis"));
     const alignedMode = txt(node.childForFieldName("aligned_mode"));
+    const centeredAxis = txt(node.childForFieldName("centered_axis"));
+    const centeredScope = txt(node.childForFieldName("centered_scope"));
+    const visibilityRelation = txt(node.childForFieldName("visibility_relation"));
+    const countScope = txt(node.childForFieldName("count_scope"));
+    const countPattern = txt(node.childForFieldName("count_pattern"));
+    const countExactToken = txt(node.childForFieldName("count_exact"));
+    const countMinToken = txt(node.childForFieldName("count_min"));
+    const countMaxToken = txt(node.childForFieldName("count_max"));
+    const countComparatorToken = txt(node.childForFieldName("count_comparator"));
+    const textMatchMode = txt(node.childForFieldName("text_match_mode"));
+    const textValueToken = txt(node.childForFieldName("text_value"));
+    const cssProperty = txt(node.childForFieldName("css_property"));
+    const cssMatchMode = txt(node.childForFieldName("css_match_mode"));
+    const cssValueToken = txt(node.childForFieldName("css_value"));
+    const textOperationTokens = node
+      .childrenForFieldName("text_operation")
+      .map((operationNode: any) => txt(operationNode))
+      .filter((operation: string) =>
+        operation === "lowercase" || operation === "uppercase" || operation === "singleline"
+      ) as Array<"lowercase" | "uppercase" | "singleline">;
+
+    if (countScope && countPattern) {
+      rules.push({
+        element: "global",
+        relation: `count-${countScope}`,
+        countPattern,
+        countExpected: countExactToken ? +countExactToken : undefined,
+        countMin: countMinToken ? +countMinToken : undefined,
+        countMax: countMaxToken ? +countMaxToken : undefined,
+        comparator: countComparatorToken
+          ? (countComparatorToken as "<" | "<=" | ">" | ">=")
+          : undefined,
+      });
+      continue;
+    }
+
+    if (visibilityRelation) {
+      rules.push({
+        element,
+        negated,
+        relation: visibilityRelation,
+      });
+      continue;
+    }
+
+    if (cssProperty && cssMatchMode && cssValueToken) {
+      rules.push({
+        element,
+        negated,
+        relation: `css-${cssMatchMode}`,
+        cssProperty: cssProperty.toLowerCase(),
+        cssExpected: parseQuotedTextToken(cssValueToken),
+      });
+      continue;
+    }
+
+    if (textMatchMode && textValueToken) {
+      rules.push({
+        element,
+        negated,
+        relation: `text-${textMatchMode}`,
+        textExpected: parseQuotedTextToken(textValueToken),
+        textOperations: textOperationTokens,
+      });
+      continue;
+    }
 
     if (alignedAxis && alignedMode) {
       const target = txt(node.childForFieldName("target"));
@@ -118,6 +204,31 @@ export function extractRules(tree: Tree | null, source: string): Rule[] {
       };
 
       const mappedRelations = relationMap[`${alignedAxis}:${alignedMode}`] || [];
+      for (const mappedRelation of mappedRelations) {
+        const rule: Rule = {
+          element,
+          negated,
+          relation: mappedRelation,
+          target,
+        };
+        Object.assign(rule, distance);
+        rules.push(rule);
+      }
+      continue;
+    }
+
+    if (centeredAxis && centeredScope) {
+      const target = txt(node.childForFieldName("target"));
+      const distTok = txt(node.childForFieldName("distance"));
+      const distance = parseDistanceToken(distTok);
+
+      const centeredRelationMap: Record<string, string[]> = {
+        horizontally: ["centered-x"],
+        vertically: ["centered-y"],
+        all: ["centered-x", "centered-y"],
+      };
+
+      const mappedRelations = centeredRelationMap[centeredAxis] || [];
       for (const mappedRelation of mappedRelations) {
         const rule: Rule = {
           element,

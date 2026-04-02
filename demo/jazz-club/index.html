@@ -159,6 +159,7 @@
       display: grid;
       grid-template-columns: 58% 42%;
       gap: 12px;
+      align-items: start;
     }
 
     #now-playing-panel,
@@ -205,11 +206,160 @@
       background: rgba(33, 23, 13, 0.46);
     }
 
+    .info-row {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .info-card {
+      border: 1px solid rgba(255, 210, 156, 0.35);
+      background: rgba(22, 15, 8, 0.48);
+      padding: 7px;
+    }
+
+    .info-title {
+      margin: 0;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      font-weight: 800;
+      border-bottom: 1px dotted rgba(255, 216, 176, 0.3);
+      padding-bottom: 3px;
+    }
+
+    .personnel-list {
+      list-style: none;
+      margin: 6px 0 0;
+      padding: 0;
+      display: grid;
+      gap: 4px;
+    }
+
+    .personnel-line {
+      font-size: 12px;
+      color: #fae5c6;
+      letter-spacing: 0.01em;
+    }
+
+    .record-name {
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    .record-meta {
+      margin: 4px 0 0;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      line-height: 1.35;
+    }
+
+    .photo-strip {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .photo-frame {
+      border: 1px solid rgba(255, 210, 156, 0.42);
+      background: rgba(22, 15, 8, 0.48);
+      padding: 5px;
+    }
+
+    .photo-label {
+      margin: 4px 0 0;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.03em;
+      text-transform: none;
+      font-weight: 700;
+    }
+
+    .pixel-photo {
+      width: 100%;
+      display: block;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      filter: sepia(0.36) contrast(1.08) saturate(0.82);
+      transform: scale(1.01);
+      transform-origin: center;
+      border: 1px solid rgba(147, 116, 79, 0.6);
+    }
+
+    #vinyl-frame {
+      margin-top: 10px;
+    }
+
     .menu-grid {
       margin-top: 10px;
       display: grid;
       grid-template-columns: 1fr;
       gap: 6px;
+    }
+
+    .menu-group {
+      border: 1px solid rgba(255, 207, 154, 0.32);
+      background: rgba(25, 18, 10, 0.42);
+      padding: 7px 8px;
+    }
+
+    .menu-group-title {
+      margin: 0;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      font-weight: 800;
+      border-bottom: 1px dotted rgba(255, 216, 176, 0.35);
+      padding-bottom: 3px;
+    }
+
+    .menu-list {
+      list-style: none;
+      margin: 8px 0 0;
+      padding: 0;
+      display: grid;
+      gap: 7px;
+    }
+
+    .menu-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: start;
+      border-bottom: 1px dotted rgba(255, 216, 176, 0.2);
+      padding-bottom: 6px;
+    }
+
+    .menu-jp {
+      margin: 0;
+      font-size: 12px;
+      color: #fae5c6;
+      letter-spacing: 0.01em;
+      font-weight: 700;
+    }
+
+    .menu-en {
+      margin: 2px 0 0;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
+    .menu-price {
+      margin: 0;
+      font-size: 12px;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      font-weight: 800;
+      white-space: nowrap;
     }
 
     .menu-card {
@@ -341,7 +491,7 @@
 </head>
 <body>
   <div id="page-texture" aria-hidden="true"></div>
-  <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT</a>
+  <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT DEMO</a>
 
   <main>
     <section id="lounge-header" class="panel">
@@ -363,20 +513,135 @@
           <li id="set-4">Set 4 · Night Signal</li>
           <li id="set-5">Set 5 · Neon Steam</li>
         </ul>
+
+        <div class="info-row" aria-label="Tonight details">
+          <section class="info-card" aria-label="Tonight personnel">
+            <h3 class="info-title">Tonight’s Personnel</h3>
+            <ul class="personnel-list">
+              <li class="personnel-line">Piano · M. Sato</li>
+              <li class="personnel-line">Bass · K. Hayashi</li>
+              <li class="personnel-line">Drums · T. Mori</li>
+            </ul>
+          </section>
+
+          <section class="info-card" aria-label="Record of the night">
+            <h3 class="info-title">Record of the Night</h3>
+            <p class="record-name">Mellow Dream</p>
+            <p class="record-meta">Ryo Fukui · 1977<br />Trio Records</p>
+          </section>
+        </div>
+
+        <div class="photo-strip" aria-label="Jazz club photo strip">
+          <figure id="catclub-frame" class="photo-frame">
+            <img
+              id="catclub-photo"
+              class="pixel-photo"
+              src="../pictures/jazz-club/vinyl.jpg"
+              alt="Pixelized vinyl records on a shelf"
+            />
+            <figcaption class="photo-label">Archive Shelf · Side B</figcaption>
+          </figure>
+
+          <figure id="saxplayer-frame" class="photo-frame">
+            <img
+              id="saxplayer-photo"
+              class="pixel-photo"
+              src="../pictures/jazz-club/saxplayer.jpg"
+              alt="Pixelized saxophone player on stage"
+            />
+            <figcaption class="photo-label">Late Set Solo</figcaption>
+          </figure>
+        </div>
       </article>
 
       <article id="menu-panel">
         <h2 class="section-title">Service Board</h2>
         <div class="menu-grid">
-          <div id="drink-card" class="menu-card">
-            <div class="menu-label">House Pour</div>
-            <div class="menu-line">Kyoto Drip — 480¥</div>
-          </div>
-          <div id="dessert-card" class="menu-card">
-            <div class="menu-label">Sweet Note</div>
-            <div class="menu-line">Yuzu Basque — 620¥</div>
-          </div>
+          <section id="drink-card" class="menu-group">
+            <h3 class="menu-group-title">Drinks · 飲み物</h3>
+            <ul class="menu-list">
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">ザ・プレミアム・モルツ（中生）</p>
+                  <p class="menu-en">The Premium Malt’s Draft</p>
+                </div>
+                <p class="menu-price">¥502</p>
+              </li>
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">角ハイボール</p>
+                  <p class="menu-en">The Kaku Highball</p>
+                </div>
+                <p class="menu-price">¥471</p>
+              </li>
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">ゆず蜜サワー</p>
+                  <p class="menu-en">Yuzu Honey Sour</p>
+                </div>
+                <p class="menu-price">¥418</p>
+              </li>
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">ジントニック</p>
+                  <p class="menu-en">Gin and Tonic</p>
+                </div>
+                <p class="menu-price">¥523</p>
+              </li>
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">ウーロン茶</p>
+                  <p class="menu-en">Oolong Tea</p>
+                </div>
+                <p class="menu-price">¥208</p>
+              </li>
+            </ul>
+          </section>
+
+          <section id="dessert-card" class="menu-group">
+            <h3 class="menu-group-title">Small Plates · おつまみ</h3>
+            <ul class="menu-list">
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">国産有機大豆の寄せ豆腐</p>
+                  <p class="menu-en">Organic Soybean Yose Dofu</p>
+                </div>
+                <p class="menu-price">¥313</p>
+              </li>
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">鶏の唐揚</p>
+                  <p class="menu-en">Fried Chicken</p>
+                </div>
+                <p class="menu-price">¥418</p>
+              </li>
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">鉄鍋餃子</p>
+                  <p class="menu-en">Iron Skillet Pot Stickers</p>
+                </div>
+                <p class="menu-price">¥313</p>
+              </li>
+              <li class="menu-item">
+                <div>
+                  <p class="menu-jp">厳選！お刺身盛り合わせ</p>
+                  <p class="menu-en">Assorted Seasonal Sashimi</p>
+                </div>
+                <p class="menu-price">¥1,363</p>
+              </li>
+            </ul>
+          </section>
         </div>
+
+        <figure id="vinyl-frame" class="photo-frame">
+          <img
+            id="vinyl-photo"
+            class="pixel-photo"
+            src="../pictures/jazz-club/catclub.jpg"
+            alt="Pixelized cat near jazz club sign"
+          />
+          <figcaption class="photo-label">Back Alley Mascot</figcaption>
+        </figure>
       </article>
     </section>
 
@@ -412,6 +677,18 @@ greeting-line below welcome-line 8px
 quote-line below greeting-line 8px
 css-sample below quote-line 20px
 chip-row below css-sample 12px
+welcome-line text starts "Welcome"
+css-sample text is "Shinjuku Basement Session Log"
+css-sample css text-transform is "none"
+css-sample css text-transform starts "no"
+css-sample css text-transform ends "one"
+css-sample css text-transform contains "on"
+css-sample css text-transform matches "n.ne"
+css-sample css font-family contains "Mincho"
+welcome-line text lowercase starts "welcome"
+greeting-line text uppercase contains "VINYL SHELF"
+quote-line text singleline lowercase contains "steady bass"
+quote-line text singleline lowercase matches "quiet cups, steady bass, one more record before dawn\."
     </pre>
   </main>
 
@@ -483,6 +760,7 @@ chip-row below css-sample 12px
       cssSample.style.letterSpacing = altFont ? "0.08em" : "0.02em";
       cssSample.style.textTransform = altFont ? "uppercase" : "none";
       cssSample.style.background = altFont ? "rgba(84, 62, 39, 0.45)" : "rgba(23, 16, 9, 0.42)";
+      cssSample.textContent = altFont ? "SHINJUKU BASEMENT SESSION LOG" : "Shinjuku Basement Session Log";
       void monitor.evaluateNow();
     });
   </script>

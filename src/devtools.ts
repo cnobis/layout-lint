@@ -506,8 +506,9 @@ export function createLayoutLintWidget(
     }
   };
 
-  const formatMeasurement = (value: number | null | undefined) => {
+  const formatMeasurement = (value: number | string | null | undefined) => {
     if (value == null) return "n/a";
+    if (typeof value === "string") return value;
     return Number.isInteger(value) ? `${value}px` : `${value.toFixed(2)}px`;
   };
 
@@ -871,7 +872,7 @@ export function createLayoutLintWidget(
         } else if (isSizeRule) {
           const unit = hasPercentDistance ? "%" : "px";
           const actualText =
-            item.actual == null
+            typeof item.actual !== "number"
               ? "n/a"
               : `${Number(item.actual.toFixed(2))}${unit}`;
 

@@ -10,7 +10,27 @@
     "fields": {}
   },
   {
+    "type": "centered_axis",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "centered_scope",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "comparator",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "count_scope",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "css_match_mode",
     "named": true,
     "fields": {}
   },
@@ -135,6 +155,26 @@
           }
         ]
       },
+      "centered_axis": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "centered_axis",
+            "named": true
+          }
+        ]
+      },
+      "centered_scope": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "centered_scope",
+            "named": true
+          }
+        ]
+      },
       "chain_target": {
         "multiple": true,
         "required": false,
@@ -155,6 +195,96 @@
           }
         ]
       },
+      "count_comparator": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "comparator",
+            "named": true
+          }
+        ]
+      },
+      "count_exact": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "number",
+            "named": true
+          }
+        ]
+      },
+      "count_max": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "number",
+            "named": true
+          }
+        ]
+      },
+      "count_min": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "number",
+            "named": true
+          }
+        ]
+      },
+      "count_pattern": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "object_pattern",
+            "named": true
+          }
+        ]
+      },
+      "count_scope": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "count_scope",
+            "named": true
+          }
+        ]
+      },
+      "css_match_mode": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "css_match_mode",
+            "named": true
+          }
+        ]
+      },
+      "css_property": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "css_property",
+            "named": true
+          }
+        ]
+      },
+      "css_value": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "quoted_text",
+            "named": true
+          }
+        ]
+      },
       "distance": {
         "multiple": false,
         "required": false,
@@ -167,7 +297,7 @@
       },
       "element": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "identifier",
@@ -278,6 +408,46 @@
             "named": true
           }
         ]
+      },
+      "text_match_mode": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "text_match_mode",
+            "named": true
+          }
+        ]
+      },
+      "text_operation": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "text_operation",
+            "named": true
+          }
+        ]
+      },
+      "text_value": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "quoted_text",
+            "named": true
+          }
+        ]
+      },
+      "visibility_relation": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "visibility_relation",
+            "named": true
+          }
+        ]
       }
     }
   },
@@ -323,6 +493,21 @@
     "fields": {}
   },
   {
+    "type": "text_match_mode",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "text_operation",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "visibility_relation",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "%",
     "named": false
   },
@@ -363,6 +548,10 @@
     "named": false
   },
   {
+    "type": "absent",
+    "named": false
+  },
+  {
     "type": "aligned",
     "named": false
   },
@@ -387,6 +576,10 @@
     "named": false
   },
   {
+    "type": "any",
+    "named": false
+  },
+  {
     "type": "below",
     "named": false
   },
@@ -399,15 +592,27 @@
     "named": false
   },
   {
-    "type": "centered-x",
+    "type": "contains",
     "named": false
   },
   {
-    "type": "centered-y",
+    "type": "count",
     "named": false
+  },
+  {
+    "type": "css",
+    "named": false
+  },
+  {
+    "type": "css_property",
+    "named": true
   },
   {
     "type": "distance-from-top",
+    "named": false
+  },
+  {
+    "type": "ends",
     "named": false
   },
   {
@@ -435,11 +640,23 @@
     "named": false
   },
   {
+    "type": "is",
+    "named": false
+  },
+  {
     "type": "left",
     "named": false
   },
   {
     "type": "left-of",
+    "named": false
+  },
+  {
+    "type": "lowercase",
+    "named": false
+  },
+  {
+    "type": "matches",
     "named": false
   },
   {
@@ -455,6 +672,10 @@
     "named": true
   },
   {
+    "type": "object_pattern",
+    "named": true
+  },
+  {
     "type": "of",
     "named": false
   },
@@ -465,6 +686,10 @@
   {
     "type": "px",
     "named": false
+  },
+  {
+    "type": "quoted_text",
+    "named": true
   },
   {
     "type": "right",
@@ -487,7 +712,19 @@
     "named": true
   },
   {
+    "type": "singleline",
+    "named": false
+  },
+  {
+    "type": "starts",
+    "named": false
+  },
+  {
     "type": "taller-than",
+    "named": false
+  },
+  {
+    "type": "text",
     "named": false
   },
   {
@@ -499,7 +736,15 @@
     "named": false
   },
   {
+    "type": "uppercase",
+    "named": false
+  },
+  {
     "type": "vertically",
+    "named": false
+  },
+  {
+    "type": "visible",
     "named": false
   },
   {

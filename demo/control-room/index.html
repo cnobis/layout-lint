@@ -1042,7 +1042,7 @@
   </style>
 </head>
 <body>
-  <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT</a>
+  <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT DEMO</a>
   <main>
     <h1>Control Room</h1>
 
@@ -1228,8 +1228,8 @@
     <pre id="spec" hidden>
   chain-1 equal-gap-x [chain-2 chain-3 chain-4 chain-5 chain-6] 2px
   logo-1 equal-gap-x [logo-2 logo-3 logo-4] 0px
-  center-test centered-x center-ref
-  center-test centered-y center-ref
+  center-test centered horizontally inside center-ref
+  center-test centered vertically inside center-ref
   align-item-1 aligned horizontally all align-item-2
   textfield near button 10px left
     </pre>
@@ -1291,8 +1291,8 @@
     const baseSpec = [
       "chain-1 equal-gap-x [chain-2 chain-3 chain-4 chain-5 chain-6] 2px",
       "logo-1 equal-gap-x [logo-2 logo-3 logo-4] 0px",
-      "center-test centered-x center-ref",
-      "center-test centered-y center-ref"
+      "center-test centered horizontally inside center-ref",
+      "center-test centered vertically inside center-ref"
     ].join("\n");
 
     const nearPresets = {

@@ -183,17 +183,237 @@ function measure(relation: string, a: HTMLElement | null, b: HTMLElement | null,
 }
 
 export interface RuleResult extends Rule {
-  actual: number | null;
+  actual: number | string | null;
   pass: boolean;
   reason?: string;
 }
 
-export function evaluateRules(rules: Rule[], resolve: (id: string) => HTMLElement | null = byId): RuleResult[] {
+function normalizeVisibleText(input: string): string {
+  return input.replace(/\s+/g, " ").trim();
+}
+
+function getElementVisibleText(element: HTMLElement): string {
+  const rawText = typeof (element as any).innerText === "string"
+    ? (element as any).innerText
+    : (element.textContent ?? "");
+  return normalizeVisibleText(rawText);
+}
+
+function applyTextOperations(text: string, operations: Array<"lowercase" | "uppercase" | "singleline">): string {
+  let next = text;
+  for (const operation of operations) {
+    if (operation === "lowercase") {
+      next = next.toLowerCase();
+      continue;
+    }
+    if (operation === "uppercase") {
+      next = next.toUpperCase();
+      continue;
+    }
+    if (operation === "singleline") {
+      next = next.replace(/[\r\n]+/g, " ");
+    }
+  }
+  return next;
+}
+
+function evaluateStringConstraint(
+  relation: string,
+  prefix: "text-" | "css-",
+  actual: string,
+  expected: string
+): { pass: boolean; reason?: string } {
+  const mode = relation.slice(prefix.length);
+  switch (mode) {
+    case "is":
+      return { pass: actual === expected };
+    case "contains":
+      return { pass: actual.includes(expected) };
+    case "starts":
+      return { pass: actual.startsWith(expected) };
+    case "ends":
+      return { pass: actual.endsWith(expected) };
+    case "matches":
+      try {
+        return { pass: new RegExp(expected).test(actual) };
+      } catch {
+        return { pass: false, reason: `Invalid regular expression: ${expected}` };
+      }
+    default:
+      return { pass: false, reason: `Unsupported relation: ${relation}` };
+  }
+}
+
+function getComputedStyleObject(element: HTMLElement): CSSStyleDeclaration | null {
+  const view = element.ownerDocument?.defaultView as (Window & typeof globalThis) | null | undefined;
+  if (view && typeof view.getComputedStyle === "function") {
+    return view.getComputedStyle(element);
+  }
+  if (typeof globalThis.getComputedStyle === "function") {
+    return globalThis.getComputedStyle(element);
+  }
+  return null;
+}
+
+function toCamelCaseCssProperty(property: string): string {
+  return property.replace(/-([a-z])/g, (_, next: string) => next.toUpperCase());
+}
+
+function getElementComputedCssValue(element: HTMLElement, property: string): string {
+  const style = getComputedStyleObject(element);
+  if (!style) return "";
+
+  const normalizedProperty = property.trim().toLowerCase();
+  const directValue = style.getPropertyValue(normalizedProperty);
+  if (directValue) return normalizeVisibleText(directValue);
+
+  const camelCaseProperty = toCamelCaseCssProperty(normalizedProperty);
+  const fallbackValue = (style as any)[camelCaseProperty];
+  return typeof fallbackValue === "string" ? normalizeVisibleText(fallbackValue) : "";
+}
+
+function isElementVisible(element: HTMLElement): boolean {
+  const style = getComputedStyleObject(element);
+  if (style) {
+    if (style.display === "none") return false;
+    if (style.visibility === "hidden" || style.visibility === "collapse") return false;
+    if (style.opacity === "0") return false;
+  }
+
+  const bounds = rect(element);
+  if (!bounds) return false;
+  return bounds.width > 0 && bounds.height > 0;
+}
+
+function toPatternRegex(pattern: string): RegExp {
+  const escaped = pattern
+    .replace(/[|\\{}()[\]^$+?.]/g, "\\$&")
+    .replace(/\*/g, ".*")
+    .replace(/#/g, "\\d+");
+  return new RegExp(`^${escaped}$`);
+}
+
+function collectPatternMatches(pattern: string): HTMLElement[] {
+  if (typeof document === "undefined") return [];
+  const matcher = toPatternRegex(pattern);
+  const nodes = Array.from(document.querySelectorAll("[id]"));
+  return nodes
+    .filter((node): node is HTMLElement => node instanceof HTMLElement)
+    .filter((node) => matcher.test(node.id));
+}
+
+function evaluateCountConstraint(rule: Rule, actual: number): boolean {
+  const expected = rule.countExpected;
+  const min = rule.countMin;
+  const max = rule.countMax;
+
+  if (rule.comparator && expected != null) {
+    switch (rule.comparator) {
+      case "<":
+        return actual < expected;
+      case "<=":
+        return actual <= expected;
+      case ">":
+        return actual > expected;
+      case ">=":
+        return actual >= expected;
+      default:
+        return false;
+    }
+  }
+
+  if (min != null && max != null) {
+    return actual >= min && actual <= max;
+  }
+
+  if (expected != null) {
+    return actual === expected;
+  }
+
+  return false;
+}
+
+export function evaluateRules(
+  rules: Rule[],
+  resolve: (id: string) => HTMLElement | null = byId,
+  resolvePattern?: (pattern: string) => Array<HTMLElement | null>
+): RuleResult[] {
   const applyNegation = (rule: Rule, pass: boolean): boolean => {
     return rule.negated ? !pass : pass;
   };
 
   return rules.map(r => {
+    if (r.relation === "visible" || r.relation === "absent") {
+      const element = resolve(r.element);
+      const visible = !!element && isElementVisible(element);
+      const basePass = r.relation === "visible" ? visible : !visible;
+      return {
+        ...r,
+        actual: visible ? 1 : 0,
+        pass: applyNegation(r, basePass),
+        reason: !element && r.relation === "visible" ? `Element not found: ${r.element}` : undefined,
+      };
+    }
+
+    if (r.relation.startsWith("count-")) {
+      if (!r.countPattern) {
+        return { ...r, pass: false, actual: null, reason: "Missing count pattern in rule" };
+      }
+
+      const matches = resolvePattern
+        ? resolvePattern(r.countPattern)
+        : collectPatternMatches(r.countPattern);
+
+      const scope = r.relation.slice("count-".length);
+      const actualCount = scope === "visible"
+        ? matches.filter((element): element is HTMLElement => !!element && isElementVisible(element)).length
+        : scope === "absent"
+          ? matches.filter((element) => !element || !isElementVisible(element as HTMLElement)).length
+          : matches.filter(Boolean).length;
+
+      const pass = evaluateCountConstraint(r, actualCount);
+      return { ...r, actual: actualCount, pass: applyNegation(r, pass) };
+    }
+
+    if (r.relation.startsWith("text-")) {
+      const element = resolve(r.element);
+      if (!element) {
+        return { ...r, pass: false, actual: null, reason: `Element not found: ${r.element}` };
+      }
+
+      const operations = r.textOperations ?? [];
+      const actualText = applyTextOperations(getElementVisibleText(element), operations);
+      const expectedText = normalizeVisibleText(r.textExpected ?? "");
+      const evaluation = evaluateStringConstraint(r.relation, "text-", actualText, expectedText);
+      return {
+        ...r,
+        actual: actualText,
+        pass: applyNegation(r, evaluation.pass),
+        reason: evaluation.reason,
+      };
+    }
+
+    if (r.relation.startsWith("css-")) {
+      const element = resolve(r.element);
+      if (!element) {
+        return { ...r, pass: false, actual: null, reason: `Element not found: ${r.element}` };
+      }
+
+      if (!r.cssProperty) {
+        return { ...r, pass: false, actual: null, reason: "Missing css property in rule" };
+      }
+
+      const actualCssValue = getElementComputedCssValue(element, r.cssProperty);
+      const expectedCssValue = normalizeVisibleText(r.cssExpected ?? "");
+      const evaluation = evaluateStringConstraint(r.relation, "css-", actualCssValue, expectedCssValue);
+      return {
+        ...r,
+        actual: actualCssValue,
+        pass: applyNegation(r, evaluation.pass),
+        reason: evaluation.reason,
+      };
+    }
+
     if (r.relation === "width" || r.relation === "height") {
       const element = resolve(r.element);
       if (!element) {

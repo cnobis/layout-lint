@@ -17,6 +17,31 @@ module.exports = grammar({
     // a rule looks like:  <element> <relation> <target> [<distance>]
     // or for absolute rules: <element> <relation> <distance>
     rule: $ => choice(
+      // count rules: count any|visible|absent pattern is <range>
+      seq(
+        "count",
+        field("count_scope", $.count_scope),
+        field("count_pattern", $.object_pattern),
+        "is",
+        field("count_exact", $.number)
+      ),
+      seq(
+        "count",
+        field("count_scope", $.count_scope),
+        field("count_pattern", $.object_pattern),
+        "is",
+        field("count_comparator", $.comparator),
+        field("count_exact", $.number)
+      ),
+      seq(
+        "count",
+        field("count_scope", $.count_scope),
+        field("count_pattern", $.object_pattern),
+        "is",
+        field("count_min", $.number),
+        "to",
+        field("count_max", $.number)
+      ),
       // near rules: element near target [distance direction [, ...]] 
       seq(
         field("element", $.identifier),
@@ -42,6 +67,12 @@ module.exports = grammar({
         field("target", $.identifier),
         optional(repeat1(field("inside_clause", $.inside_clause)))
       ),
+      // visibility rules: element visible|absent
+      seq(
+        field("element", $.identifier),
+        optional(field("negated", "not")),
+        field("visibility_relation", $.visibility_relation)
+      ),
       // size rules (absolute): element width|height [<|<=|>|>=] distance
       seq(
         field("element", $.identifier),
@@ -49,6 +80,24 @@ module.exports = grammar({
         field("size_property", $.size_property),
         optional(field("comparator", $.comparator)),
         field("size_distance_px", $.distance)
+      ),
+      // text rules: element text is|contains|starts|ends|matches "..."
+      seq(
+        field("element", $.identifier),
+        optional(field("negated", "not")),
+        "text",
+        repeat(field("text_operation", $.text_operation)),
+        field("text_match_mode", $.text_match_mode),
+        field("text_value", $.quoted_text)
+      ),
+      // css rules: element css property is|contains|starts|ends|matches "..."
+      seq(
+        field("element", $.identifier),
+        optional(field("negated", "not")),
+        "css",
+        field("css_property", $.css_property),
+        field("css_match_mode", $.css_match_mode),
+        field("css_value", $.quoted_text)
       ),
       // size rules (relative): element width|height [<|<=|>|>=] percentage of target/width|height
       seq(
@@ -69,6 +118,16 @@ module.exports = grammar({
         "aligned",
         field("aligned_axis", $.aligned_axis),
         field("aligned_mode", $.aligned_mode),
+        field("target", $.identifier),
+        optional(field("distance", $.distance))
+      ),
+      // centered syntax sugar: element centered horizontally|vertically|all inside|on target [distance]
+      seq(
+        field("element", $.identifier),
+        optional(field("negated", "not")),
+        "centered",
+        field("centered_axis", $.centered_axis),
+        field("centered_scope", $.centered_scope),
         field("target", $.identifier),
         optional(field("distance", $.distance))
       ),
@@ -114,7 +173,6 @@ module.exports = grammar({
     relation: $ => choice(
       "below", "above", "left-of", "right-of",
       "aligned-top", "aligned-bottom", "aligned-left", "aligned-right",
-      "centered-x", "centered-y",
       "wider-than", "taller-than", "same-width", "same-height",
       "distance-from-top"
     ),
@@ -144,6 +202,14 @@ module.exports = grammar({
       "left", "right", "top", "bottom"
     ),
 
+    visibility_relation: $ => choice("visible", "absent"),
+
+    count_scope: $ => choice("any", "visible", "absent"),
+
+    centered_axis: $ => choice("horizontally", "vertically", "all"),
+
+    centered_scope: $ => "inside",
+
     size_property: $ => choice("width", "height"),
 
     aligned_axis: $ => choice("horizontally", "vertically"),
@@ -152,10 +218,32 @@ module.exports = grammar({
 
     comparator: $ => choice("<=", ">=", "<", ">"),
 
+    text_match_mode: $ => choice("is", "contains", "starts", "ends", "matches"),
+
+    css_match_mode: $ => choice("is", "contains", "starts", "ends", "matches"),
+
+    text_operation: $ => choice("lowercase", "uppercase", "singleline"),
+
+    css_property: $ => token(choice(
+      /[a-zA-Z_][a-zA-Z0-9_-]*/,
+      /--[a-zA-Z0-9_-]+/
+    )),
+
     ternary_relation: $ => choice(
       "equal-gap-x",
       "equal-gap-y"
     ),
+
+    quoted_text: $ => token(seq(
+      '"',
+      repeat(choice(
+        /[^"\\]/,
+        /\\./
+      )),
+      '"'
+    )),
+
+    object_pattern: $ => token(/[a-zA-Z_][a-zA-Z0-9_.#*-]*/),
 
     // identifiers = simple names (e.g. header, button, loginBtn, featured-badge)
     identifier: $ => /[a-zA-Z_][a-zA-Z0-9_-]*/,
