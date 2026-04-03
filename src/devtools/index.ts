@@ -1,4 +1,4 @@
-import { runLayoutLint, type RunLayoutLintResult } from "../index.js";
+import { runLayoutLint, type RunLayoutLintResult } from "../core/runtime.js";
 import type { RuleResult } from "../core/types.js";
 export { createLayoutLintWidget } from "./widget/index.js";
 
