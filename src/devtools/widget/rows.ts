@@ -1,4 +1,4 @@
-import type { LayoutLintMonitorController } from "../../devtools.js";
+import type { LayoutLintMonitorController } from "../index.js";
 import type { RuleResult } from "../../core/types.js";
 import type { WidgetState } from "./state.js";
 

@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { evaluateRules } from '../dist/evaluator.js';
-import { parseDistanceToken, parsePercentageToken } from '../dist/dsl.js';
+import { evaluateRules } from '../dist/core/evaluator.js';
+import { parseDistanceToken, parsePercentageToken } from '../dist/core/dsl.js';
 
 describe('layout-lint Core', () => {
 

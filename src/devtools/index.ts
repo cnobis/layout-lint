@@ -1,6 +1,6 @@
-import { runLayoutLint, type RunLayoutLintResult } from "./index.js";
-import type { RuleResult } from "./core/types.js";
-export { createLayoutLintWidget } from "./devtools/widget/index.js";
+import { runLayoutLint, type RunLayoutLintResult } from "../index.js";
+import type { RuleResult } from "../core/types.js";
+export { createLayoutLintWidget } from "./widget/index.js";
 
 export type LayoutLintReporter = (result: RunLayoutLintResult) => void;
 
@@ -50,8 +50,7 @@ export function createConsoleReporter(options: ConsoleReporterOptions = {}): Lay
       const negation = item.negated ? "not " : "";
       const target = item.target ? ` ${item.target}` : "";
       const target2 = item.target2 ? ` ${item.target2}` : "";
-      
-      // for inside relations, show semantic status without generic distance threshold text
+
       const isSemantic = ["inside", "partially-inside"].includes(item.relation);
       if (isSemantic) {
         console.log(
