@@ -84,7 +84,7 @@ const buildMeta = (item: RuleResult) => {
 };
 
 export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
-  const { body, status, state, monitor, renderActiveHighlight, clampWidgetIntoViewport, scheduleClampWidgetIntoViewport, updatePinStatus } = deps;
+  const { body, status, state, monitor, renderActiveHighlight, scheduleClampWidgetIntoViewport, updatePinStatus } = deps;
 
   body.innerHTML = "";
   if (results.length === 0) {
@@ -99,7 +99,6 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
 
   for (const [index, item] of results.entries()) {
     const row = document.createElement("div");
-    const rowKey = state.getRuleKey(item);
     const isPinned = state.isPinned(item);
     const ruleNumber = index + 1;
     row.style.border = "1px solid #e5e7eb";
