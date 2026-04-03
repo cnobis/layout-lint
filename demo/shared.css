@@ -1,0 +1,27 @@
+#demo-exit {
+  position: fixed;
+  top: 12px;
+  right: 14px;
+  z-index: 900;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(122, 129, 255, 0.58);
+  background: rgba(122, 129, 255, 0.24);
+  color: #eceeff;
+  text-decoration: none;
+  font-size: 10px;
+  font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease;
+  backdrop-filter: blur(2px);
+}
+
+#demo-exit:hover,
+#demo-exit:focus-visible {
+  background: rgba(122, 129, 255, 0.36);
+  border-color: rgba(122, 129, 255, 0.78);
+  color: #f7f8ff;
+  outline: none;
+}

@@ -3,224 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <title>Galerie Nocturne — Contemporary Art</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Garamond', 'Georgia', serif;
-      background: #0a0a0a;
-      color: #e8e8e8;
-      line-height: 1.6;
-      letter-spacing: 0.05em;
-    }
-
-    #header {
-      background: #000;
-      border-bottom: 1px solid #333;
-      padding: 48px 64px;
-      text-align: center;
-    }
-
-    #header h1 {
-      font-size: 48px;
-      font-weight: 300;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: #ccc;
-      margin-bottom: 12px;
-    }
-
-    #header p {
-      font-size: 14px;
-      color: #888;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-
-    #nav {
-      background: #0f0f0f;
-      padding: 24px 64px;
-      border-bottom: 1px solid #222;
-      display: flex;
-      gap: 48px;
-      align-items: center;
-      margin-bottom: 5px;
-    }
-
-    #nav a {
-      font-size: 12px;
-      letter-spacing: 0.08em;
-      color: #aaa;
-      text-decoration: none;
-      text-transform: uppercase;
-      transition: color 0.3s ease;
-    }
-
-    #nav a:hover {
-      color: #e8e8e8;
-    }
-
-    #search-box {
-      margin-left: auto;
-      padding: 10px 16px;
-      background: #1a1a1a;
-      border: 1px solid #333;
-      color: #e8e8e8;
-      font-family: 'Garamond', serif;
-      font-size: 12px;
-      letter-spacing: 0.05em;
-      width: 200px;
-    }
-
-    #search-box::placeholder {
-      color: #666;
-    }
-
-    #gallery {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 48px;
-      padding: 64px;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    @media (max-width: 900px) {
-      #gallery {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .artwork {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .artwork-image {
-      width: 100%;
-      aspect-ratio: 3/4;
-      background: #1a1a1a;
-      overflow: hidden;
-      border: 1px solid #222;
-    }
-
-    .artwork-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: opacity 0.4s ease;
-    }
-
-    .artwork-image img:hover {
-      opacity: 0.9;
-    }
-
-    .artwork-info {
-      padding: 16px 0;
-      border-bottom: 1px solid #222;
-      padding-bottom: 16px;
-    }
-
-    .artwork-title {
-      font-size: 16px;
-      color: #e8e8e8;
-      margin-bottom: 8px;
-      font-weight: 400;
-      letter-spacing: 0.03em;
-    }
-
-    .artwork-artist {
-      font-size: 12px;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 12px;
-    }
-
-    .artwork-price {
-      font-size: 13px;
-      color: #aaa;
-      letter-spacing: 0.05em;
-    }
-
-    #footer {
-      background: #000;
-      border-top: 1px solid #222;
-      padding: 48px 64px;
-      text-align: center;
-      font-size: 12px;
-      color: #666;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-top: 50px;
-    }
-
-    #featured-badge {
-      position: fixed;
-      top: 320px;
-      right: 64px;
-      width: 180px;
-      background: #1a1a1a;
-      border: 1px solid #666;
-      padding: 16px;
-      border-radius: 2px;
-      z-index: 500;
-      cursor: grab;
-      user-select: none;
-    }
-
-    #featured-badge.dragging {
-      cursor: grabbing;
-      opacity: 0.9;
-    }
-
-    #featured-badge .badge-title {
-      font-size: 11px;
-      color: #aaa;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 8px;
-    }
-
-    #featured-badge .badge-content {
-      font-size: 12px;
-      color: #ddd;
-      line-height: 1.5;
-    }
-
-    #demo-exit {
-      position: fixed;
-      top: 12px;
-      right: 14px;
-      z-index: 900;
-      padding: 6px 11px;
-      border-radius: 999px;
-      border: 1px solid rgba(122, 129, 255, 0.58);
-      background: rgba(122, 129, 255, 0.24);
-      color: #eceeff;
-      text-decoration: none;
-      font-size: 10px;
-      font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-      font-weight: 700;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-      transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease;
-      backdrop-filter: blur(2px);
-    }
-
-    #demo-exit:hover,
-    #demo-exit:focus-visible {
-      background: rgba(122, 129, 255, 0.36);
-      border-color: rgba(122, 129, 255, 0.78);
-      color: #f7f8ff;
-      outline: none;
-    }
-  </style>
+  <link rel="stylesheet" href="../shared.css" />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
 
@@ -241,7 +25,7 @@
   <section id="gallery">
     <article id="artwork-1" class="artwork">
       <div id="artwork-1-image" class="artwork-image">
-        <img src="../pictures/gallery/barbershop.jpeg" alt="Abstract Geometry">
+        <img src="../images/gallery/barbershop.jpeg" alt="Abstract Geometry">
       </div>
       <div id="artwork-1-info" class="artwork-info">
         <div class="artwork-title">Untitled Series #42</div>
@@ -252,7 +36,7 @@
 
     <article id="artwork-2" class="artwork">
       <div id="artwork-2-image" class="artwork-image">
-        <img src="../pictures/gallery/bluewithred.jpeg" alt="Ethereal Light">
+        <img src="../images/gallery/bluewithred.jpeg" alt="Ethereal Light">
       </div>
       <div id="artwork-2-info" class="artwork-info">
         <div class="artwork-title">Luminescence</div>
@@ -263,7 +47,7 @@
 
     <article id="artwork-3" class="artwork">
       <div id="artwork-3-image" class="artwork-image">
-        <img src="../pictures/gallery/swimmer.jpeg" alt="Chromatic Layers">
+        <img src="../images/gallery/swimmer.jpeg" alt="Chromatic Layers">
       </div>
       <div id="artwork-3-info" class="artwork-info">
         <div class="artwork-title">Depth of Field</div>
