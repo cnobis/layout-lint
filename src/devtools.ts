@@ -1,5 +1,5 @@
 import { runLayoutLint, type RunLayoutLintResult } from "./index.js";
-import type { RuleResult } from "./evaluator.js";
+import type { RuleResult } from "./core/types.js";
 export { createLayoutLintWidget } from "./devtools/widget/index.js";
 
 export type LayoutLintReporter = (result: RunLayoutLintResult) => void;

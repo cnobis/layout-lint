@@ -1,5 +1,5 @@
 import type { LayoutLintMonitorController } from "../../devtools.js";
-import type { RuleResult } from "../../evaluator.js";
+import type { RuleResult } from "../../core/types.js";
 import type { WidgetState } from "./state.js";
 
 export interface RenderRowsDeps {

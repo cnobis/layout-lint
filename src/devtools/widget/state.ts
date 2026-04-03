@@ -1,4 +1,4 @@
-import type { RuleResult } from "../../evaluator.js";
+import type { RuleResult } from "../../core/types.js";
 
 export interface WidgetState {
   isHighlightsEnabled(): boolean;
