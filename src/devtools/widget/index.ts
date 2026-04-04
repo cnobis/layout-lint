@@ -1,4 +1,5 @@
-import type { LayoutLintMonitorController, LayoutLintWidgetController, LayoutLintWidgetOptions } from "../index.js";
+import type { LayoutLintMonitorController } from "../monitor/types.js";
+import type { LayoutLintWidgetController, LayoutLintWidgetOptions } from "./types.js";
 import type { RuleResult } from "../../core/types.js";
 import { createOverlayRenderer } from "./overlays.js";
 import { createWidgetState } from "./state.js";
