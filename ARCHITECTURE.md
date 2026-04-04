@@ -161,7 +161,7 @@ An optional professional developer experience layer is available via a separate 
 
 ### 4.4 Devtools Export Entry
 - **Package Export**: `"./devtools"` in `package.json`
-- **Resolves to**: `dist/devtools.js` + `dist/devtools.d.ts`
+- **Resolves to**: `dist/devtools/index.js` + `dist/devtools/index.d.ts`
 - **Installation**:
   ```bash
   npm install layout-lint

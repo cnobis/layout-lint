@@ -36,7 +36,7 @@ This folder contains the demo set for validating layout-lint and the devtools ov
 - demo entry: `demo/index.html` (Playground landing)
 - gallery entry: `demo/gallery/index.html`
 - jazz club entry: `demo/jazz-club/index.html`
-- devtools runtime import: `../dist/devtools.js`
+- devtools runtime import: `../dist/devtools/index.js`
 - grammar wasm: `layout_lint.wasm` from project root
 - monitor in demo currently uses `observeMutations: false` to avoid self-trigger loops; manual re-evaluation is triggered during badge dragging
 

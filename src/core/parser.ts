@@ -1,5 +1,5 @@
 // @ts-expect-error no types for this local js
-import { Parser, Language } from "../demo/web-tree-sitter.js";
+import { Parser, Language } from "../../demo/web-tree-sitter.js";
 
 let _parserPromise: Promise<Parser> | null = null;
 
