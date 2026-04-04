@@ -65,4 +65,27 @@ Use this format for every new bug:
 - **Verification**: Local build passes and visual approach now follows the same Safari-safe pattern used in prior control-room fixes.
 - **General principle**: For Safari compatibility, prefer solid page backgrounds plus explicit DOM/SVG texture layers over stacked CSS gradient backgrounds on root elements.
 
+## 5) Widget tab switching becomes slow or unresponsive
+
+- **Symptom**: Switching widget category/page tabs can require multiple clicks, lag heavily, or appear to not apply.
+- **Root cause**: Monitor subscription updates rendered widget DOM while mutation observation was active. The widget rerender mutated DOM, which retriggered observer-driven evaluations and caused a feedback loop.
+- **Fix applied**:
+  - Added a shared paused-render path (`renderBodyWithObserverPaused`) in the widget.
+  - Routed both manual rerenders and monitor subscription rerenders through the same pause/resume flow using `try/finally`.
+- **Where**: `src/devtools/widget/index.ts`.
+- **Verification**: `npm run build:ts && npm test` passes; tab switching no longer re-enters evaluation loops.
+- **General principle**: Any internal widget DOM rerender path (including async subscription handlers) must render with mutation observation paused.
+
+## 6) Widget list numbers can duplicate while overlay numbers stay unique
+
+- **Symptom**: In some result sets, two visible list rows show the same badge number (for example `7` and `7`) while overlay labels for those same constraints show distinct numbers (for example `7` and `8`).
+- **Root cause**: Row numbering in the widget list resolved indices using key-based lookup only. When two results mapped to the same key identity, both rows resolved to the first matching index.
+- **Fix applied**:
+  - Updated list numbering to resolve index by object reference first.
+  - Kept key-based lookup only as a fallback when reference matching is unavailable.
+  - Aligned list-number resolution strategy with the existing overlay-number resolution logic.
+- **Where**: `src/devtools/widget/rows.ts` (row numbering in `renderWidgetRows`).
+- **Verification**: `npm run build:ts && npm test` passes; list badges now stay in sync with overlay labels.
+- **General principle**: For UI labels tied to evaluation order, prefer stable reference/index mapping over derived keys that may collide.
+
 

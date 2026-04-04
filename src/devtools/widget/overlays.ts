@@ -8,6 +8,34 @@ export interface LabelRect {
 export function createOverlayRenderer(highlightLayer: HTMLDivElement) {
   const placedLabelRects: LabelRect[] = [];
 
+  const getNumberBadgeStyles = (color: string) => {
+    const normalized = color.toLowerCase();
+    const isPass = normalized === "#059669";
+    const isFail = normalized === "#dc2626";
+
+    if (isPass) {
+      return {
+        border: "1px solid #34d399",
+        background: "#d1fae5",
+        color: "#065f46",
+      };
+    }
+
+    if (isFail) {
+      return {
+        border: "1px solid #f87171",
+        background: "#fee2e2",
+        color: "#991b1b",
+      };
+    }
+
+    return {
+      border: "1px solid #d1d5db",
+      background: "#f3f4f6",
+      color: "#111827",
+    };
+  };
+
   const clear = () => {
     highlightLayer.innerHTML = "";
     placedLabelRects.length = 0;
@@ -51,7 +79,19 @@ export function createOverlayRenderer(highlightLayer: HTMLDivElement) {
     const firstSegment = segments[0]?.trim() ?? "";
     if (segments.length > 1 && /^(\?|\d+)$/.test(firstSegment)) {
       const numberPart = document.createElement("span");
+      const badgeStyles = getNumberBadgeStyles(color);
+      numberPart.style.display = "inline-flex";
+      numberPart.style.alignItems = "center";
+      numberPart.style.justifyContent = "center";
+      numberPart.style.minWidth = "26px";
+      numberPart.style.padding = "1px 7px";
+      numberPart.style.borderRadius = "999px";
+      numberPart.style.fontSize = "10px";
+      numberPart.style.lineHeight = "1.3";
       numberPart.style.fontWeight = "700";
+      numberPart.style.border = badgeStyles.border;
+      numberPart.style.background = badgeStyles.background;
+      numberPart.style.color = badgeStyles.color;
       numberPart.textContent = firstSegment;
       label.appendChild(numberPart);
 

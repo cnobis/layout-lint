@@ -111,7 +111,10 @@ artwork-3 below artwork-2 0px
     });
 
     createLayoutLintWidget(monitor, {
-      initialPosition: { x: window.innerWidth - 360, y: window.innerHeight - 400 }
+      initialPosition: { x: window.innerWidth - 360, y: window.innerHeight - 400 },
+      tabsEnabled: true,
+      constraintsPerPage: 10,
+      persistSettings: true
     });
 
     const badge = document.getElementById("featured-badge");

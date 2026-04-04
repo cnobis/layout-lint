@@ -105,8 +105,10 @@ export function createLayoutLintMonitor(options: LayoutLintMonitorOptions): Layo
   };
 
   const resumeObserver = () => {
-    if (observeMutations && running && !mutationObserver) {
-      mutationObserver = new MutationObserver(() => queueEvaluation());
+    if (observeMutations && running) {
+      if (!mutationObserver) {
+        mutationObserver = new MutationObserver(() => queueEvaluation());
+      }
       mutationObserver.observe(document.documentElement, {
         attributes: true,
         childList: true,

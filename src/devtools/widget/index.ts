@@ -4,11 +4,32 @@ import type { RuleResult } from "../../core/types.js";
 import { createOverlayRenderer } from "./overlays.js";
 import { createWidgetState } from "./state.js";
 import { renderWidgetRows } from "./rows.js";
+import {
+  DEFAULT_WIDGET_SETTINGS,
+  DEFAULT_WIDGET_SETTINGS_STORAGE_KEY,
+  clampConstraintsPerPage,
+  loadWidgetSettings,
+  normalizeWidgetSettings,
+  saveWidgetSettings,
+} from "../settings/index.js";
 
 export function createLayoutLintWidget(
   monitor: LayoutLintMonitorController,
   options: LayoutLintWidgetOptions = {}
 ): LayoutLintWidgetController {
+  const persistSettings = options.persistSettings !== false;
+  const settingsStorageKey = options.settingsStorageKey ?? DEFAULT_WIDGET_SETTINGS_STORAGE_KEY;
+  const storedSettings = persistSettings
+    ? loadWidgetSettings(settingsStorageKey, DEFAULT_WIDGET_SETTINGS)
+    : DEFAULT_WIDGET_SETTINGS;
+  const initialSettings = normalizeWidgetSettings(
+    {
+      tabsEnabled: options.tabsEnabled,
+      constraintsPerPage: options.constraintsPerPage,
+    },
+    storedSettings
+  );
+
   const root = document.createElement("div");
   root.style.position = "fixed";
   root.style.zIndex = "2147483647";
@@ -42,20 +63,31 @@ export function createLayoutLintWidget(
   status.style.fontWeight = "600";
   status.textContent = "…";
 
-  const highlightToggle = document.createElement("button");
-  highlightToggle.type = "button";
-  highlightToggle.style.border = "1px solid rgba(255,255,255,0.6)";
-  highlightToggle.style.borderRadius = "999px";
-  highlightToggle.style.background = "transparent";
-  highlightToggle.style.color = "#ffffff";
-  highlightToggle.style.fontSize = "11px";
-  highlightToggle.style.padding = "2px 8px";
-  highlightToggle.style.cursor = "pointer";
-
   const controls = document.createElement("div");
   controls.style.display = "flex";
   controls.style.alignItems = "center";
   controls.style.gap = "8px";
+
+  const settingsToggle = document.createElement("button");
+  settingsToggle.type = "button";
+  settingsToggle.textContent = "settings";
+  settingsToggle.style.border = "1px solid rgba(255,255,255,0.6)";
+  settingsToggle.style.borderRadius = "999px";
+  settingsToggle.style.background = "transparent";
+  settingsToggle.style.color = "#ffffff";
+  settingsToggle.style.fontSize = "11px";
+  settingsToggle.style.padding = "2px 8px";
+  settingsToggle.style.cursor = "pointer";
+  settingsToggle.style.outline = "none";
+  settingsToggle.style.transition = "box-shadow 120ms ease, border-color 120ms ease";
+  settingsToggle.addEventListener("focus", () => {
+    settingsToggle.style.borderColor = "#c7d2fe";
+    settingsToggle.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.28)";
+  });
+  settingsToggle.addEventListener("blur", () => {
+    settingsToggle.style.borderColor = "rgba(255,255,255,0.6)";
+    settingsToggle.style.boxShadow = "none";
+  });
 
   const pinStatus = document.createElement("span");
   pinStatus.style.fontSize = "11px";
@@ -67,7 +99,7 @@ export function createLayoutLintWidget(
   body.style.maxHeight = "calc(45vh - 40px)";
   body.style.overflow = "auto";
 
-  controls.appendChild(highlightToggle);
+  controls.appendChild(settingsToggle);
   controls.appendChild(pinStatus);
   controls.appendChild(status);
   header.appendChild(controls);
@@ -84,7 +116,7 @@ export function createLayoutLintWidget(
   document.body.appendChild(highlightLayer);
 
   const overlays = createOverlayRenderer(highlightLayer);
-  const state = createWidgetState();
+  const state = createWidgetState({ initialSettings, defaults: DEFAULT_WIDGET_SETTINGS });
   const clearHighlights = () => overlays.clear();
   const createHighlightBox = overlays.createHighlightBox;
   const createElementRoleLabel = overlays.createElementRoleLabel;
@@ -94,17 +126,23 @@ export function createLayoutLintWidget(
   const getEqualGapConnectorPoints = overlays.getEqualGapConnectorPoints;
 
   let latestResults: RuleResult[] = [];
-
-  const updateToggleLabel = () => {
-    highlightToggle.textContent = `highlight: ${state.isHighlightsEnabled() ? "on" : "off"}`;
-  };
+  let settingsOpen = false;
 
   const updatePinStatus = () => {
     pinStatus.textContent = `pin: ${state.getPinnedRuleCount()}`;
   };
 
-  updateToggleLabel();
+  const updateSettingsToggleLabel = () => {
+    settingsToggle.textContent = settingsOpen ? "constraints" : "settings";
+  };
+
+  const persistCurrentSettings = () => {
+    if (!persistSettings) return;
+    saveWidgetSettings(settingsStorageKey, state.getSettings());
+  };
+
   updatePinStatus();
+  updateSettingsToggleLabel();
 
   const resolveElement = (identifier: string | undefined): HTMLElement | null => {
     if (!identifier) return null;
@@ -125,7 +163,13 @@ export function createLayoutLintWidget(
 
     const pinnedRules = state.getPinnedRules(latestResults);
     const activeRule = state.getActiveRule();
-    const rulesToRender = pinnedRules.length > 0 ? pinnedRules : (activeRule ? [activeRule] : []);
+    const visibleKeys = new Set(state.getViewModel(latestResults).visibleResults.map((rule) => state.getRuleKey(rule)));
+    const rulesToRender =
+      pinnedRules.length > 0
+        ? pinnedRules
+        : activeRule && visibleKeys.has(state.getRuleKey(activeRule))
+          ? [activeRule]
+          : [];
     if (rulesToRender.length === 0) return;
 
     const getRuleNumber = (rule: RuleResult) => {
@@ -252,10 +296,10 @@ export function createLayoutLintWidget(
     event.stopPropagation();
   };
 
-  const onToggleClick = () => {
-    state.toggleHighlights();
-    updateToggleLabel();
-    renderActiveHighlight();
+  const onSettingsToggleClick = () => {
+    settingsOpen = !settingsOpen;
+    updateSettingsToggleLabel();
+    requestRerender();
   };
 
   const scheduleClampWidgetIntoViewport = () => {
@@ -271,26 +315,273 @@ export function createLayoutLintWidget(
       state,
       monitor,
       renderActiveHighlight,
-      clampWidgetIntoViewport,
       scheduleClampWidgetIntoViewport,
       updatePinStatus,
+      requestRerender,
     });
+  };
+
+  const renderSettingsPanel = () => {
+    body.innerHTML = "";
+    status.textContent = "settings";
+
+    const section = document.createElement("div");
+    section.style.display = "grid";
+    section.style.gap = "10px";
+    section.style.padding = "10px";
+    section.style.border = "1px solid #dbe3ff";
+    section.style.borderRadius = "10px";
+    section.style.background = "linear-gradient(180deg, #f8faff 0%, #eef2ff 100%)";
+
+    const settings = state.getSettings();
+
+    const createToggleRow = (
+      label: string,
+      description: string,
+      checked: boolean,
+      onChange: (nextValue: boolean) => void
+    ) => {
+      const row = document.createElement("div");
+      row.style.display = "flex";
+      row.style.alignItems = "center";
+      row.style.justifyContent = "space-between";
+      row.style.gap = "10px";
+      row.style.padding = "8px 10px";
+      row.style.border = "1px solid #c7d2fe";
+      row.style.borderRadius = "8px";
+      row.style.background = "rgba(255,255,255,0.85)";
+
+      const textWrap = document.createElement("div");
+      textWrap.style.display = "grid";
+      textWrap.style.gap = "1px";
+
+      const title = document.createElement("div");
+      title.textContent = label;
+      title.style.fontSize = "11px";
+      title.style.fontWeight = "700";
+      title.style.color = "#1f2937";
+
+      const subtitle = document.createElement("div");
+      subtitle.textContent = description;
+      subtitle.style.fontSize = "10px";
+      subtitle.style.color = "#6b7280";
+
+      const toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.textContent = checked ? "On" : "Off";
+      toggle.style.minWidth = "44px";
+      toggle.style.padding = "3px 10px";
+      toggle.style.borderRadius = "999px";
+      toggle.style.border = checked ? "1px solid #6366f1" : "1px solid #9ca3af";
+      toggle.style.background = checked ? "#e0e7ff" : "#f3f4f6";
+      toggle.style.color = checked ? "#3730a3" : "#4b5563";
+      toggle.style.fontSize = "10px";
+      toggle.style.fontWeight = "700";
+      toggle.style.cursor = "pointer";
+      toggle.style.outline = "none";
+      toggle.style.transition = "box-shadow 120ms ease";
+      toggle.addEventListener("pointerdown", (event) => event.stopPropagation());
+      toggle.addEventListener("focus", () => {
+        toggle.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.22)";
+      });
+      toggle.addEventListener("blur", () => {
+        toggle.style.boxShadow = "none";
+      });
+      toggle.addEventListener("click", () => {
+        onChange(!checked);
+      });
+
+      textWrap.appendChild(title);
+      textWrap.appendChild(subtitle);
+      row.appendChild(textWrap);
+      row.appendChild(toggle);
+      return row;
+    };
+
+    const highlightRow = createToggleRow(
+      "Highlights",
+      "Show overlays on linked elements",
+      settings.highlightsEnabled,
+      (nextValue) => {
+      state.updateSettings({ highlightsEnabled: nextValue });
+      persistCurrentSettings();
+      requestRerender();
+      }
+    );
+
+    const tabsRow = createToggleRow(
+      "Tabs",
+      "Split constraints into navigable pages",
+      settings.tabsEnabled,
+      (nextValue) => {
+      state.updateSettings({ tabsEnabled: nextValue });
+      persistCurrentSettings();
+      requestRerender();
+      }
+    );
+
+    const thresholdWrap = document.createElement("div");
+    thresholdWrap.style.display = "grid";
+    thresholdWrap.style.gap = "4px";
+    thresholdWrap.style.padding = "8px 10px";
+    const thresholdEnabled = settings.tabsEnabled;
+    thresholdWrap.style.border = thresholdEnabled ? "1px solid #c7d2fe" : "1px solid #d1d5db";
+    thresholdWrap.style.borderRadius = "8px";
+    thresholdWrap.style.background = thresholdEnabled ? "rgba(255,255,255,0.85)" : "rgba(243,244,246,0.9)";
+    thresholdWrap.style.opacity = thresholdEnabled ? "1" : "0.8";
+
+    const thresholdLabel = document.createElement("label");
+    thresholdLabel.textContent = "Constraints Per Page";
+    thresholdLabel.style.fontWeight = "700";
+    thresholdLabel.style.fontSize = "11px";
+    thresholdLabel.style.color = "#1f2937";
+
+    const thresholdInput = document.createElement("input");
+    thresholdInput.type = "text";
+    thresholdInput.inputMode = "numeric";
+    thresholdInput.pattern = "[0-9]*";
+    thresholdInput.maxLength = 3;
+    thresholdInput.disabled = !thresholdEnabled;
+    thresholdInput.value = `${settings.constraintsPerPage}`;
+    thresholdInput.style.border = thresholdEnabled ? "1px solid #a5b4fc" : "1px solid #d1d5db";
+    thresholdInput.style.borderRadius = "6px";
+    thresholdInput.style.padding = "6px 8px";
+    thresholdInput.style.fontSize = "12px";
+    thresholdInput.style.background = thresholdEnabled ? "#ffffff" : "#f3f4f6";
+    thresholdInput.style.color = thresholdEnabled ? "#111827" : "#6b7280";
+    thresholdInput.style.outline = "none";
+    thresholdInput.style.boxShadow = "none";
+    thresholdInput.style.transition = "border-color 120ms ease, box-shadow 120ms ease";
+    thresholdInput.addEventListener("pointerdown", (event) => event.stopPropagation());
+
+    const commitThresholdValue = () => {
+      const raw = Number.parseInt(thresholdInput.value, 10);
+      const nextValue = clampConstraintsPerPage(
+        Number.isFinite(raw) ? raw : settings.constraintsPerPage
+      );
+      thresholdInput.value = `${nextValue}`;
+      state.updateSettings({ constraintsPerPage: nextValue });
+      persistCurrentSettings();
+      requestRerender();
+    };
+
+    thresholdInput.addEventListener("input", () => {
+      const digitsOnly = thresholdInput.value.replace(/[^0-9]/g, "").slice(0, 3);
+      if (digitsOnly !== thresholdInput.value) {
+        thresholdInput.value = digitsOnly;
+      }
+    });
+
+    thresholdInput.addEventListener("blur", commitThresholdValue);
+    thresholdInput.addEventListener("focus", () => {
+      thresholdInput.style.borderColor = "#6366f1";
+      thresholdInput.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.22)";
+    });
+    thresholdInput.addEventListener("blur", () => {
+      thresholdInput.style.borderColor = "#a5b4fc";
+      thresholdInput.style.boxShadow = "none";
+    });
+    thresholdInput.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") {
+        return;
+      }
+      event.preventDefault();
+      commitThresholdValue();
+    });
+
+    const helper = document.createElement("div");
+    helper.style.fontSize = "10px";
+    helper.style.color = "#6b7280";
+    helper.textContent = "Allowed range: 5 to 200.";
+
+    thresholdWrap.appendChild(thresholdLabel);
+    thresholdWrap.appendChild(thresholdInput);
+    thresholdWrap.appendChild(helper);
+
+    const resetButton = document.createElement("button");
+    resetButton.type = "button";
+    resetButton.textContent = "Reset Defaults";
+    resetButton.style.padding = "6px 8px";
+    resetButton.style.fontSize = "11px";
+    resetButton.style.fontWeight = "600";
+    resetButton.style.border = "1px solid #d1d5db";
+    resetButton.style.borderRadius = "6px";
+    resetButton.style.background = "#f3f4f6";
+    resetButton.style.color = "#374151";
+    resetButton.style.cursor = "pointer";
+    resetButton.style.transition = "all 120ms ease";
+    resetButton.style.outline = "none";
+    resetButton.addEventListener("pointerdown", (event) => event.stopPropagation());
+    resetButton.addEventListener("click", () => {
+      state.resetSettings();
+      persistCurrentSettings();
+      requestRerender();
+    });
+    resetButton.addEventListener("focus", () => {
+      resetButton.style.borderColor = "#6366f1";
+      resetButton.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.22)";
+    });
+    resetButton.addEventListener("blur", () => {
+      resetButton.style.borderColor = "#d1d5db";
+      resetButton.style.boxShadow = "none";
+    });
+    resetButton.addEventListener("pointerenter", () => {
+      resetButton.style.background = "#e5e7eb";
+      resetButton.style.borderColor = "#9ca3af";
+    });
+    resetButton.addEventListener("pointerleave", () => {
+      resetButton.style.background = "#f3f4f6";
+      resetButton.style.borderColor = "#d1d5db";
+    });
+
+    section.appendChild(highlightRow);
+    section.appendChild(tabsRow);
+    section.appendChild(thresholdWrap);
+    section.appendChild(resetButton);
+    body.appendChild(section);
+    scheduleClampWidgetIntoViewport();
+  };
+
+  const renderBody = (results: RuleResult[]) => {
+    if (settingsOpen) {
+      renderSettingsPanel();
+      return;
+    }
+    renderRows(results);
+  };
+
+  const renderBodyWithObserverPaused = (results: RuleResult[]) => {
+    monitor.pauseObserver();
+    try {
+      renderBody(results);
+      clampWidgetIntoViewport();
+      renderActiveHighlight();
+    } finally {
+      monitor.resumeObserver();
+    }
+  };
+
+  const requestRerender = () => {
+    renderBodyWithObserverPaused(latestResults);
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key !== "Escape") return;
+    if (settingsOpen) {
+      settingsOpen = false;
+      updateSettingsToggleLabel();
+      requestRerender();
+      return;
+    }
     if (!state.hasPinnedRules()) return;
 
     state.clearPinnedRules();
     updatePinStatus();
-    monitor.pauseObserver();
-    renderRows(latestResults);
-    monitor.resumeObserver();
-    renderActiveHighlight();
+    requestRerender();
   };
 
-  highlightToggle.addEventListener("pointerdown", onTogglePointerDown);
-  highlightToggle.addEventListener("click", onToggleClick);
+  settingsToggle.addEventListener("pointerdown", onTogglePointerDown);
+  settingsToggle.addEventListener("click", onSettingsToggleClick);
   window.addEventListener("keydown", onKeyDown);
 
   const onViewportChange = () => {
@@ -308,17 +599,15 @@ export function createLayoutLintWidget(
     latestResults = result.results;
     state.applyResults(latestResults);
     updatePinStatus();
-    renderRows(latestResults);
-    clampWidgetIntoViewport();
-    renderActiveHighlight();
+    renderBodyWithObserverPaused(latestResults);
   });
 
   return {
     destroy: () => {
       unsubscribe();
       header.removeEventListener("pointerdown", onPointerDown);
-      highlightToggle.removeEventListener("pointerdown", onTogglePointerDown);
-      highlightToggle.removeEventListener("click", onToggleClick);
+      settingsToggle.removeEventListener("pointerdown", onTogglePointerDown);
+      settingsToggle.removeEventListener("click", onSettingsToggleClick);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("resize", onViewportChange);
       window.removeEventListener("scroll", onViewportChange, true);
