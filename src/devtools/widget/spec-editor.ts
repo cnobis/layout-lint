@@ -117,6 +117,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     section.style.flexDirection = "column";
     section.style.flex = "1 1 auto";
     section.style.minHeight = "0";
+    section.style.overflow = "hidden";
     section.style.gap = "8px";
     section.style.padding = "10px";
     section.style.border = "1px solid #dbe3ff";
@@ -128,11 +129,13 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     heading.style.fontSize = "12px";
     heading.style.fontWeight = "700";
     heading.style.color = "#1f2937";
+    heading.style.flex = "0 0 auto";
 
     const helper = document.createElement("div");
     helper.textContent = "Apply with Cmd/Ctrl+Enter.";
     helper.style.fontSize = "10px";
     helper.style.color = "#6b7280";
+    helper.style.flex = "0 0 auto";
 
     const textArea = document.createElement("textarea");
     textArea.value = draft;
@@ -140,9 +143,9 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     textArea.rows = 12;
     textArea.style.width = "100%";
     textArea.style.flex = "1 1 auto";
+    textArea.style.minHeight = "0";
     textArea.style.boxSizing = "border-box";
     textArea.style.resize = "none";
-    textArea.style.minHeight = "220px";
     textArea.style.padding = "8px";
     textArea.style.border = "1px solid #a5b4fc";
     textArea.style.borderRadius = "8px";
@@ -174,6 +177,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     actions.style.justifyContent = "space-between";
     actions.style.alignItems = "center";
     actions.style.gap = "8px";
+    actions.style.flex = "0 0 auto";
 
     const errorText = document.createElement("span");
     errorText.style.fontSize = "10px";

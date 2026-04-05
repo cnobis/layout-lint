@@ -31,7 +31,7 @@ export function createLayoutLintWidget(
   const EXPANDED_WIDGET_HEIGHT = 360;
   const MINIMIZED_WIDGET_WIDTH = 248;
   const FAKE_LOADING_DURATION_MS = 800;
-  const REEVALUATE_STATUS_LABEL = "reevaluating...";
+  const REEVALUATE_STATUS_LABEL = "evaluating...";
   const SPEC_UPDATE_STATUS_LABEL = "updating spec...";
   const persistSettings = options.persistSettings !== false;
   const settingsStorageKey = options.settingsStorageKey ?? DEFAULT_WIDGET_SETTINGS_STORAGE_KEY;

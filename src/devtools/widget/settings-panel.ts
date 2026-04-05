@@ -20,15 +20,19 @@ export const renderWidgetSettingsPanel = ({
   scheduleClampWidgetIntoViewport,
 }: RenderWidgetSettingsPanelArgs) => {
   body.innerHTML = "";
-  body.style.display = "block";
-  body.style.flexDirection = "";
-  body.style.overflow = "auto";
-  body.style.minHeight = "";
+  body.style.display = "flex";
+  body.style.flexDirection = "column";
+  body.style.overflow = "hidden";
+  body.style.minHeight = "0";
   body.style.padding = "8px 10px";
   body.style.paddingBottom = "8px";
 
   const section = document.createElement("div");
-  section.style.display = "grid";
+  section.style.display = "flex";
+  section.style.flexDirection = "column";
+  section.style.flex = "1 1 auto";
+  section.style.minHeight = "0";
+  section.style.overflowY = "auto";
   section.style.gap = "10px";
   section.style.padding = "10px";
   section.style.border = "1px solid #dbe3ff";
@@ -237,6 +241,7 @@ export const renderWidgetSettingsPanel = ({
   const actionButtons = document.createElement("div");
   actionButtons.style.display = "flex";
   actionButtons.style.gap = "8px";
+  actionButtons.style.marginTop = "auto";
 
   const resetSizeButton = createActionButton("Reset Size", () => {
     onResetSize();

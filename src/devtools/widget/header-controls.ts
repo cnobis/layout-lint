@@ -75,8 +75,8 @@ export const createWidgetHeaderControls = (titleText: string): WidgetHeaderContr
   minimizeToggle.style.minWidth = "30px";
   minimizeToggle.title = "minimize widget";
 
-  controls.appendChild(specToggle);
   controls.appendChild(constraintsToggle);
+  controls.appendChild(specToggle);
   controls.appendChild(settingsToggle);
   controls.appendChild(minimizeToggle);
   header.appendChild(controls);

@@ -24,7 +24,7 @@ export const renderFooterStatusBar = (
   mode: FooterStatusMode,
   passed: number,
   total: number,
-  actionLabel = "reevaluating..."
+  actionLabel = "evaluating..."
 ) => {
   status.innerHTML = "";
   const allConstraintsMet = total > 0 && passed === total;
