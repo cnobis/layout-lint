@@ -5,7 +5,7 @@ export function createLayoutLintMonitor(options: LayoutLintMonitorOptions): Layo
   let specText = options.specText;
   let latestResult: RunLayoutLintResult | null = null;
   let running = false;
-  let resizeHandler: (() => void) | null = null;
+  let resizeHandler: ((event?: Event) => void) | null = null;
   let mutationObserver: MutationObserver | null = null;
   let debounceTimer: number | null = null;
 
@@ -21,6 +21,11 @@ export function createLayoutLintMonitor(options: LayoutLintMonitorOptions): Layo
     const element = node instanceof Element ? node : node.parentElement;
     if (!element) return false;
     return Boolean(element.closest("[data-layout-lint-widget='true'], [data-layout-lint-widget-overlay='true']"));
+  };
+
+  const isWidgetOwnedEventTarget = (target: EventTarget | null): boolean => {
+    if (!(target instanceof Node)) return false;
+    return isWidgetOwnedNode(target);
   };
 
   const shouldQueueForMutations = (mutations: MutationRecord[]): boolean => {
@@ -74,7 +79,12 @@ export function createLayoutLintMonitor(options: LayoutLintMonitorOptions): Layo
     running = true;
 
     if (observeResize) {
-      resizeHandler = () => queueEvaluation();
+      resizeHandler = (event?: Event) => {
+        if (event?.type === "scroll" && isWidgetOwnedEventTarget(event.target)) {
+          return;
+        }
+        queueEvaluation();
+      };
       window.addEventListener("resize", resizeHandler);
       window.addEventListener("scroll", resizeHandler, true);
     }

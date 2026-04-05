@@ -121,4 +121,15 @@ Use this format for every new bug:
 - **Verification**: `npm run build:ts && npm test` passes; VS Code import diagnostic clears after TS server refresh when needed.
 - **General principle**: Align editor/compiler module resolution with runtime ESM import style to avoid IDE-only false positives.
 
+## 10) Button hover flicker reappears after page scroll
+
+- **Symptom**: After scrolling the page away from the top, hovering `Refresh Results` or `Unpin All` can trigger violent flicker again.
+- **Root cause**: The monitor's global scroll observation (`window` capture phase) queued reevaluations for widget-owned scroll targets, which can retrigger rerender loops around hover states.
+- **Fix applied**:
+  - Added event-target filtering for resize/scroll observation in the monitor.
+  - Ignored scroll-driven queue requests when the scroll event target is inside widget-owned regions (`data-layout-lint-widget` or `data-layout-lint-widget-overlay`).
+- **Where**: `src/devtools/monitor/create-monitor.ts`.
+- **Verification**: `npm run build:ts && npm test` passes; hover state remains stable after scrolling the page.
+- **General principle**: Global scroll listeners used for reevaluation must ignore self-owned UI scroll contexts, not only self-owned mutation records.
+
 

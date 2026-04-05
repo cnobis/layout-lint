@@ -141,7 +141,7 @@ export function createLayoutLintWidget(
 
   const updateMinimizeToggleLabel = () => {
     const isMinimized = state.getSettings().minimized;
-    minimizeToggle.textContent = isMinimized ? "▸" : "▾";
+    minimizeToggle.textContent = isMinimized ? "◂" : "▾";
     minimizeToggle.title = isMinimized ? "expand widget" : "minimize widget";
     minimizeToggle.setAttribute("aria-label", isMinimized ? "expand widget" : "minimize widget");
     constraintsToggle.style.display = isMinimized ? "none" : "inline-flex";
