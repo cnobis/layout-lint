@@ -183,6 +183,7 @@ export function createWidgetState(options: CreateWidgetStateOptions): WidgetStat
         highlightsEnabled:
           typeof patch.highlightsEnabled === "boolean" ? patch.highlightsEnabled : settings.highlightsEnabled,
         tabsEnabled: typeof patch.tabsEnabled === "boolean" ? patch.tabsEnabled : settings.tabsEnabled,
+        minimized: typeof patch.minimized === "boolean" ? patch.minimized : settings.minimized,
         constraintsPerPage:
           typeof patch.constraintsPerPage === "number" && Number.isFinite(patch.constraintsPerPage)
             ? clampConstraintsPerPage(patch.constraintsPerPage)

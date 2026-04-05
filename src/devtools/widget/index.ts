@@ -3,7 +3,8 @@ import type { LayoutLintWidgetController, LayoutLintWidgetOptions } from "./type
 import type { RuleResult } from "../../core/types.js";
 import { createOverlayRenderer } from "./overlays.js";
 import { createWidgetState } from "./state.js";
-import { renderWidgetRows } from "./rows.js";
+import { renderWidgetMinimizedStatus, renderWidgetRows } from "./rows.js";
+import type { FooterStatusMode } from "./footer-status.js";
 import {
   DEFAULT_WIDGET_SETTINGS,
   DEFAULT_WIDGET_SETTINGS_STORAGE_KEY,
@@ -17,6 +18,8 @@ export function createLayoutLintWidget(
   monitor: LayoutLintMonitorController,
   options: LayoutLintWidgetOptions = {}
 ): LayoutLintWidgetController {
+  const EXPANDED_WIDGET_WIDTH = 340;
+  const MINIMIZED_WIDGET_WIDTH = 248;
   const persistSettings = options.persistSettings !== false;
   const settingsStorageKey = options.settingsStorageKey ?? DEFAULT_WIDGET_SETTINGS_STORAGE_KEY;
   const storedSettings = persistSettings
@@ -26,6 +29,7 @@ export function createLayoutLintWidget(
     {
       tabsEnabled: options.tabsEnabled,
       constraintsPerPage: options.constraintsPerPage,
+      minimized: options.initialMinimized,
     },
     storedSettings
   );
@@ -35,13 +39,14 @@ export function createLayoutLintWidget(
   root.style.zIndex = "2147483647";
   root.style.top = `${options.initialPosition?.y ?? 16}px`;
   root.style.left = `${options.initialPosition?.x ?? 16}px`;
-  root.style.width = "340px";
+  root.style.width = `${initialSettings.minimized ? MINIMIZED_WIDGET_WIDTH : EXPANDED_WIDGET_WIDTH}px`;
   root.style.maxHeight = "45vh";
   root.style.overflow = "hidden";
   root.style.border = "1px solid #d1d5db";
   root.style.borderRadius = "10px";
   root.style.background = "#ffffff";
   root.style.boxShadow = "0 10px 25px rgba(0,0,0,0.15)";
+  root.style.transition = "width 140ms ease";
   root.style.font = "12px/1.4 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif";
   root.style.color = "#111827";
 
@@ -57,6 +62,9 @@ export function createLayoutLintWidget(
 
   const title = document.createElement("span");
   title.textContent = options.title ?? "layout-lint";
+  title.style.fontFamily = '"Helvetica Neue", Helvetica, Arial, sans-serif';
+  title.style.fontWeight = "300";
+  title.style.letterSpacing = "0.01em";
   header.appendChild(title);
 
   const status = document.createElement("span");
@@ -89,12 +97,38 @@ export function createLayoutLintWidget(
     settingsToggle.style.boxShadow = "none";
   });
 
+  const minimizeToggle = document.createElement("button");
+  minimizeToggle.type = "button";
+  minimizeToggle.textContent = "▾";
+  minimizeToggle.title = "minimize widget";
+  minimizeToggle.style.border = "1px solid rgba(255,255,255,0.6)";
+  minimizeToggle.style.borderRadius = "999px";
+  minimizeToggle.style.background = "transparent";
+  minimizeToggle.style.color = "#ffffff";
+  minimizeToggle.style.fontSize = "14px";
+  minimizeToggle.style.fontWeight = "700";
+  minimizeToggle.style.lineHeight = "1";
+  minimizeToggle.style.minWidth = "30px";
+  minimizeToggle.style.padding = "3px 8px";
+  minimizeToggle.style.cursor = "pointer";
+  minimizeToggle.style.outline = "none";
+  minimizeToggle.style.transition = "box-shadow 120ms ease, border-color 120ms ease";
+  minimizeToggle.addEventListener("focus", () => {
+    minimizeToggle.style.borderColor = "#c7d2fe";
+    minimizeToggle.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.28)";
+  });
+  minimizeToggle.addEventListener("blur", () => {
+    minimizeToggle.style.borderColor = "rgba(255,255,255,0.6)";
+    minimizeToggle.style.boxShadow = "none";
+  });
+
   const body = document.createElement("div");
   body.style.padding = "8px 10px";
   body.style.maxHeight = "calc(45vh - 40px)";
   body.style.overflow = "auto";
 
   controls.appendChild(settingsToggle);
+  controls.appendChild(minimizeToggle);
   header.appendChild(controls);
 
   root.appendChild(header);
@@ -120,9 +154,63 @@ export function createLayoutLintWidget(
 
   let latestResults: RuleResult[] = [];
   let settingsOpen = false;
+  let footerStatusMode: FooterStatusMode = "ready";
+  let footerStatusResetTimer: number | null = null;
+
+  const clearFooterStatusResetTimer = () => {
+    if (footerStatusResetTimer == null) return;
+    window.clearTimeout(footerStatusResetTimer);
+    footerStatusResetTimer = null;
+  };
+
+  const setFooterStatusMode = (mode: FooterStatusMode) => {
+    footerStatusMode = mode;
+    requestRerender();
+  };
+
+  const flashFooterStatusDone = () => {
+    clearFooterStatusResetTimer();
+    footerStatusMode = "done";
+    requestRerender();
+    footerStatusResetTimer = window.setTimeout(() => {
+      footerStatusMode = "ready";
+      requestRerender();
+    }, 1600);
+  };
+
+  const handleRefreshAction = async () => {
+    clearFooterStatusResetTimer();
+    setFooterStatusMode("loading");
+    try {
+      await new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 1200);
+      });
+      await monitor.evaluateNow();
+      flashFooterStatusDone();
+    } catch {
+      footerStatusMode = "error";
+      requestRerender();
+      footerStatusResetTimer = window.setTimeout(() => {
+        footerStatusMode = "ready";
+        requestRerender();
+      }, 1600);
+    }
+  };
 
   const updateSettingsToggleLabel = () => {
     settingsToggle.textContent = settingsOpen ? "constraints" : "settings";
+  };
+
+  const updateMinimizeToggleLabel = () => {
+    const isMinimized = state.getSettings().minimized;
+    minimizeToggle.textContent = isMinimized ? "▸" : "▾";
+    minimizeToggle.title = isMinimized ? "expand widget" : "minimize widget";
+    minimizeToggle.setAttribute("aria-label", isMinimized ? "expand widget" : "minimize widget");
+    settingsToggle.style.display = isMinimized ? "none" : "inline-flex";
+  };
+
+  const applyWidgetWidthForCurrentState = () => {
+    root.style.width = `${state.getSettings().minimized ? MINIMIZED_WIDGET_WIDTH : EXPANDED_WIDGET_WIDTH}px`;
   };
 
   const persistCurrentSettings = () => {
@@ -131,6 +219,7 @@ export function createLayoutLintWidget(
   };
 
   updateSettingsToggleLabel();
+  updateMinimizeToggleLabel();
 
   const resolveElement = (identifier: string | undefined): HTMLElement | null => {
     if (!identifier) return null;
@@ -285,8 +374,22 @@ export function createLayoutLintWidget(
   };
 
   const onSettingsToggleClick = () => {
+    if (state.getSettings().minimized) return;
     settingsOpen = !settingsOpen;
     updateSettingsToggleLabel();
+    requestRerender();
+  };
+
+  const onMinimizeToggleClick = () => {
+    const nextMinimized = !state.getSettings().minimized;
+    state.updateSettings({ minimized: nextMinimized });
+    if (nextMinimized && settingsOpen) {
+      settingsOpen = false;
+      updateSettingsToggleLabel();
+    }
+    persistCurrentSettings();
+    updateMinimizeToggleLabel();
+    applyWidgetWidthForCurrentState();
     requestRerender();
   };
 
@@ -302,6 +405,7 @@ export function createLayoutLintWidget(
       status,
       state,
       monitor,
+      footerStatusMode,
       renderActiveHighlight,
       scheduleClampWidgetIntoViewport,
       requestRerender,
@@ -309,6 +413,7 @@ export function createLayoutLintWidget(
         state.clearPinnedRules();
         requestRerender();
       },
+      onRefreshRequested: handleRefreshAction,
     });
   };
 
@@ -319,6 +424,7 @@ export function createLayoutLintWidget(
     body.style.flexDirection = "";
     body.style.overflow = "auto";
     body.style.minHeight = "";
+    body.style.padding = "8px 10px";
     body.style.paddingBottom = "8px";
 
     const section = document.createElement("div");
@@ -539,6 +645,16 @@ export function createLayoutLintWidget(
   };
 
   const renderBody = (results: RuleResult[]) => {
+    if (state.getSettings().minimized) {
+      renderWidgetMinimizedStatus(results, {
+        body,
+        status,
+        footerStatusMode,
+        scheduleClampWidgetIntoViewport,
+      });
+      return;
+    }
+
     if (settingsOpen) {
       renderSettingsPanel();
       return;
@@ -577,6 +693,8 @@ export function createLayoutLintWidget(
 
   settingsToggle.addEventListener("pointerdown", onTogglePointerDown);
   settingsToggle.addEventListener("click", onSettingsToggleClick);
+  minimizeToggle.addEventListener("pointerdown", onTogglePointerDown);
+  minimizeToggle.addEventListener("click", onMinimizeToggleClick);
   window.addEventListener("keydown", onKeyDown);
 
   const onViewportChange = () => {
@@ -598,10 +716,13 @@ export function createLayoutLintWidget(
 
   return {
     destroy: () => {
+      clearFooterStatusResetTimer();
       unsubscribe();
       header.removeEventListener("pointerdown", onPointerDown);
       settingsToggle.removeEventListener("pointerdown", onTogglePointerDown);
       settingsToggle.removeEventListener("click", onSettingsToggleClick);
+      minimizeToggle.removeEventListener("pointerdown", onTogglePointerDown);
+      minimizeToggle.removeEventListener("click", onMinimizeToggleClick);
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("resize", onViewportChange);
       window.removeEventListener("scroll", onViewportChange, true);

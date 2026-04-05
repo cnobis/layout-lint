@@ -2,17 +2,42 @@ import type { LayoutLintMonitorController } from "../monitor/types.js";
 import type { RuleResult } from "../../core/types.js";
 import type { WidgetCategory } from "./types.js";
 import type { WidgetState } from "./state.js";
-import { renderFooterStatusBar, styleFooterStatusBar } from "./footer-status.js";
+import { renderFooterStatusBar, styleFooterStatusBar, type FooterStatusMode } from "./footer-status.js";
 
 export interface RenderRowsDeps {
   body: HTMLDivElement;
   status: HTMLSpanElement;
   state: WidgetState;
   monitor: LayoutLintMonitorController;
+  footerStatusMode: FooterStatusMode;
   renderActiveHighlight: () => void;
   scheduleClampWidgetIntoViewport: () => void;
   requestRerender: () => void;
   onUnpinAll: () => void;
+  onRefreshRequested: () => void | Promise<void>;
+}
+
+export function renderWidgetMinimizedStatus(results: RuleResult[], deps: Pick<RenderRowsDeps, "body" | "status" | "footerStatusMode" | "scheduleClampWidgetIntoViewport">) {
+  const { body, status, footerStatusMode, scheduleClampWidgetIntoViewport } = deps;
+  const passed = results.filter((rule) => rule.pass).length;
+
+  body.innerHTML = "";
+  body.style.display = "block";
+  body.style.overflow = "hidden";
+  body.style.minHeight = "0";
+  body.style.padding = "0";
+
+  const minimizedBarWrap = document.createElement("div");
+  minimizedBarWrap.style.borderTop = "1px solid #e5e7eb";
+  minimizedBarWrap.style.background = "#ffffff";
+
+  styleFooterStatusBar(status);
+  renderFooterStatusBar(status, footerStatusMode, passed, results.length);
+  status.style.margin = "0";
+
+  minimizedBarWrap.appendChild(status);
+  body.appendChild(minimizedBarWrap);
+  scheduleClampWidgetIntoViewport();
 }
 
 const CATEGORY_LABELS: Record<WidgetCategory, string> = {
@@ -119,7 +144,7 @@ const buildMeta = (item: RuleResult) => {
 };
 
 export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
-  const { body, status, state, monitor, renderActiveHighlight, scheduleClampWidgetIntoViewport, requestRerender } = deps;
+  const { body, status, state, footerStatusMode, renderActiveHighlight, scheduleClampWidgetIntoViewport, requestRerender } = deps;
 
   const existingScroll = body.querySelector("[data-widget-constraints-scroll='true']") as HTMLDivElement | null;
   const previousScrollTop = existingScroll?.scrollTop ?? 0;
@@ -129,11 +154,12 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
   body.style.flexDirection = "column";
   body.style.overflow = "hidden";
   body.style.minHeight = "0";
+  body.style.padding = "8px 10px";
   body.style.paddingBottom = "0";
   if (results.length === 0) {
     body.textContent = "No rules";
     styleFooterStatusBar(status);
-    renderFooterStatusBar(status, 0, 0);
+    renderFooterStatusBar(status, footerStatusMode, 0, 0);
     scheduleClampWidgetIntoViewport();
     return;
   }
@@ -473,7 +499,7 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
 
   evaluateBtn.addEventListener("pointerdown", (e) => e.stopPropagation());
   evaluateBtn.addEventListener("click", () => {
-    void monitor.evaluateNow();
+    void deps.onRefreshRequested();
   });
   evaluateBtn.addEventListener("focus", () => {
     evaluateBtn.style.borderColor = "#6366f1";
@@ -492,7 +518,7 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
     evaluateBtn.style.borderColor = "#d1d5db";
   });
 
-  renderFooterStatusBar(status, passed, results.length);
+  renderFooterStatusBar(status, footerStatusMode, passed, results.length);
   status.style.marginTop = "6px";
   status.style.marginLeft = "0";
   status.style.marginRight = "0";
