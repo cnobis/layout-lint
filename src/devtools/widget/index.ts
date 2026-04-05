@@ -35,6 +35,7 @@ export function createLayoutLintWidget(
   );
 
   const root = document.createElement("div");
+  root.dataset.layoutLintWidget = "true";
   root.style.position = "fixed";
   root.style.zIndex = "2147483647";
   root.style.top = `${options.initialPosition?.y ?? 16}px`;
@@ -136,6 +137,7 @@ export function createLayoutLintWidget(
   document.body.appendChild(root);
 
   const highlightLayer = document.createElement("div");
+  highlightLayer.dataset.layoutLintWidgetOverlay = "true";
   highlightLayer.style.position = "fixed";
   highlightLayer.style.inset = "0";
   highlightLayer.style.pointerEvents = "none";

@@ -16,6 +16,34 @@ export function createLayoutLintMonitor(options: LayoutLintMonitorOptions): Layo
   const observeResize = options.observeResize ?? true;
   const observeMutations = options.observeMutations ?? true;
 
+  const isWidgetOwnedNode = (node: Node | null): boolean => {
+    if (!node) return false;
+    const element = node instanceof Element ? node : node.parentElement;
+    if (!element) return false;
+    return Boolean(element.closest("[data-layout-lint-widget='true'], [data-layout-lint-widget-overlay='true']"));
+  };
+
+  const shouldQueueForMutations = (mutations: MutationRecord[]): boolean => {
+    for (const mutation of mutations) {
+      if (!isWidgetOwnedNode(mutation.target)) return true;
+
+      for (const node of mutation.addedNodes) {
+        if (!isWidgetOwnedNode(node)) return true;
+      }
+      for (const node of mutation.removedNodes) {
+        if (!isWidgetOwnedNode(node)) return true;
+      }
+    }
+    return false;
+  };
+
+  const createMutationObserver = () =>
+    new MutationObserver((mutations) => {
+      if (shouldQueueForMutations(mutations)) {
+        queueEvaluation();
+      }
+    });
+
   const queueEvaluation = () => {
     if (!running) return;
     if (debounceTimer != null) window.clearTimeout(debounceTimer);
@@ -52,7 +80,7 @@ export function createLayoutLintMonitor(options: LayoutLintMonitorOptions): Layo
     }
 
     if (observeMutations) {
-      mutationObserver = new MutationObserver(() => queueEvaluation());
+      mutationObserver = createMutationObserver();
       mutationObserver.observe(document.documentElement, {
         attributes: true,
         childList: true,
@@ -107,7 +135,7 @@ export function createLayoutLintMonitor(options: LayoutLintMonitorOptions): Layo
   const resumeObserver = () => {
     if (observeMutations && running) {
       if (!mutationObserver) {
-        mutationObserver = new MutationObserver(() => queueEvaluation());
+        mutationObserver = createMutationObserver();
       }
       mutationObserver.observe(document.documentElement, {
         attributes: true,

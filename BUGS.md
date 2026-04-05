@@ -99,4 +99,26 @@ Use this format for every new bug:
 - **Verification**: `npm run build:ts && npm test` passes; highlight no longer remains after `Unpin All`.
 - **General principle**: Bulk clear actions should reset both collection state (pinned set) and derived/selection state (active item) to avoid stale UI artifacts.
 
+## 8) Widget control buttons flicker and need repeated clicks in some demos
+
+- **Symptom**: In `demo/control-room` and `demo/jazz-club`, hovering `Refresh Results` or `Unpin All` causes vivid flicker, and button actions can require several clicks to trigger.
+- **Root cause**: The monitor observes mutations on the full document. Widget button hover/focus style updates mutate widget DOM attributes, which retrigger evaluation/rerender loops while the pointer is still over the controls.
+- **Fix applied**:
+  - Tagged widget and highlight-layer roots with marker attributes (`data-layout-lint-widget` and `data-layout-lint-widget-overlay`).
+  - Filtered mutation callbacks so observer-driven evaluation ignores mutations occurring inside those widget-owned regions.
+- **Where**: `src/devtools/widget/index.ts` (marker attributes), `src/devtools/monitor/create-monitor.ts` (mutation filter + observer factory).
+- **Verification**: `npm run build:ts && npm test` passes; hover state is stable and single-click actions trigger reliably in control-room/jazz-club demos.
+- **General principle**: Global mutation observers must ignore self-owned UI layers to prevent feedback loops from local hover/focus DOM changes.
+
+## 9) VS Code reports ts(2307) for local `.js` specifier imports
+
+- **Symptom**: VS Code shows `Cannot find module './footer-status.js' or its corresponding type declarations.ts(2307)` in `src/devtools/widget/rows.ts` even though `npm run build:ts` succeeds.
+- **Root cause**: Language service module-resolution mismatch. The project uses ESM `.js` specifiers in TypeScript source, and VS Code resolution under prior tsconfig settings could flag false-positive local module errors.
+- **Fix applied**:
+  - Switched TypeScript compiler settings to NodeNext module semantics (`module: "NodeNext"`, `moduleResolution: "NodeNext"`).
+  - Kept explicit value/type split imports where appropriate to maximize editor compatibility.
+- **Where**: `tsconfig.json`, `src/devtools/widget/rows.ts`.
+- **Verification**: `npm run build:ts && npm test` passes; VS Code import diagnostic clears after TS server refresh when needed.
+- **General principle**: Align editor/compiler module resolution with runtime ESM import style to avoid IDE-only false positives.
+
 

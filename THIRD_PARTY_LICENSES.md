@@ -2,10 +2,11 @@
 
 This project includes third-party assets under the licenses listed below.
 
-## Lucide (Pin Icon)
+## Lucide (Pin + Rotate CCW Icons)
 
 - Source: https://lucide.dev/icons/pin
-- Asset used: `pin` SVG icon
+- Source: https://lucide.dev/icons/rotate-ccw
+- Asset used: `pin`, `rotate-ccw` SVG icons
 - License: ISC
 - Copyright: Copyright (c) Lucide Contributors
 

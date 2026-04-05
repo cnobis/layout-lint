@@ -2,7 +2,8 @@ import type { LayoutLintMonitorController } from "../monitor/types.js";
 import type { RuleResult } from "../../core/types.js";
 import type { WidgetCategory } from "./types.js";
 import type { WidgetState } from "./state.js";
-import { renderFooterStatusBar, styleFooterStatusBar, type FooterStatusMode } from "./footer-status.js";
+import { renderFooterStatusBar, styleFooterStatusBar } from "./footer-status.js";
+import type { FooterStatusMode } from "./footer-status.js";
 
 export interface RenderRowsDeps {
   body: HTMLDivElement;
@@ -64,6 +65,7 @@ const createPinIcon = (size = 14) => {
   svg.setAttribute("width", `${size}`);
   svg.setAttribute("height", `${size}`);
   svg.setAttribute("aria-hidden", "true");
+  svg.style.display = "block";
 
   const stem = document.createElementNS(svgNS, "path");
   stem.setAttribute("d", "M12 17v5");
@@ -76,6 +78,30 @@ const createPinIcon = (size = 14) => {
 
   svg.appendChild(stem);
   svg.appendChild(body);
+  return svg;
+};
+
+const createRotateCcwIcon = (size = 14) => {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("width", `${size}`);
+  svg.setAttribute("height", `${size}`);
+  svg.setAttribute("aria-hidden", "true");
+
+  const path1 = document.createElementNS(svgNS, "path");
+  path1.setAttribute("d", "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8");
+
+  const path2 = document.createElementNS(svgNS, "path");
+  path2.setAttribute("d", "M3 3v5h5");
+
+  svg.appendChild(path1);
+  svg.appendChild(path2);
   return svg;
 };
 
@@ -419,18 +445,35 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
   const statusSide = document.createElement("div");
   statusSide.style.display = "flex";
   statusSide.style.alignItems = "center";
-  statusSide.style.gap = "4px";
+  statusSide.style.gap = "5px";
   statusSide.style.padding = "6px 8px";
   statusSide.style.color = hasPinnedRules ? "#1f2937" : "#6b7280";
   statusSide.style.cursor = "default";
   statusSide.style.userSelect = "none";
+  statusSide.style.lineHeight = "1";
   statusSide.title = `${pinnedCount} pinned constraint${pinnedCount !== 1 ? 's' : ''}`;
-  statusSide.appendChild(createPinIcon(12));
+
+  const pinIconWrap = document.createElement("span");
+  pinIconWrap.style.display = "inline-flex";
+  pinIconWrap.style.width = "12px";
+  pinIconWrap.style.height = "12px";
+  pinIconWrap.style.alignItems = "center";
+  pinIconWrap.style.justifyContent = "center";
+  pinIconWrap.style.flex = "0 0 auto";
+  pinIconWrap.appendChild(createPinIcon(12));
+  statusSide.appendChild(pinIconWrap);
+
   const pinnedCountText = document.createElement("span");
   pinnedCountText.textContent = `${pinnedCount}`;
-  pinnedCountText.style.minWidth = "1ch";
+  pinnedCountText.style.display = "inline-flex";
+  pinnedCountText.style.alignItems = "center";
+  pinnedCountText.style.justifyContent = "center";
+  pinnedCountText.style.width = "12px";
+  pinnedCountText.style.flex = "0 0 auto";
+  pinnedCountText.style.transform = "translateY(-1px)";
   pinnedCountText.style.fontSize = "11px";
   pinnedCountText.style.fontWeight = "600";
+  pinnedCountText.style.lineHeight = "1";
   statusSide.appendChild(pinnedCountText);
 
   const divider = document.createElement("div");
@@ -484,7 +527,10 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
 
   const evaluateBtn = document.createElement("button");
   evaluateBtn.type = "button";
-  evaluateBtn.textContent = "Refresh Results";
+  evaluateBtn.style.display = "inline-flex";
+  evaluateBtn.style.alignItems = "center";
+  evaluateBtn.style.justifyContent = "center";
+  evaluateBtn.style.gap = "6px";
   evaluateBtn.style.width = "100%";
   evaluateBtn.style.padding = "6px 8px";
   evaluateBtn.style.fontSize = "11px";
@@ -496,6 +542,12 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
   evaluateBtn.style.cursor = "pointer";
   evaluateBtn.style.transition = "all 120ms ease";
   evaluateBtn.style.outline = "none";
+
+  const refreshIcon = createRotateCcwIcon(13);
+  const refreshText = document.createElement("span");
+  refreshText.textContent = "Refresh Results";
+  evaluateBtn.appendChild(refreshIcon);
+  evaluateBtn.appendChild(refreshText);
 
   evaluateBtn.addEventListener("pointerdown", (e) => e.stopPropagation());
   evaluateBtn.addEventListener("click", () => {
