@@ -1,5 +1,6 @@
 export interface Rule {
   element: string;
+  sourceRange?: LayoutLintSourceRange;
   negated?: boolean;
   relation: string;
   textExpected?: string;

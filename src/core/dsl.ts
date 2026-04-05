@@ -78,6 +78,17 @@ export interface ExtractRulesResult {
   diagnostics: LayoutLintDiagnostic[];
 }
 
+function withSourceRange(rule: Rule, node: NodeLike, source: string): Rule {
+  return {
+    ...rule,
+    sourceRange: getSourceRange(source, node.startIndex, node.endIndex),
+  };
+}
+
+function withSourceRangeMany(rules: Rule[], node: NodeLike, source: string): Rule[] {
+  return rules.map((rule) => withSourceRange(rule, node, source));
+}
+
 const DSL_KEYWORDS = [
   "above",
   "below",
@@ -290,30 +301,34 @@ export function extractRules(tree: Tree | null, source: string): ExtractRulesRes
 
     if (countScope && countPattern) {
       rules.push(
-        buildCountRule(
+        withSourceRange(
+          buildCountRule(
           countScope,
           countPattern,
           countExactToken,
           countMinToken,
           countMaxToken,
           countComparatorToken
+          ),
+          node,
+          source
         )
       );
       continue;
     }
 
     if (visibilityRelation) {
-      rules.push(buildVisibilityRule(element, negated, visibilityRelation));
+      rules.push(withSourceRange(buildVisibilityRule(element, negated, visibilityRelation), node, source));
       continue;
     }
 
     if (cssProperty && cssMatchMode && cssValueToken) {
-      rules.push(buildCssRule(element, negated, cssProperty, cssMatchMode, cssValueToken));
+      rules.push(withSourceRange(buildCssRule(element, negated, cssProperty, cssMatchMode, cssValueToken), node, source));
       continue;
     }
 
     if (textMatchMode && textValueToken) {
-      rules.push(buildTextRule(element, negated, textMatchMode, textValueToken, textOperationTokens));
+      rules.push(withSourceRange(buildTextRule(element, negated, textMatchMode, textValueToken, textOperationTokens), node, source));
       continue;
     }
 
@@ -322,7 +337,7 @@ export function extractRules(tree: Tree | null, source: string): ExtractRulesRes
       const distTok = txt(node.childForFieldName("distance"));
       const distance = parseDistanceToken(distTok);
 
-      rules.push(...buildAlignedRules(element, negated, target, alignedAxis, alignedMode, distance));
+      rules.push(...withSourceRangeMany(buildAlignedRules(element, negated, target, alignedAxis, alignedMode, distance), node, source));
       continue;
     }
 
@@ -331,7 +346,7 @@ export function extractRules(tree: Tree | null, source: string): ExtractRulesRes
       const distTok = txt(node.childForFieldName("distance"));
       const distance = parseDistanceToken(distTok);
 
-      rules.push(...buildCenteredRules(element, negated, target, centeredAxis, distance));
+      rules.push(...withSourceRangeMany(buildCenteredRules(element, negated, target, centeredAxis, distance), node, source));
       continue;
     }
 
@@ -342,7 +357,8 @@ export function extractRules(tree: Tree | null, source: string): ExtractRulesRes
       const sizeDistancePctToken = txt(node.childForFieldName("size_distance_pct"));
 
       rules.push(
-        buildSizeRule(
+        withSourceRange(
+          buildSizeRule(
           element,
           negated,
           sizeProperty,
@@ -353,6 +369,9 @@ export function extractRules(tree: Tree | null, source: string): ExtractRulesRes
           sizeDistancePctToken,
           parseDistanceToken,
           parsePercentageToken
+          ),
+          node,
+          source
         )
       );
       continue;
@@ -363,7 +382,7 @@ export function extractRules(tree: Tree | null, source: string): ExtractRulesRes
       const target = txt(node.childForFieldName("target"));
       const insideOffsets = extractInsideOffsets(node, txt);
 
-      rules.push(buildInsideRule(element, negated, insideRelation, target, insideOffsets));
+      rules.push(withSourceRange(buildInsideRule(element, negated, insideRelation, target, insideOffsets), node, source));
 
       continue;
     }
@@ -372,7 +391,7 @@ export function extractRules(tree: Tree | null, source: string): ExtractRulesRes
       const target = txt(node.childForFieldName("target"));
       const nearDirections = extractNearDirections(node, txt, parseDistanceToken);
 
-      rules.push(buildNearRule(element, negated, target, nearDirections));
+      rules.push(withSourceRange(buildNearRule(element, negated, target, nearDirections), node, source));
       
       continue;
     }
@@ -382,14 +401,14 @@ export function extractRules(tree: Tree | null, source: string): ExtractRulesRes
 
     if (relation === "equal-gap-x" || relation === "equal-gap-y") {
       rules.push(
-        ...buildEqualGapRules(
+        ...withSourceRangeMany(buildEqualGapRules(
           element,
           negated,
           relation,
           node,
           txt,
           distance
-        )
+        ), node, source)
       );
 
       continue;
@@ -409,7 +428,7 @@ export function extractRules(tree: Tree | null, source: string): ExtractRulesRes
       continue;
     }
 
-    rules.push(buildDefaultRelationRule(element, negated, relation, target, target2, distance));
+    rules.push(withSourceRange(buildDefaultRelationRule(element, negated, relation, target, target2, distance), node, source));
   }
 
   return { rules, diagnostics };
