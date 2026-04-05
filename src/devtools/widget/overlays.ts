@@ -37,12 +37,7 @@ export function createOverlayRenderer(highlightLayer: HTMLDivElement) {
     };
   };
 
-  const getHeadlineTextColor = (color: string) => {
-    const normalized = color.toLowerCase();
-    if (normalized === "#059669") return "#065f46";
-    if (normalized === "#dc2626") return "#991b1b";
-    return "#334155";
-  };
+  const getHeadlineTextColor = () => "#111827";
 
   const clear = () => {
     highlightLayer.innerHTML = "";
@@ -121,7 +116,7 @@ export function createOverlayRenderer(highlightLayer: HTMLDivElement) {
 
       const headText = document.createElement("span");
       headText.style.fontWeight = "600";
-      headText.style.color = getHeadlineTextColor(color);
+      headText.style.color = getHeadlineTextColor();
       headText.textContent = remainder;
       head.appendChild(headText);
 
