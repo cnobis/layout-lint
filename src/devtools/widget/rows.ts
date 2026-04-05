@@ -10,8 +10,8 @@ export interface RenderRowsDeps {
   monitor: LayoutLintMonitorController;
   renderActiveHighlight: () => void;
   scheduleClampWidgetIntoViewport: () => void;
-  updatePinStatus: () => void;
   requestRerender: () => void;
+  onUnpinAll: () => void;
 }
 
 const CATEGORY_LABELS: Record<WidgetCategory, string> = {
@@ -25,6 +25,33 @@ const isSemanticRelation = (relation: string) => ["inside", "partially-inside"].
 const isAlignmentRelation = (relation: string) =>
   relation.startsWith("aligned-") || relation === "centered-x" || relation === "centered-y";
 const isEqualGapRelation = (relation: string) => relation === "equal-gap-x" || relation === "equal-gap-y";
+
+const createPinIcon = (size = 14) => {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("width", `${size}`);
+  svg.setAttribute("height", `${size}`);
+  svg.setAttribute("aria-hidden", "true");
+
+  const stem = document.createElementNS(svgNS, "path");
+  stem.setAttribute("d", "M12 17v5");
+
+  const body = document.createElementNS(svgNS, "path");
+  body.setAttribute(
+    "d",
+    "M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"
+  );
+
+  svg.appendChild(stem);
+  svg.appendChild(body);
+  return svg;
+};
 
 const buildHeadline = (item: RuleResult) => {
   const hasPercentDistance = item.distancePct != null || item.distanceMinPct != null || item.distanceMaxPct != null;
@@ -91,7 +118,7 @@ const buildMeta = (item: RuleResult) => {
 };
 
 export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
-  const { body, status, state, monitor, renderActiveHighlight, scheduleClampWidgetIntoViewport, updatePinStatus, requestRerender } = deps;
+  const { body, status, state, monitor, renderActiveHighlight, scheduleClampWidgetIntoViewport, requestRerender } = deps;
 
   body.innerHTML = "";
   if (results.length === 0) {
@@ -236,7 +263,6 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
     const onRowPointerDown = (event: PointerEvent) => {
       event.preventDefault();
       state.togglePinnedRule(item);
-      updatePinStatus();
       renderActiveHighlight();
       requestRerender();
     };
@@ -251,9 +277,121 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
   }
 
   const buttonContainer = document.createElement("div");
-  buttonContainer.style.marginTop = "10px";
+  buttonContainer.style.position = "sticky";
+  buttonContainer.style.bottom = "0";
+  buttonContainer.style.marginLeft = "-10px";
+  buttonContainer.style.marginRight = "-10px";
+  buttonContainer.style.marginBottom = "-8px";
+  buttonContainer.style.paddingLeft = "10px";
+  buttonContainer.style.paddingRight = "10px";
   buttonContainer.style.paddingTop = "8px";
+  buttonContainer.style.paddingBottom = "8px";
   buttonContainer.style.borderTop = "1px solid #e5e7eb";
+  buttonContainer.style.background = "white";
+  buttonContainer.style.boxShadow = "0 4px 0 0 white";
+  buttonContainer.style.zIndex = "10";
+
+  const footerRow = document.createElement("div");
+  footerRow.style.display = "grid";
+  footerRow.style.gridTemplateColumns = "minmax(0, 1fr) auto";
+  footerRow.style.alignItems = "center";
+  footerRow.style.gap = "8px";
+
+  const refreshWrap = document.createElement("div");
+  refreshWrap.style.display = "flex";
+  refreshWrap.style.alignItems = "center";
+  refreshWrap.style.width = "100%";
+
+  const footerActions = document.createElement("div");
+  footerActions.style.display = "flex";
+  footerActions.style.alignItems = "center";
+  footerActions.style.justifyContent = "flex-end";
+  footerActions.style.gap = "0";
+  footerActions.style.fontSize = "11px";
+  footerActions.style.width = "100%";
+
+  const actionButtons = document.createElement("div");
+  actionButtons.style.display = "flex";
+  actionButtons.style.alignItems = "center";
+  actionButtons.style.gap = "0";
+
+  const pinnedCount = state.getPinnedRuleCount();
+  const hasPinnedRules = pinnedCount > 0;
+
+  const pinControlContainer = document.createElement("div");
+  pinControlContainer.style.display = "flex";
+  pinControlContainer.style.alignItems = "center";
+  pinControlContainer.style.gap = "0";
+  pinControlContainer.style.border = "1px solid #d1d5db";
+  pinControlContainer.style.borderRadius = "6px";
+  pinControlContainer.style.background = "#f3f4f6";
+  pinControlContainer.style.overflow = "hidden";
+
+  const statusSide = document.createElement("div");
+  statusSide.style.display = "flex";
+  statusSide.style.alignItems = "center";
+  statusSide.style.gap = "4px";
+  statusSide.style.padding = "6px 8px";
+  statusSide.style.color = hasPinnedRules ? "#1f2937" : "#6b7280";
+  statusSide.style.cursor = "default";
+  statusSide.style.userSelect = "none";
+  statusSide.title = `${pinnedCount} pinned constraint${pinnedCount !== 1 ? 's' : ''}`;
+  statusSide.appendChild(createPinIcon(12));
+  const pinnedCountText = document.createElement("span");
+  pinnedCountText.textContent = `${pinnedCount}`;
+  pinnedCountText.style.minWidth = "1ch";
+  pinnedCountText.style.fontSize = "11px";
+  pinnedCountText.style.fontWeight = "600";
+  statusSide.appendChild(pinnedCountText);
+
+  const divider = document.createElement("div");
+  divider.style.width = "1px";
+  divider.style.height = "20px";
+  divider.style.background = "#d1d5db";
+  divider.style.opacity = "0.3";
+
+  const unpinBtn = document.createElement("button");
+  unpinBtn.type = "button";
+  unpinBtn.textContent = "Unpin All";
+  unpinBtn.style.display = "flex";
+  unpinBtn.style.alignItems = "center";
+  unpinBtn.style.justifyContent = "center";
+  unpinBtn.style.padding = "6px 8px";
+  unpinBtn.style.fontSize = "11px";
+  unpinBtn.style.fontWeight = "600";
+  unpinBtn.style.border = "none";
+  unpinBtn.style.background = "transparent";
+  unpinBtn.style.color = "#374151";
+  unpinBtn.style.cursor = hasPinnedRules ? "pointer" : "not-allowed";
+  unpinBtn.style.outline = "none";
+  unpinBtn.style.transition = "all 120ms ease";
+  unpinBtn.disabled = !hasPinnedRules;
+  unpinBtn.style.opacity = hasPinnedRules ? "1" : "0.55";
+
+  pinControlContainer.appendChild(statusSide);
+  pinControlContainer.appendChild(divider);
+  pinControlContainer.appendChild(unpinBtn);
+
+  unpinBtn.addEventListener("pointerdown", (e) => e.stopPropagation());
+  unpinBtn.addEventListener("click", () => {
+    if (!state.hasPinnedRules()) return;
+    deps.onUnpinAll();
+  });
+  unpinBtn.addEventListener("focus", () => {
+    pinControlContainer.style.borderColor = "#6366f1";
+    pinControlContainer.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.22)";
+  });
+  unpinBtn.addEventListener("blur", () => {
+    pinControlContainer.style.borderColor = "#d1d5db";
+    pinControlContainer.style.boxShadow = "none";
+  });
+  unpinBtn.addEventListener("pointerenter", () => {
+    if (!hasPinnedRules) return;
+    unpinBtn.style.background = "#e5e7eb";
+  });
+  unpinBtn.addEventListener("pointerleave", () => {
+    unpinBtn.style.background = "transparent";
+  });
 
   const evaluateBtn = document.createElement("button");
   evaluateBtn.type = "button";
@@ -282,18 +420,20 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
     evaluateBtn.style.borderColor = "#d1d5db";
     evaluateBtn.style.boxShadow = "none";
   });
-
   evaluateBtn.addEventListener("pointerenter", () => {
     evaluateBtn.style.background = "#e5e7eb";
     evaluateBtn.style.borderColor = "#9ca3af";
   });
-
   evaluateBtn.addEventListener("pointerleave", () => {
     evaluateBtn.style.background = "#f3f4f6";
     evaluateBtn.style.borderColor = "#d1d5db";
   });
 
-  buttonContainer.appendChild(evaluateBtn);
+  refreshWrap.appendChild(evaluateBtn);
+  actionButtons.appendChild(pinControlContainer);
+  footerRow.appendChild(refreshWrap);
+  footerRow.appendChild(actionButtons);
+  buttonContainer.appendChild(footerRow);
   body.appendChild(buttonContainer);
   scheduleClampWidgetIntoViewport();
 }

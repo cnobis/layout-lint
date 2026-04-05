@@ -75,9 +75,10 @@ export function createOverlayRenderer(highlightLayer: HTMLDivElement) {
     label.style.overflow = "hidden";
     label.style.textOverflow = "ellipsis";
 
-    const segments = text.split(" • ");
-    const firstSegment = segments[0]?.trim() ?? "";
-    if (segments.length > 1 && /^(\?|\d+)$/.test(firstSegment)) {
+    const numberedLabelMatch = text.match(/^(\?|\d+)\s*(?:•\s*)?(.*)$/);
+    if (numberedLabelMatch && numberedLabelMatch[2]) {
+      const firstSegment = numberedLabelMatch[1];
+      const remainder = numberedLabelMatch[2];
       const numberPart = document.createElement("span");
       const badgeStyles = getNumberBadgeStyles(color);
       numberPart.style.display = "inline-flex";
@@ -92,16 +93,24 @@ export function createOverlayRenderer(highlightLayer: HTMLDivElement) {
       numberPart.style.border = badgeStyles.border;
       numberPart.style.background = badgeStyles.background;
       numberPart.style.color = badgeStyles.color;
+      numberPart.style.marginRight = "4px";
       numberPart.textContent = firstSegment;
       label.appendChild(numberPart);
 
-      for (let i = 1; i < segments.length; i++) {
-        const delimiter = document.createTextNode(" • ");
-        label.appendChild(delimiter);
+      const roleStartIndex = remainder.lastIndexOf(" (");
+      if (roleStartIndex > 0 && remainder.endsWith(")")) {
+        const namePart = document.createElement("span");
+        namePart.style.fontWeight = "700";
+        namePart.textContent = remainder.slice(0, roleStartIndex);
+        label.appendChild(namePart);
 
-        const part = document.createElement("span");
-        part.textContent = segments[i];
-        label.appendChild(part);
+        const rolePart = document.createElement("span");
+        rolePart.textContent = remainder.slice(roleStartIndex);
+        label.appendChild(rolePart);
+      } else {
+        const remainderPart = document.createElement("span");
+        remainderPart.textContent = remainder;
+        label.appendChild(remainderPart);
       }
     } else {
       label.textContent = text;

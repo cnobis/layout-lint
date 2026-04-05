@@ -88,4 +88,15 @@ Use this format for every new bug:
 - **Verification**: `npm run build:ts && npm test` passes; list badges now stay in sync with overlay labels.
 - **General principle**: For UI labels tied to evaluation order, prefer stable reference/index mapping over derived keys that may collide.
 
+## 7) Unpin-all can leave stale highlight active
+
+- **Symptom**: After clicking `Unpin All`, the previously selected constraint can remain highlighted even though pin count is `0`.
+- **Root cause**: Clearing pinned keys did not clear the widget active rule. Highlight rendering then fell back to that lingering active selection.
+- **Fix applied**:
+  - Updated `clearPinnedRules()` to also reset `activeRule` to `null`.
+  - Kept rerender flow unchanged so highlight layer clears naturally after state update.
+- **Where**: `src/devtools/widget/state.ts` (`clearPinnedRules`).
+- **Verification**: `npm run build:ts && npm test` passes; highlight no longer remains after `Unpin All`.
+- **General principle**: Bulk clear actions should reset both collection state (pinned set) and derived/selection state (active item) to avoid stale UI artifacts.
+
 

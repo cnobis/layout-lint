@@ -89,18 +89,12 @@ export function createLayoutLintWidget(
     settingsToggle.style.boxShadow = "none";
   });
 
-  const pinStatus = document.createElement("span");
-  pinStatus.style.fontSize = "11px";
-  pinStatus.style.opacity = "0.9";
-  pinStatus.style.userSelect = "none";
-
   const body = document.createElement("div");
   body.style.padding = "8px 10px";
   body.style.maxHeight = "calc(45vh - 40px)";
   body.style.overflow = "auto";
 
   controls.appendChild(settingsToggle);
-  controls.appendChild(pinStatus);
   controls.appendChild(status);
   header.appendChild(controls);
 
@@ -128,10 +122,6 @@ export function createLayoutLintWidget(
   let latestResults: RuleResult[] = [];
   let settingsOpen = false;
 
-  const updatePinStatus = () => {
-    pinStatus.textContent = `pin: ${state.getPinnedRuleCount()}`;
-  };
-
   const updateSettingsToggleLabel = () => {
     settingsToggle.textContent = settingsOpen ? "constraints" : "settings";
   };
@@ -141,7 +131,6 @@ export function createLayoutLintWidget(
     saveWidgetSettings(settingsStorageKey, state.getSettings());
   };
 
-  updatePinStatus();
   updateSettingsToggleLabel();
 
   const resolveElement = (identifier: string | undefined): HTMLElement | null => {
@@ -189,21 +178,21 @@ export function createLayoutLintWidget(
       const primaryRect = primary?.getBoundingClientRect() ?? null;
       if (primary && primaryRect) {
         createHighlightBox(primary, color);
-        createElementRoleLabel(`${rulePrefix} • ${rule.element} • source`, color, primaryRect, true);
+        createElementRoleLabel(`${rulePrefix} ${rule.element} (source)`, color, primaryRect, true);
       }
 
       const target = resolveElement(rule.target ?? undefined);
       const targetRect = target?.getBoundingClientRect() ?? null;
       if (target && targetRect) {
         createHighlightBox(target, color, true);
-        createElementRoleLabel(`${rulePrefix} • ${rule.target} • target`, color, targetRect, true);
+        createElementRoleLabel(`${rulePrefix} ${rule.target} (target)`, color, targetRect, true);
       }
 
       const target2 = resolveElement(rule.target2 ?? undefined);
       const target2Rect = target2?.getBoundingClientRect() ?? null;
       if (target2 && target2Rect) {
         createHighlightBox(target2, color, true);
-        createElementRoleLabel(`${rulePrefix} • ${rule.target2} • target 2`, color, target2Rect, false);
+        createElementRoleLabel(`${rulePrefix} ${rule.target2} (target 2)`, color, target2Rect, false);
       }
 
       const equalGapPoints =
@@ -316,8 +305,11 @@ export function createLayoutLintWidget(
       monitor,
       renderActiveHighlight,
       scheduleClampWidgetIntoViewport,
-      updatePinStatus,
       requestRerender,
+      onUnpinAll: () => {
+        state.clearPinnedRules();
+        requestRerender();
+      },
     });
   };
 
@@ -576,7 +568,6 @@ export function createLayoutLintWidget(
     if (!state.hasPinnedRules()) return;
 
     state.clearPinnedRules();
-    updatePinStatus();
     requestRerender();
   };
 
@@ -598,7 +589,6 @@ export function createLayoutLintWidget(
   const unsubscribe = monitor.subscribe((result) => {
     latestResults = result.results;
     state.applyResults(latestResults);
-    updatePinStatus();
     renderBodyWithObserverPaused(latestResults);
   });
 

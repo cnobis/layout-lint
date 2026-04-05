@@ -149,7 +149,7 @@ export function createWidgetState(options: CreateWidgetStateOptions): WidgetStat
     },
     clearPinnedRules: () => {
       pinnedRuleKeys.clear();
-      if (activeRule) syncActiveRule();
+      activeRule = null;
     },
     togglePinnedRule: (rule) => {
       const key = getRuleKey(rule);
