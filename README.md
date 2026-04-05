@@ -26,6 +26,29 @@ const { results } = await runLayoutLint({
 });
 ```
 
+The runtime result also includes optional parser diagnostics:
+
+```typescript
+const { rules, results, diagnostics } = await runLayoutLint({
+  specText,
+  wasmUrl: './layout_lint.wasm'
+});
+
+if (diagnostics?.length) {
+  diagnostics.forEach((item) => {
+    console.warn(`${item.code} L${item.range.start.line}:${item.range.start.column + 1} ${item.message}`);
+  });
+}
+```
+
+Diagnostics include:
+
+- `code`: stable identifier (for example `LL-PARSE-SYNTAX`, `LL-RULE-MALFORMED`)
+- `severity`: `error` or `warning`
+- `message`: human-readable issue summary
+- `range`: source indices + line/column positions
+- `snippet` (optional): source fragment near the issue
+
 ## Devtools Widget
 
 ```typescript
@@ -62,6 +85,7 @@ Widget options:
 In the widget, use the `settings` button to open the settings panel and configure tabs behavior live.
 Use `Reset Size` in settings to restore default expanded width/height without resetting the rest of your widget preferences.
 Use the `spec` button to edit the layout DSL directly in the widget, then apply changes with the `Apply` button or `Cmd/Ctrl+Enter`.
+When applying an invalid spec, the editor stays open and displays parse diagnostics with line/column references.
 
 ## License
 

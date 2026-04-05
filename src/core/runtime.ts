@@ -1,7 +1,7 @@
 import { getParser } from "./parser.js";
 import { extractRules } from "./dsl.js";
 import { evaluateRules } from "./evaluator.js";
-import type { Rule, RuleResult } from "./types.js";
+import type { LayoutLintDiagnostic, Rule, RuleResult } from "./types.js";
 
 export interface RunLayoutLintOptions {
   specText: string;
@@ -13,6 +13,7 @@ export interface RunLayoutLintOptions {
 export interface RunLayoutLintResult {
   rules: Rule[];
   results: RuleResult[];
+  diagnostics?: LayoutLintDiagnostic[];
 }
 
 export async function runLayoutLint({
@@ -26,8 +27,8 @@ export async function runLayoutLint({
 
   const parser = await getParser(wasmUrl, locateFile);
   const tree = parser.parse(specText);
-  const rules = extractRules(tree, specText);
+  const { rules, diagnostics } = extractRules(tree, specText);
   const results = evaluateRules(rules, resolve);
 
-  return { rules, results };
+  return { rules, results, diagnostics };
 }

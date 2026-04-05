@@ -37,3 +37,25 @@ export interface RuleResult extends Rule {
   pass: boolean;
   reason?: string;
 }
+
+export type LayoutLintDiagnosticSeverity = "error" | "warning";
+
+export interface LayoutLintSourcePosition {
+  line: number;
+  column: number;
+}
+
+export interface LayoutLintSourceRange {
+  startIndex: number;
+  endIndex: number;
+  start: LayoutLintSourcePosition;
+  end: LayoutLintSourcePosition;
+}
+
+export interface LayoutLintDiagnostic {
+  code: string;
+  severity: LayoutLintDiagnosticSeverity;
+  message: string;
+  range: LayoutLintSourceRange;
+  snippet?: string;
+}

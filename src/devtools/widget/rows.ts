@@ -2,8 +2,9 @@ import type { LayoutLintMonitorController } from "../monitor/types.js";
 import type { RuleResult } from "../../core/types.js";
 import type { WidgetCategory } from "./types.js";
 import type { WidgetState } from "./state.js";
-import { renderFooterStatusBar, styleFooterStatusBar } from "./footer-status.js";
+import { createFooterStatusContainer, renderFooterStatusBar, styleFooterStatusBar } from "./footer-status.js";
 import type { FooterStatusMode } from "./footer-status.js";
+import type { FooterDiagnosticsSummary } from "./footer-status.js";
 
 export interface RenderRowsDeps {
   body: HTMLDivElement;
@@ -12,6 +13,7 @@ export interface RenderRowsDeps {
   monitor: LayoutLintMonitorController;
   footerStatusMode: FooterStatusMode;
   footerStatusActionLabel: string;
+  footerDiagnosticsSummary: FooterDiagnosticsSummary;
   renderActiveHighlight: () => void;
   scheduleClampWidgetIntoViewport: () => void;
   requestRerender: () => void;
@@ -19,8 +21,8 @@ export interface RenderRowsDeps {
   onRefreshRequested: () => void | Promise<void>;
 }
 
-export function renderWidgetMinimizedStatus(results: RuleResult[], deps: Pick<RenderRowsDeps, "body" | "status" | "footerStatusMode" | "footerStatusActionLabel" | "scheduleClampWidgetIntoViewport">) {
-  const { body, status, footerStatusMode, footerStatusActionLabel, scheduleClampWidgetIntoViewport } = deps;
+export function renderWidgetMinimizedStatus(results: RuleResult[], deps: Pick<RenderRowsDeps, "body" | "status" | "footerStatusMode" | "footerStatusActionLabel" | "footerDiagnosticsSummary" | "scheduleClampWidgetIntoViewport">) {
+  const { body, status, footerStatusMode, footerStatusActionLabel, footerDiagnosticsSummary, scheduleClampWidgetIntoViewport } = deps;
   const passed = results.filter((rule) => rule.pass).length;
 
   body.innerHTML = "";
@@ -34,7 +36,7 @@ export function renderWidgetMinimizedStatus(results: RuleResult[], deps: Pick<Re
   minimizedBarWrap.style.background = "#ffffff";
 
   styleFooterStatusBar(status);
-  renderFooterStatusBar(status, footerStatusMode, passed, results.length, footerStatusActionLabel);
+  renderFooterStatusBar(status, footerStatusMode, passed, results.length, footerStatusActionLabel, footerDiagnosticsSummary);
   status.style.margin = "0";
 
   minimizedBarWrap.appendChild(status);
@@ -171,7 +173,17 @@ const buildMeta = (item: RuleResult) => {
 };
 
 export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
-  const { body, status, state, footerStatusMode, footerStatusActionLabel, renderActiveHighlight, scheduleClampWidgetIntoViewport, requestRerender } = deps;
+  const {
+    body,
+    status,
+    state,
+    footerStatusMode,
+    footerStatusActionLabel,
+    footerDiagnosticsSummary,
+    renderActiveHighlight,
+    scheduleClampWidgetIntoViewport,
+    requestRerender,
+  } = deps;
   const useNeutralConstraintStyling = footerStatusMode === "loading";
 
   const existingScroll = body.querySelector("[data-widget-constraints-scroll='true']") as HTMLDivElement | null;
@@ -187,7 +199,7 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
   if (results.length === 0) {
     body.textContent = "No rules";
     styleFooterStatusBar(status);
-    renderFooterStatusBar(status, footerStatusMode, 0, 0, footerStatusActionLabel);
+    renderFooterStatusBar(status, footerStatusMode, 0, 0, footerStatusActionLabel, footerDiagnosticsSummary);
     scheduleClampWidgetIntoViewport();
     return;
   }
@@ -388,21 +400,7 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
     constraintsScroll.appendChild(row);
   }
 
-  const buttonContainer = document.createElement("div");
-  buttonContainer.style.position = "relative";
-  buttonContainer.style.flex = "0 0 auto";
-  buttonContainer.style.marginLeft = "-10px";
-  buttonContainer.style.marginRight = "-10px";
-  buttonContainer.style.marginBottom = "0";
-  buttonContainer.style.paddingLeft = "0";
-  buttonContainer.style.paddingRight = "0";
-  buttonContainer.style.paddingTop = "8px";
-  buttonContainer.style.paddingBottom = "0";
-  buttonContainer.style.borderTop = "1px solid #e5e7eb";
-  buttonContainer.style.background = "white";
-  buttonContainer.style.boxShadow = "none";
-  buttonContainer.style.zIndex = "10";
-  buttonContainer.style.overflow = "hidden";
+  const buttonContainer = createFooterStatusContainer();
 
   styleFooterStatusBar(status);
 
@@ -574,7 +572,7 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
     evaluateBtn.style.borderColor = "#d1d5db";
   });
 
-  renderFooterStatusBar(status, footerStatusMode, passed, results.length, footerStatusActionLabel);
+  renderFooterStatusBar(status, footerStatusMode, passed, results.length, footerStatusActionLabel, footerDiagnosticsSummary);
   status.style.marginTop = "6px";
   status.style.marginLeft = "0";
   status.style.marginRight = "0";

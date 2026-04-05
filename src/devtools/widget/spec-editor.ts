@@ -1,9 +1,16 @@
 import type { LayoutLintMonitorController } from "../monitor/types.js";
-import type { FooterStatusMode } from "./footer-status.js";
+import type { FooterDiagnosticsSummary, FooterStatusMode } from "./footer-status.js";
+import type { LayoutLintDiagnostic } from "../../core/types.js";
+import { createFooterStatusContainer, renderFooterStatusBar, styleFooterStatusBar } from "./footer-status.js";
 
 interface RenderSpecEditorPanelArgs {
   body: HTMLDivElement;
   status: HTMLSpanElement;
+  footerStatusMode: FooterStatusMode;
+  footerStatusActionLabel: string;
+  footerDiagnosticsSummary: FooterDiagnosticsSummary;
+  footerPassedCount: number;
+  footerTotalCount: number;
   scheduleClampWidgetIntoViewport: () => void;
 }
 
@@ -39,10 +46,25 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
   let isOpen = false;
   let draft = args.monitor.getSpecText();
   let error: string | null = null;
+  let diagnostics: LayoutLintDiagnostic[] = [];
+  let closeAfterSuccessTimer: number | null = null;
+
+  const clearCloseAfterSuccessTimer = () => {
+    if (closeAfterSuccessTimer == null) return;
+    window.clearTimeout(closeAfterSuccessTimer);
+    closeAfterSuccessTimer = null;
+  };
+
+  const formatDiagnostic = (diagnostic: LayoutLintDiagnostic) => {
+    const location = `L${diagnostic.range.start.line}:${diagnostic.range.start.column + 1}`;
+    return `${diagnostic.code} ${location} - ${diagnostic.message}`;
+  };
 
   const close = () => {
+    clearCloseAfterSuccessTimer();
     isOpen = false;
     error = null;
+    diagnostics = [];
     args.updateHeaderToggleStyles();
   };
 
@@ -50,6 +72,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     isOpen = true;
     draft = args.monitor.getSpecText();
     error = null;
+    diagnostics = [];
     args.updateHeaderToggleStyles();
   };
 
@@ -63,6 +86,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     const nextSpec = draft;
     if (!nextSpec.trim()) {
       error = "Spec cannot be empty.";
+      diagnostics = [];
       args.requestRerender();
       return;
     }
@@ -76,17 +100,38 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
 
     try {
       args.clearFooterStatusResetTimer();
+      clearCloseAfterSuccessTimer();
       args.setFooterStatusActionLabel(args.specUpdateStatusLabel);
-      isOpen = false;
+      isOpen = true;
       args.updateHeaderToggleStyles();
       args.setFooterStatusMode("loading");
       if (args.isStatusTransitionDelayEnabled()) {
         await delay(args.fakeLoadingDurationMs);
       }
       args.monitor.setSpecText(nextSpec);
-      await args.monitor.evaluateNow();
-      close();
+      const result = await args.monitor.evaluateNow();
+      const errorDiagnostics = (result.diagnostics ?? []).filter((diagnostic) => diagnostic.severity === "error");
+      if (errorDiagnostics.length > 0) {
+        args.monitor.setSpecText(previousSpec);
+        try {
+          await args.monitor.evaluateNow();
+        } catch {
+          // keep prior spec restoration best effort
+        }
+        diagnostics = errorDiagnostics;
+        error = `Spec contains ${errorDiagnostics.length} syntax issue${errorDiagnostics.length === 1 ? "" : "s"}.`;
+        isOpen = true;
+        args.updateHeaderToggleStyles();
+        args.showFooterErrorAndReset();
+        args.requestRerender();
+        return;
+      }
+      diagnostics = [];
       args.flashFooterStatusDone();
+      closeAfterSuccessTimer = window.setTimeout(() => {
+        close();
+        args.requestRerender();
+      }, 220);
     } catch (cause) {
       args.monitor.setSpecText(previousSpec);
       try {
@@ -95,6 +140,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
         // keep prior spec restoration best effort
       }
       error = cause instanceof Error ? cause.message : "Failed to apply spec.";
+      diagnostics = [];
       isOpen = true;
       args.updateHeaderToggleStyles();
       args.showFooterErrorAndReset();
@@ -102,15 +148,23 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     }
   };
 
-  const renderPanel = ({ body, status, scheduleClampWidgetIntoViewport }: RenderSpecEditorPanelArgs) => {
+  const renderPanel = ({
+    body,
+    status,
+    footerStatusMode,
+    footerStatusActionLabel,
+    footerDiagnosticsSummary,
+    footerPassedCount,
+    footerTotalCount,
+    scheduleClampWidgetIntoViewport,
+  }: RenderSpecEditorPanelArgs) => {
     body.innerHTML = "";
-    status.textContent = "";
     body.style.display = "flex";
     body.style.flexDirection = "column";
     body.style.overflow = "hidden";
     body.style.minHeight = "0";
     body.style.padding = "8px 10px";
-    body.style.paddingBottom = "8px";
+    body.style.paddingBottom = "0";
 
     const section = document.createElement("div");
     section.style.display = "flex";
@@ -159,6 +213,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     textArea.addEventListener("input", () => {
       draft = textArea.value;
       error = null;
+      diagnostics = [];
     });
     textArea.addEventListener("keydown", (event) => {
       if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
@@ -183,6 +238,27 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     errorText.style.fontSize = "10px";
     errorText.style.color = "#b91c1c";
     errorText.textContent = error ?? "";
+
+    const diagnosticsList = document.createElement("div");
+    diagnosticsList.style.display = diagnostics.length > 0 ? "grid" : "none";
+    diagnosticsList.style.gap = "2px";
+    diagnosticsList.style.fontSize = "10px";
+    diagnosticsList.style.color = "#7f1d1d";
+    diagnosticsList.style.maxHeight = "76px";
+    diagnosticsList.style.overflow = "auto";
+    diagnosticsList.style.padding = diagnostics.length > 0 ? "2px 0 0" : "0";
+
+    for (const diagnostic of diagnostics.slice(0, 4)) {
+      const item = document.createElement("div");
+      item.textContent = formatDiagnostic(diagnostic);
+      diagnosticsList.appendChild(item);
+    }
+
+    if (diagnostics.length > 4) {
+      const overflow = document.createElement("div");
+      overflow.textContent = `...and ${diagnostics.length - 4} more`;
+      diagnosticsList.appendChild(overflow);
+    }
 
     const actionButtons = document.createElement("div");
     actionButtons.style.display = "flex";
@@ -229,7 +305,28 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     section.appendChild(helper);
     section.appendChild(textArea);
     section.appendChild(actions);
+    section.appendChild(diagnosticsList);
     body.appendChild(section);
+
+    const footerContainer = createFooterStatusContainer();
+    footerContainer.style.marginTop = "6px";
+    footerContainer.style.paddingTop = "0";
+    footerContainer.style.borderTop = "none";
+    styleFooterStatusBar(status);
+    renderFooterStatusBar(
+      status,
+      footerStatusMode,
+      footerPassedCount,
+      footerTotalCount,
+      footerStatusActionLabel,
+      footerDiagnosticsSummary
+    );
+    status.style.marginTop = "0";
+    status.style.marginLeft = "0";
+    status.style.marginRight = "0";
+    status.style.marginBottom = "0";
+    footerContainer.appendChild(status);
+    body.appendChild(footerContainer);
     scheduleClampWidgetIntoViewport();
   };
 

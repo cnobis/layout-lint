@@ -1,5 +1,5 @@
 import type { Tree } from "web-tree-sitter";
-import type { Rule } from "./types.js";
+import type { LayoutLintDiagnostic, Rule } from "./types.js";
 import {
   buildAlignedRules,
   buildCountRule,
@@ -19,6 +19,7 @@ import {
   extractInsideOffsets,
   extractNearDirections,
   extractTextOperationTokens,
+  getSourceRange,
   isNearNode,
 } from "./dsl-helpers.js";
 
@@ -72,12 +73,44 @@ export function parsePercentageToken(token: string): {
   return {};
 }
 
-export function extractRules(tree: Tree | null, source: string): Rule[] {
-  if (!tree) return [];
+export interface ExtractRulesResult {
+  rules: Rule[];
+  diagnostics: LayoutLintDiagnostic[];
+}
+
+function collectSyntaxDiagnostics(node: NodeLike | null, source: string, diagnostics: LayoutLintDiagnostic[]) {
+  if (!node) return;
+
+  const isErrorNode = node.type === "ERROR";
+  const isMissingNode = node.isMissing === true;
+  if (isErrorNode || isMissingNode) {
+    const snippet = source.slice(node.startIndex, node.endIndex).trim();
+    diagnostics.push({
+      code: isMissingNode ? "LL-PARSE-MISSING" : "LL-PARSE-SYNTAX",
+      severity: "error",
+      message: isMissingNode
+        ? "Incomplete spec segment. A required token appears to be missing."
+        : "Invalid spec syntax near this segment.",
+      range: getSourceRange(source, node.startIndex, node.endIndex),
+      snippet: snippet || undefined,
+    });
+  }
+
+  for (let i = 0; i < node.childCount; i += 1) {
+    const child = node.child(i);
+    collectSyntaxDiagnostics(child, source, diagnostics);
+  }
+}
+
+export function extractRules(tree: Tree | null, source: string): ExtractRulesResult {
+  if (!tree) return { rules: [], diagnostics: [] };
 
   const root = tree.rootNode;
   const txt: NodeTextReader = (node) => (node ? source.slice(node.startIndex, node.endIndex) : "");
   const rules: Rule[] = [];
+  const diagnostics: LayoutLintDiagnostic[] = [];
+
+  collectSyntaxDiagnostics(root as unknown as NodeLike, source, diagnostics);
 
   for (let i = 0; i < root.namedChildCount; i++) {
     const node = root.namedChild(i) as unknown as NodeLike | null;
@@ -215,11 +248,22 @@ export function extractRules(tree: Tree | null, source: string): Rule[] {
       continue;
     }
 
-    const target   = txt(node.childForFieldName("target"));
-    const target2  = txt(node.childForFieldName("target2"));
+    const target = txt(node.childForFieldName("target"));
+    const target2 = txt(node.childForFieldName("target2"));
+
+    if (!element || !relation) {
+      diagnostics.push({
+        code: "LL-RULE-MALFORMED",
+        severity: "error",
+        message: "Malformed rule: missing element or relation.",
+        range: getSourceRange(source, node.startIndex, node.endIndex),
+        snippet: txt(node).trim() || undefined,
+      });
+      continue;
+    }
 
     rules.push(buildDefaultRelationRule(element, negated, relation, target, target2, distance));
   }
 
-  return rules;
+  return { rules, diagnostics };
 }
