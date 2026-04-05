@@ -1,6 +1,6 @@
 import type { LayoutLintMonitorController } from "../monitor/types.js";
 import type { LayoutLintWidgetController, LayoutLintWidgetOptions } from "./types.js";
-import type { RuleResult } from "../../core/types.js";
+import type { LayoutLintDiagnostic, RuleResult } from "../../core/types.js";
 import { createOverlayRenderer } from "./overlays.js";
 import { createWidgetState } from "./state.js";
 import { renderWidgetMinimizedStatus, renderWidgetRows } from "./rows.js";
@@ -10,6 +10,7 @@ import { renderWidgetSettingsPanel } from "./settings-panel.js";
 import { createWidgetDragController } from "./drag-controller.js";
 import { createWidgetStatusController } from "./status-controller.js";
 import { createWidgetResizeController } from "./resize-controller.js";
+import type { FooterDiagnosticsSummary } from "./footer-status.js";
 import {
   DEFAULT_WIDGET_SETTINGS,
   DEFAULT_WIDGET_SETTINGS_STORAGE_KEY,
@@ -32,7 +33,7 @@ export function createLayoutLintWidget(
   const MINIMIZED_WIDGET_WIDTH = 248;
   const FAKE_LOADING_DURATION_MS = 800;
   const REEVALUATE_STATUS_LABEL = "evaluating...";
-  const SPEC_UPDATE_STATUS_LABEL = "updating spec...";
+  const SPEC_UPDATE_STATUS_LABEL = "parsing spec...";
   const persistSettings = options.persistSettings !== false;
   const settingsStorageKey = options.settingsStorageKey ?? DEFAULT_WIDGET_SETTINGS_STORAGE_KEY;
   const storedSettings = persistSettings
@@ -110,6 +111,7 @@ export function createLayoutLintWidget(
   const getEqualGapConnectorPoints = overlays.getEqualGapConnectorPoints;
 
   let latestResults: RuleResult[] = [];
+  let latestDiagnosticsSummary: FooterDiagnosticsSummary = { total: 0, errors: 0, warnings: 0 };
   let settingsOpen = false;
   let specEditor: ReturnType<typeof createSpecEditor> | null = null;
   let requestRerender = () => {};
@@ -376,6 +378,7 @@ export function createLayoutLintWidget(
       monitor,
       footerStatusMode: statusController.getMode(),
       footerStatusActionLabel: statusController.getActionLabel(),
+      footerDiagnosticsSummary: latestDiagnosticsSummary,
       renderActiveHighlight,
       scheduleClampWidgetIntoViewport,
       requestRerender,
@@ -386,6 +389,11 @@ export function createLayoutLintWidget(
       onRefreshRequested: handleRefreshAction,
     });
   };
+
+  const summarizeResults = (results: RuleResult[]) => ({
+    passed: results.filter((rule) => rule.pass).length,
+    total: results.length,
+  });
 
   const renderSettingsPanel = () => {
     status.textContent = "";
@@ -424,6 +432,7 @@ export function createLayoutLintWidget(
         status,
         footerStatusMode: statusController.getMode(),
         footerStatusActionLabel: statusController.getActionLabel(),
+        footerDiagnosticsSummary: latestDiagnosticsSummary,
         scheduleClampWidgetIntoViewport,
       });
       return;
@@ -434,7 +443,17 @@ export function createLayoutLintWidget(
       return;
     }
     if (specEditor?.isOpen()) {
-      specEditor.renderPanel({ body, status, scheduleClampWidgetIntoViewport });
+      const { passed, total } = summarizeResults(latestResults);
+      specEditor.renderPanel({
+        body,
+        status,
+        footerStatusMode: statusController.getMode(),
+        footerStatusActionLabel: statusController.getActionLabel(),
+        footerDiagnosticsSummary: latestDiagnosticsSummary,
+        footerPassedCount: passed,
+        footerTotalCount: total,
+        scheduleClampWidgetIntoViewport,
+      });
       return;
     }
     renderRows(results);
@@ -453,6 +472,16 @@ export function createLayoutLintWidget(
 
   requestRerender = () => {
     renderBodyWithObserverPaused(latestResults);
+  };
+
+  const summarizeDiagnostics = (diagnostics: LayoutLintDiagnostic[] | undefined): FooterDiagnosticsSummary => {
+    if (!diagnostics || diagnostics.length === 0) {
+      return { total: 0, errors: 0, warnings: 0 };
+    }
+
+    const errors = diagnostics.filter((diagnostic) => diagnostic.severity === "error").length;
+    const warnings = diagnostics.length - errors;
+    return { total: diagnostics.length, errors, warnings };
   };
 
   specEditor = createSpecEditor({
@@ -505,6 +534,7 @@ export function createLayoutLintWidget(
 
   const unsubscribe = monitor.subscribe((result) => {
     latestResults = result.results;
+    latestDiagnosticsSummary = summarizeDiagnostics(result.diagnostics);
     state.applyResults(latestResults);
     if (specEditor?.isOpen()) return;
     renderBodyWithObserverPaused(latestResults);

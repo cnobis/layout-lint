@@ -1,5 +1,30 @@
 export type FooterStatusMode = "ready" | "loading" | "done" | "error";
 
+export interface FooterDiagnosticsSummary {
+  total: number;
+  errors: number;
+  warnings: number;
+}
+
+export const createFooterStatusContainer = () => {
+  const container = document.createElement("div");
+  container.style.position = "relative";
+  container.style.flex = "0 0 auto";
+  container.style.marginLeft = "-10px";
+  container.style.marginRight = "-10px";
+  container.style.marginBottom = "0";
+  container.style.paddingLeft = "0";
+  container.style.paddingRight = "0";
+  container.style.paddingTop = "8px";
+  container.style.paddingBottom = "0";
+  container.style.borderTop = "1px solid #e5e7eb";
+  container.style.background = "white";
+  container.style.boxShadow = "none";
+  container.style.zIndex = "10";
+  container.style.overflow = "hidden";
+  return container;
+};
+
 export const styleFooterStatusBar = (status: HTMLSpanElement) => {
   status.style.display = "flex";
   status.style.alignItems = "center";
@@ -24,7 +49,8 @@ export const renderFooterStatusBar = (
   mode: FooterStatusMode,
   passed: number,
   total: number,
-  actionLabel = "evaluating..."
+  actionLabel = "evaluating...",
+  diagnostics?: FooterDiagnosticsSummary
 ) => {
   status.innerHTML = "";
   const allConstraintsMet = total > 0 && passed === total;
@@ -69,6 +95,7 @@ export const renderFooterStatusBar = (
     left.appendChild(createStatusWord(actionLabel, "#166534"));
     left.appendChild(createStatusWord("done", "#166534"));
   } else if (mode === "error") {
+    left.appendChild(createStatusWord(actionLabel, "#b91c1c"));
     left.appendChild(createStatusWord("error", "#b91c1c"));
   } else {
     left.appendChild(createStatusWord("ready", "#64748b"));
@@ -77,10 +104,15 @@ export const renderFooterStatusBar = (
   const right = document.createElement("span");
   right.style.display = "inline-flex";
   right.style.alignItems = "baseline";
-  right.style.gap = "3px";
+  right.style.gap = "8px";
   right.style.flex = "0 0 auto";
   right.style.whiteSpace = "nowrap";
-  right.title = "constraints met";
+
+  const constraints = document.createElement("span");
+  constraints.style.display = "inline-flex";
+  constraints.style.alignItems = "baseline";
+  constraints.style.gap = "3px";
+  constraints.title = "constraints met";
 
   if (allConstraintsMet) {
     const rightCheck = document.createElement("span");
@@ -89,7 +121,7 @@ export const renderFooterStatusBar = (
     rightCheck.style.fontWeight = "800";
     rightCheck.style.color = "#10b981";
     rightCheck.style.marginRight = "1px";
-    right.appendChild(rightCheck);
+    constraints.appendChild(rightCheck);
   }
 
   const passedValue = document.createElement("span");
@@ -110,9 +142,37 @@ export const renderFooterStatusBar = (
   totalValue.style.fontWeight = "800";
   totalValue.style.color = "#1f2937";
 
-  right.appendChild(passedValue);
-  right.appendChild(separator);
-  right.appendChild(totalValue);
+  constraints.appendChild(passedValue);
+  constraints.appendChild(separator);
+  constraints.appendChild(totalValue);
+
+  right.appendChild(constraints);
+
+  if (diagnostics && diagnostics.total > 0) {
+    const diagnosticsBadge = document.createElement("span");
+    diagnosticsBadge.style.display = "inline-flex";
+    diagnosticsBadge.style.alignItems = "center";
+    diagnosticsBadge.style.gap = "4px";
+    diagnosticsBadge.style.fontSize = "10px";
+    diagnosticsBadge.style.fontWeight = "700";
+    diagnosticsBadge.style.color = diagnostics.errors > 0 ? "#b91c1c" : "#92400e";
+
+    const issueCountLabel = diagnostics.total === 1 ? "issue" : "issues";
+    diagnosticsBadge.textContent = `! ${diagnostics.total} ${issueCountLabel}`;
+
+    const titleParts: string[] = [];
+    if (diagnostics.errors > 0) {
+      const errorLabel = diagnostics.errors === 1 ? "error" : "errors";
+      titleParts.push(`${diagnostics.errors} ${errorLabel}`);
+    }
+    if (diagnostics.warnings > 0) {
+      const warningLabel = diagnostics.warnings === 1 ? "warning" : "warnings";
+      titleParts.push(`${diagnostics.warnings} ${warningLabel}`);
+    }
+
+    diagnosticsBadge.title = `diagnostics: ${titleParts.join(", ")}`;
+    right.appendChild(diagnosticsBadge);
+  }
 
   status.appendChild(left);
   status.appendChild(right);

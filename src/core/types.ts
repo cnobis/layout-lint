@@ -1,5 +1,6 @@
 export interface Rule {
   element: string;
+  sourceRange?: LayoutLintSourceRange;
   negated?: boolean;
   relation: string;
   textExpected?: string;
@@ -36,4 +37,38 @@ export interface RuleResult extends Rule {
   actual: number | string | null;
   pass: boolean;
   reason?: string;
+}
+
+export type LayoutLintDiagnosticSeverity = "error" | "warning";
+
+export interface LayoutLintSourcePosition {
+  line: number;
+  column: number;
+}
+
+export interface LayoutLintSourceRange {
+  startIndex: number;
+  endIndex: number;
+  start: LayoutLintSourcePosition;
+  end: LayoutLintSourcePosition;
+}
+
+export interface LayoutLintRelatedDiagnostic {
+  code: string;
+  severity: LayoutLintDiagnosticSeverity;
+  message: string;
+  range: LayoutLintSourceRange;
+  snippet?: string;
+  suggestion?: string;
+}
+
+export interface LayoutLintDiagnostic {
+  code: string;
+  severity: LayoutLintDiagnosticSeverity;
+  message: string;
+  range: LayoutLintSourceRange;
+  snippet?: string;
+  suggestion?: string;
+  relatedDiagnosticsCount?: number;
+  relatedDiagnostics?: LayoutLintRelatedDiagnostic[];
 }

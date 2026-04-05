@@ -74,6 +74,9 @@ Output contract:
 - Traverses tree-sitter nodes using named fields:
   - `element`, `relation`, `target`, `distance`
 - Converts `distance` token (`20px`) to numeric `distancePx`
+- Emits structured diagnostics for malformed parse segments and malformed rules
+  - syntax-level (for example parser `ERROR`/missing segments)
+  - extraction-level (for example missing element/relation in a rule)
 
 ### 3.4 Rule Evaluation
 - `src/evaluator.ts`
@@ -86,6 +89,21 @@ Output contract:
   - `left-of`: `B.left - A.right`
 - Pass condition: `actual >= distancePx`
 - Missing elements produce `pass: false` with reason text
+
+### 3.5 Diagnostics Model
+- `src/core/types.ts`
+- `RunLayoutLintResult` includes optional `diagnostics`
+- Each diagnostic includes:
+  - stable code
+  - severity
+  - message
+  - source range (start/end index + line/column)
+  - optional snippet
+
+Runtime behavior:
+- `runLayoutLint()` returns `{ rules, results, diagnostics }`
+- valid rules are still evaluated even when diagnostics are present
+- consumers can treat diagnostics as non-fatal warnings or blocking errors
 
 ### 3.5 Build Output
 TypeScript compiles to:
@@ -146,6 +164,7 @@ An optional professional developer experience layer is available via a separate 
   - Multi-pin via row click and `esc` clear-all
   - Viewport-safe, collision-aware overlay labels
   - Inline styles for quick deployment
+  - Spec editor surfaces parse diagnostics on invalid apply attempts and keeps editor mode open for correction
 - **Usage**:
   ```typescript
   const widget = createLayoutLintWidget(monitor, {

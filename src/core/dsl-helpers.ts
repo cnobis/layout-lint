@@ -1,7 +1,9 @@
-import type { Rule } from "./types.js";
+import type { LayoutLintSourcePosition, LayoutLintSourceRange, Rule } from "./types.js";
 
 export interface NodeLike {
   text: string;
+  type: string;
+  isMissing?: boolean;
   startIndex: number;
   endIndex: number;
   childCount: number;
@@ -11,6 +13,35 @@ export interface NodeLike {
 }
 
 export type NodeTextReader = (node: NodeLike | null | undefined) => string;
+
+export function getSourcePosition(source: string, index: number): LayoutLintSourcePosition {
+  const boundedIndex = Math.min(Math.max(index, 0), source.length);
+  let line = 1;
+  let column = 0;
+
+  for (let i = 0; i < boundedIndex; i += 1) {
+    if (source[i] === "\n") {
+      line += 1;
+      column = 0;
+    } else {
+      column += 1;
+    }
+  }
+
+  return { line, column };
+}
+
+export function getSourceRange(source: string, startIndex: number, endIndex: number): LayoutLintSourceRange {
+  const normalizedStart = Math.min(Math.max(startIndex, 0), source.length);
+  const normalizedEnd = Math.min(Math.max(endIndex, normalizedStart), source.length);
+
+  return {
+    startIndex: normalizedStart,
+    endIndex: normalizedEnd,
+    start: getSourcePosition(source, normalizedStart),
+    end: getSourcePosition(source, normalizedEnd),
+  };
+}
 
 export type PxDistanceToken = {
   distancePx?: number;
