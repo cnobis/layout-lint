@@ -2,6 +2,7 @@ import type { LayoutLintMonitorController } from "../monitor/types.js";
 import type { RuleResult } from "../../core/types.js";
 import type { WidgetCategory } from "./types.js";
 import type { WidgetState } from "./state.js";
+import { renderFooterStatusBar, styleFooterStatusBar } from "./footer-status.js";
 
 export interface RenderRowsDeps {
   body: HTMLDivElement;
@@ -120,50 +121,95 @@ const buildMeta = (item: RuleResult) => {
 export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
   const { body, status, state, monitor, renderActiveHighlight, scheduleClampWidgetIntoViewport, requestRerender } = deps;
 
+  const existingScroll = body.querySelector("[data-widget-constraints-scroll='true']") as HTMLDivElement | null;
+  const previousScrollTop = existingScroll?.scrollTop ?? 0;
+
   body.innerHTML = "";
+  body.style.display = "flex";
+  body.style.flexDirection = "column";
+  body.style.overflow = "hidden";
+  body.style.minHeight = "0";
+  body.style.paddingBottom = "0";
   if (results.length === 0) {
     body.textContent = "No rules";
-    status.textContent = "0/0";
+    styleFooterStatusBar(status);
+    renderFooterStatusBar(status, 0, 0);
     scheduleClampWidgetIntoViewport();
     return;
   }
 
   const passed = results.filter((r) => r.pass).length;
-  status.textContent = `${passed}/${results.length}`;
 
   const viewModel = state.getViewModel(results);
   const hasMultiplePages = viewModel.settings.tabsEnabled && viewModel.totalPages > 1;
 
-  const categoryTabs = document.createElement("div");
-  categoryTabs.style.display = "flex";
-  categoryTabs.style.gap = "6px";
-  categoryTabs.style.marginBottom = "8px";
+  // Tab container with count integrated
+  const tabContainer = document.createElement("div");
+  tabContainer.style.marginBottom = "4px";
+
+  const categoryTabsRow = document.createElement("div");
+  categoryTabsRow.style.display = "flex";
+  categoryTabsRow.style.alignItems = "center";
+  categoryTabsRow.style.gap = "0";
+  categoryTabsRow.style.borderBottom = "1px solid #e5e7eb";
 
   const createCategoryTab = (category: WidgetCategory, count: number) => {
     const button = document.createElement("button");
     button.type = "button";
     const selected = viewModel.category === category;
-    button.textContent = `${CATEGORY_LABELS[category]} (${count})`;
-    button.style.padding = "3px 8px";
-    button.style.borderRadius = "999px";
-    button.style.fontSize = "10px";
+    button.style.flex = "1";
+    button.style.padding = "6px 10px 5px";
+    button.style.borderRadius = "0";
     button.style.fontWeight = "600";
-    button.style.border = selected ? "1px solid #6366f1" : "1px solid #d1d5db";
-    button.style.background = selected ? "#eef2ff" : "#ffffff";
-    button.style.color = selected ? "#3730a3" : "#4b5563";
+    button.style.border = "none";
+    button.style.borderBottom = selected ? "2px solid #6366f1" : "2px solid transparent";
+    button.style.background = selected ? "#f9fafb" : "#ffffff";
+    button.style.color = selected ? "#1f2937" : "#6b7280";
     button.style.cursor = "pointer";
+    button.style.outline = "none";
+    button.style.transition = "all 120ms ease";
+    button.style.display = "flex";
+    button.style.flexDirection = "column";
+    button.style.alignItems = "center";
+    button.style.justifyContent = "center";
+    button.style.gap = "1px";
     button.addEventListener("pointerdown", (event) => event.stopPropagation());
     button.addEventListener("click", () => {
       state.setActiveCategory(category);
       requestRerender();
     });
+    button.addEventListener("focus", () => {
+      button.style.background = "#f3f4f6";
+    });
+    button.addEventListener("blur", () => {
+      button.style.background = selected ? "#f9fafb" : "#ffffff";
+    });
+
+    const label = document.createElement("span");
+    label.textContent = CATEGORY_LABELS[category];
+    label.style.fontSize = "11px";
+    label.style.lineHeight = "1.1";
+
+    const amount = document.createElement("span");
+    amount.textContent = `(${count})`;
+    amount.style.fontSize = "10px";
+    amount.style.lineHeight = "1.1";
+    amount.style.fontWeight = "700";
+    amount.style.color = selected ? "#4338ca" : "#9ca3af";
+
+    button.appendChild(label);
+    button.appendChild(amount);
     return button;
   };
 
-  categoryTabs.appendChild(createCategoryTab("all", viewModel.counts.all));
-  categoryTabs.appendChild(createCategoryTab("failing", viewModel.counts.failing));
-  categoryTabs.appendChild(createCategoryTab("passing", viewModel.counts.passing));
-  body.appendChild(categoryTabs);
+  categoryTabsRow.appendChild(createCategoryTab("all", viewModel.counts.all));
+  categoryTabsRow.appendChild(createCategoryTab("failing", viewModel.counts.failing));
+  categoryTabsRow.appendChild(createCategoryTab("passing", viewModel.counts.passing));
+
+  tabContainer.appendChild(categoryTabsRow);
+  body.appendChild(tabContainer);
+
+  const categoryTabs = categoryTabsRow;
 
   if (hasMultiplePages) {
     const pageTabs = document.createElement("div");
@@ -195,6 +241,16 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
 
     body.appendChild(pageTabs);
   }
+
+  const constraintsScroll = document.createElement("div");
+  constraintsScroll.dataset.widgetConstraintsScroll = "true";
+  constraintsScroll.style.flex = "1 1 auto";
+  constraintsScroll.style.minHeight = "0";
+  constraintsScroll.style.overflowY = "auto";
+  constraintsScroll.style.overflowX = "hidden";
+  constraintsScroll.style.paddingRight = "2px";
+  constraintsScroll.style.paddingBottom = "2px";
+  body.appendChild(constraintsScroll);
 
   for (const [index, item] of viewModel.visibleResults.entries()) {
     const row = document.createElement("div");
@@ -273,29 +329,36 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
 
     row.appendChild(head);
     row.appendChild(meta);
-    body.appendChild(row);
+    constraintsScroll.appendChild(row);
   }
 
   const buttonContainer = document.createElement("div");
-  buttonContainer.style.position = "sticky";
-  buttonContainer.style.bottom = "0";
+  buttonContainer.style.position = "relative";
+  buttonContainer.style.flex = "0 0 auto";
   buttonContainer.style.marginLeft = "-10px";
   buttonContainer.style.marginRight = "-10px";
-  buttonContainer.style.marginBottom = "-8px";
-  buttonContainer.style.paddingLeft = "10px";
-  buttonContainer.style.paddingRight = "10px";
+  buttonContainer.style.marginBottom = "0";
+  buttonContainer.style.paddingLeft = "0";
+  buttonContainer.style.paddingRight = "0";
   buttonContainer.style.paddingTop = "8px";
-  buttonContainer.style.paddingBottom = "8px";
+  buttonContainer.style.paddingBottom = "0";
   buttonContainer.style.borderTop = "1px solid #e5e7eb";
   buttonContainer.style.background = "white";
-  buttonContainer.style.boxShadow = "0 4px 0 0 white";
+  buttonContainer.style.boxShadow = "none";
   buttonContainer.style.zIndex = "10";
+  buttonContainer.style.overflow = "hidden";
+
+  styleFooterStatusBar(status);
 
   const footerRow = document.createElement("div");
   footerRow.style.display = "grid";
   footerRow.style.gridTemplateColumns = "minmax(0, 1fr) auto";
   footerRow.style.alignItems = "center";
-  footerRow.style.gap = "8px";
+  footerRow.style.columnGap = "8px";
+  footerRow.style.paddingLeft = "10px";
+  footerRow.style.paddingRight = "10px";
+  footerRow.style.paddingBottom = "0";
+  footerRow.style.background = "white";
 
   const refreshWrap = document.createElement("div");
   refreshWrap.style.display = "flex";
@@ -429,11 +492,20 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
     evaluateBtn.style.borderColor = "#d1d5db";
   });
 
+  renderFooterStatusBar(status, passed, results.length);
+  status.style.marginTop = "6px";
+  status.style.marginLeft = "0";
+  status.style.marginRight = "0";
+  status.style.marginBottom = "0";
+
   refreshWrap.appendChild(evaluateBtn);
   actionButtons.appendChild(pinControlContainer);
   footerRow.appendChild(refreshWrap);
   footerRow.appendChild(actionButtons);
   buttonContainer.appendChild(footerRow);
+  buttonContainer.appendChild(status);
   body.appendChild(buttonContainer);
+
+  constraintsScroll.scrollTop = previousScrollTop;
   scheduleClampWidgetIntoViewport();
 }

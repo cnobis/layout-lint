@@ -95,7 +95,6 @@ export function createLayoutLintWidget(
   body.style.overflow = "auto";
 
   controls.appendChild(settingsToggle);
-  controls.appendChild(status);
   header.appendChild(controls);
 
   root.appendChild(header);
@@ -315,7 +314,12 @@ export function createLayoutLintWidget(
 
   const renderSettingsPanel = () => {
     body.innerHTML = "";
-    status.textContent = "settings";
+    status.textContent = "";
+    body.style.display = "block";
+    body.style.flexDirection = "";
+    body.style.overflow = "auto";
+    body.style.minHeight = "";
+    body.style.paddingBottom = "8px";
 
     const section = document.createElement("div");
     section.style.display = "grid";
