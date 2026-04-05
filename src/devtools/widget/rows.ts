@@ -1,23 +1,109 @@
 import type { LayoutLintMonitorController } from "../monitor/types.js";
 import type { RuleResult } from "../../core/types.js";
+import type { WidgetCategory } from "./types.js";
 import type { WidgetState } from "./state.js";
+import { renderFooterStatusBar, styleFooterStatusBar } from "./footer-status.js";
+import type { FooterStatusMode } from "./footer-status.js";
 
 export interface RenderRowsDeps {
   body: HTMLDivElement;
   status: HTMLSpanElement;
   state: WidgetState;
   monitor: LayoutLintMonitorController;
+  footerStatusMode: FooterStatusMode;
   renderActiveHighlight: () => void;
-  clampWidgetIntoViewport: () => void;
   scheduleClampWidgetIntoViewport: () => void;
-  updatePinStatus: () => void;
+  requestRerender: () => void;
+  onUnpinAll: () => void;
+  onRefreshRequested: () => void | Promise<void>;
 }
+
+export function renderWidgetMinimizedStatus(results: RuleResult[], deps: Pick<RenderRowsDeps, "body" | "status" | "footerStatusMode" | "scheduleClampWidgetIntoViewport">) {
+  const { body, status, footerStatusMode, scheduleClampWidgetIntoViewport } = deps;
+  const passed = results.filter((rule) => rule.pass).length;
+
+  body.innerHTML = "";
+  body.style.display = "block";
+  body.style.overflow = "hidden";
+  body.style.minHeight = "0";
+  body.style.padding = "0";
+
+  const minimizedBarWrap = document.createElement("div");
+  minimizedBarWrap.style.borderTop = "1px solid #e5e7eb";
+  minimizedBarWrap.style.background = "#ffffff";
+
+  styleFooterStatusBar(status);
+  renderFooterStatusBar(status, footerStatusMode, passed, results.length);
+  status.style.margin = "0";
+
+  minimizedBarWrap.appendChild(status);
+  body.appendChild(minimizedBarWrap);
+  scheduleClampWidgetIntoViewport();
+}
+
+const CATEGORY_LABELS: Record<WidgetCategory, string> = {
+  all: "All",
+  failing: "Failing",
+  passing: "Passing",
+};
 
 const isSizeRelation = (relation: string) => relation === "width" || relation === "height";
 const isSemanticRelation = (relation: string) => ["inside", "partially-inside"].includes(relation);
 const isAlignmentRelation = (relation: string) =>
   relation.startsWith("aligned-") || relation === "centered-x" || relation === "centered-y";
 const isEqualGapRelation = (relation: string) => relation === "equal-gap-x" || relation === "equal-gap-y";
+
+const createPinIcon = (size = 14) => {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("width", `${size}`);
+  svg.setAttribute("height", `${size}`);
+  svg.setAttribute("aria-hidden", "true");
+  svg.style.display = "block";
+
+  const stem = document.createElementNS(svgNS, "path");
+  stem.setAttribute("d", "M12 17v5");
+
+  const body = document.createElementNS(svgNS, "path");
+  body.setAttribute(
+    "d",
+    "M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"
+  );
+
+  svg.appendChild(stem);
+  svg.appendChild(body);
+  return svg;
+};
+
+const createRotateCcwIcon = (size = 14) => {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("width", `${size}`);
+  svg.setAttribute("height", `${size}`);
+  svg.setAttribute("aria-hidden", "true");
+
+  const path1 = document.createElementNS(svgNS, "path");
+  path1.setAttribute("d", "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8");
+
+  const path2 = document.createElementNS(svgNS, "path");
+  path2.setAttribute("d", "M3 3v5h5");
+
+  svg.appendChild(path1);
+  svg.appendChild(path2);
+  return svg;
+};
 
 const buildHeadline = (item: RuleResult) => {
   const hasPercentDistance = item.distancePct != null || item.distanceMinPct != null || item.distanceMaxPct != null;
@@ -84,23 +170,148 @@ const buildMeta = (item: RuleResult) => {
 };
 
 export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
-  const { body, status, state, monitor, renderActiveHighlight, scheduleClampWidgetIntoViewport, updatePinStatus } = deps;
+  const { body, status, state, footerStatusMode, renderActiveHighlight, scheduleClampWidgetIntoViewport, requestRerender } = deps;
+
+  const existingScroll = body.querySelector("[data-widget-constraints-scroll='true']") as HTMLDivElement | null;
+  const previousScrollTop = existingScroll?.scrollTop ?? 0;
 
   body.innerHTML = "";
+  body.style.display = "flex";
+  body.style.flexDirection = "column";
+  body.style.overflow = "hidden";
+  body.style.minHeight = "0";
+  body.style.padding = "8px 10px";
+  body.style.paddingBottom = "0";
   if (results.length === 0) {
     body.textContent = "No rules";
-    status.textContent = "0/0";
+    styleFooterStatusBar(status);
+    renderFooterStatusBar(status, footerStatusMode, 0, 0);
     scheduleClampWidgetIntoViewport();
     return;
   }
 
   const passed = results.filter((r) => r.pass).length;
-  status.textContent = `${passed}/${results.length}`;
 
-  for (const [index, item] of results.entries()) {
+  const viewModel = state.getViewModel(results);
+  const hasMultiplePages = viewModel.settings.tabsEnabled && viewModel.totalPages > 1;
+
+  // Tab container with count integrated
+  const tabContainer = document.createElement("div");
+  tabContainer.style.marginBottom = "4px";
+
+  const categoryTabsRow = document.createElement("div");
+  categoryTabsRow.style.display = "flex";
+  categoryTabsRow.style.alignItems = "center";
+  categoryTabsRow.style.gap = "0";
+  categoryTabsRow.style.borderBottom = "1px solid #e5e7eb";
+
+  const createCategoryTab = (category: WidgetCategory, count: number) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    const selected = viewModel.category === category;
+    button.style.flex = "1";
+    button.style.padding = "6px 10px 5px";
+    button.style.borderRadius = "0";
+    button.style.fontWeight = "600";
+    button.style.border = "none";
+    button.style.borderBottom = selected ? "2px solid #6366f1" : "2px solid transparent";
+    button.style.background = selected ? "#f9fafb" : "#ffffff";
+    button.style.color = selected ? "#1f2937" : "#6b7280";
+    button.style.cursor = "pointer";
+    button.style.outline = "none";
+    button.style.transition = "all 120ms ease";
+    button.style.display = "flex";
+    button.style.flexDirection = "column";
+    button.style.alignItems = "center";
+    button.style.justifyContent = "center";
+    button.style.gap = "1px";
+    button.addEventListener("pointerdown", (event) => event.stopPropagation());
+    button.addEventListener("click", () => {
+      state.setActiveCategory(category);
+      requestRerender();
+    });
+    button.addEventListener("focus", () => {
+      button.style.background = "#f3f4f6";
+    });
+    button.addEventListener("blur", () => {
+      button.style.background = selected ? "#f9fafb" : "#ffffff";
+    });
+
+    const label = document.createElement("span");
+    label.textContent = CATEGORY_LABELS[category];
+    label.style.fontSize = "11px";
+    label.style.lineHeight = "1.1";
+
+    const amount = document.createElement("span");
+    amount.textContent = `(${count})`;
+    amount.style.fontSize = "10px";
+    amount.style.lineHeight = "1.1";
+    amount.style.fontWeight = "700";
+    amount.style.color = selected ? "#4338ca" : "#9ca3af";
+
+    button.appendChild(label);
+    button.appendChild(amount);
+    return button;
+  };
+
+  categoryTabsRow.appendChild(createCategoryTab("all", viewModel.counts.all));
+  categoryTabsRow.appendChild(createCategoryTab("failing", viewModel.counts.failing));
+  categoryTabsRow.appendChild(createCategoryTab("passing", viewModel.counts.passing));
+
+  tabContainer.appendChild(categoryTabsRow);
+  body.appendChild(tabContainer);
+
+  const categoryTabs = categoryTabsRow;
+
+  if (hasMultiplePages) {
+    const pageTabs = document.createElement("div");
+    pageTabs.style.display = "flex";
+    pageTabs.style.flexWrap = "wrap";
+    pageTabs.style.gap = "4px";
+    pageTabs.style.marginBottom = "8px";
+
+    for (let page = 1; page <= viewModel.totalPages; page += 1) {
+      const pageButton = document.createElement("button");
+      pageButton.type = "button";
+      pageButton.textContent = `${page}`;
+      pageButton.style.minWidth = "24px";
+      pageButton.style.padding = "2px 6px";
+      pageButton.style.borderRadius = "999px";
+      pageButton.style.fontSize = "10px";
+      pageButton.style.fontWeight = "600";
+      pageButton.style.border = page === viewModel.page ? "1px solid #7a81ff" : "1px solid #d1d5db";
+      pageButton.style.background = page === viewModel.page ? "#e0e7ff" : "#ffffff";
+      pageButton.style.color = page === viewModel.page ? "#3730a3" : "#4b5563";
+      pageButton.style.cursor = "pointer";
+      pageButton.addEventListener("pointerdown", (event) => event.stopPropagation());
+      pageButton.addEventListener("click", () => {
+        state.setActivePage(page);
+        requestRerender();
+      });
+      pageTabs.appendChild(pageButton);
+    }
+
+    body.appendChild(pageTabs);
+  }
+
+  const constraintsScroll = document.createElement("div");
+  constraintsScroll.dataset.widgetConstraintsScroll = "true";
+  constraintsScroll.style.flex = "1 1 auto";
+  constraintsScroll.style.minHeight = "0";
+  constraintsScroll.style.overflowY = "auto";
+  constraintsScroll.style.overflowX = "hidden";
+  constraintsScroll.style.paddingRight = "2px";
+  constraintsScroll.style.paddingBottom = "2px";
+  body.appendChild(constraintsScroll);
+
+  for (const [index, item] of viewModel.visibleResults.entries()) {
     const row = document.createElement("div");
     const isPinned = state.isPinned(item);
-    const ruleNumber = index + 1;
+    const byReferenceIndex = results.findIndex((candidate) => candidate === item);
+    const globalIndex = byReferenceIndex >= 0
+      ? byReferenceIndex
+      : results.findIndex((candidate) => state.getRuleKey(candidate) === state.getRuleKey(item));
+    const ruleNumber = globalIndex >= 0 ? globalIndex + 1 : index + 1;
     row.style.border = "1px solid #e5e7eb";
     row.style.borderRadius = "6px";
     row.style.padding = "6px 8px";
@@ -160,14 +371,8 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
     const onRowPointerDown = (event: PointerEvent) => {
       event.preventDefault();
       state.togglePinnedRule(item);
-      updatePinStatus();
       renderActiveHighlight();
-
-      requestAnimationFrame(() => {
-        monitor.pauseObserver();
-        renderWidgetRows(results, deps);
-        monitor.resumeObserver();
-      });
+      requestRerender();
     };
 
     row.addEventListener("pointerenter", onRowEnter);
@@ -176,17 +381,156 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
 
     row.appendChild(head);
     row.appendChild(meta);
-    body.appendChild(row);
+    constraintsScroll.appendChild(row);
   }
 
   const buttonContainer = document.createElement("div");
-  buttonContainer.style.marginTop = "10px";
+  buttonContainer.style.position = "relative";
+  buttonContainer.style.flex = "0 0 auto";
+  buttonContainer.style.marginLeft = "-10px";
+  buttonContainer.style.marginRight = "-10px";
+  buttonContainer.style.marginBottom = "0";
+  buttonContainer.style.paddingLeft = "0";
+  buttonContainer.style.paddingRight = "0";
   buttonContainer.style.paddingTop = "8px";
+  buttonContainer.style.paddingBottom = "0";
   buttonContainer.style.borderTop = "1px solid #e5e7eb";
+  buttonContainer.style.background = "white";
+  buttonContainer.style.boxShadow = "none";
+  buttonContainer.style.zIndex = "10";
+  buttonContainer.style.overflow = "hidden";
+
+  styleFooterStatusBar(status);
+
+  const footerRow = document.createElement("div");
+  footerRow.style.display = "grid";
+  footerRow.style.gridTemplateColumns = "minmax(0, 1fr) auto";
+  footerRow.style.alignItems = "center";
+  footerRow.style.columnGap = "8px";
+  footerRow.style.paddingLeft = "10px";
+  footerRow.style.paddingRight = "10px";
+  footerRow.style.paddingBottom = "0";
+  footerRow.style.background = "white";
+
+  const refreshWrap = document.createElement("div");
+  refreshWrap.style.display = "flex";
+  refreshWrap.style.alignItems = "center";
+  refreshWrap.style.width = "100%";
+
+  const footerActions = document.createElement("div");
+  footerActions.style.display = "flex";
+  footerActions.style.alignItems = "center";
+  footerActions.style.justifyContent = "flex-end";
+  footerActions.style.gap = "0";
+  footerActions.style.fontSize = "11px";
+  footerActions.style.width = "100%";
+
+  const actionButtons = document.createElement("div");
+  actionButtons.style.display = "flex";
+  actionButtons.style.alignItems = "center";
+  actionButtons.style.gap = "0";
+
+  const pinnedCount = state.getPinnedRuleCount();
+  const hasPinnedRules = pinnedCount > 0;
+
+  const pinControlContainer = document.createElement("div");
+  pinControlContainer.style.display = "flex";
+  pinControlContainer.style.alignItems = "center";
+  pinControlContainer.style.gap = "0";
+  pinControlContainer.style.border = "1px solid #d1d5db";
+  pinControlContainer.style.borderRadius = "6px";
+  pinControlContainer.style.background = "#f3f4f6";
+  pinControlContainer.style.overflow = "hidden";
+
+  const statusSide = document.createElement("div");
+  statusSide.style.display = "flex";
+  statusSide.style.alignItems = "center";
+  statusSide.style.gap = "5px";
+  statusSide.style.padding = "6px 8px";
+  statusSide.style.color = hasPinnedRules ? "#1f2937" : "#6b7280";
+  statusSide.style.cursor = "default";
+  statusSide.style.userSelect = "none";
+  statusSide.style.lineHeight = "1";
+  statusSide.title = `${pinnedCount} pinned constraint${pinnedCount !== 1 ? 's' : ''}`;
+
+  const pinIconWrap = document.createElement("span");
+  pinIconWrap.style.display = "inline-flex";
+  pinIconWrap.style.width = "12px";
+  pinIconWrap.style.height = "12px";
+  pinIconWrap.style.alignItems = "center";
+  pinIconWrap.style.justifyContent = "center";
+  pinIconWrap.style.flex = "0 0 auto";
+  pinIconWrap.appendChild(createPinIcon(12));
+  statusSide.appendChild(pinIconWrap);
+
+  const pinnedCountText = document.createElement("span");
+  pinnedCountText.textContent = `${pinnedCount}`;
+  pinnedCountText.style.display = "inline-flex";
+  pinnedCountText.style.alignItems = "center";
+  pinnedCountText.style.justifyContent = "center";
+  pinnedCountText.style.width = "12px";
+  pinnedCountText.style.flex = "0 0 auto";
+  pinnedCountText.style.transform = "translateY(-1px)";
+  pinnedCountText.style.fontSize = "11px";
+  pinnedCountText.style.fontWeight = "600";
+  pinnedCountText.style.lineHeight = "1";
+  statusSide.appendChild(pinnedCountText);
+
+  const divider = document.createElement("div");
+  divider.style.width = "1px";
+  divider.style.height = "20px";
+  divider.style.background = "#d1d5db";
+  divider.style.opacity = "0.3";
+
+  const unpinBtn = document.createElement("button");
+  unpinBtn.type = "button";
+  unpinBtn.textContent = "Unpin All";
+  unpinBtn.style.display = "flex";
+  unpinBtn.style.alignItems = "center";
+  unpinBtn.style.justifyContent = "center";
+  unpinBtn.style.padding = "6px 8px";
+  unpinBtn.style.fontSize = "11px";
+  unpinBtn.style.fontWeight = "600";
+  unpinBtn.style.border = "none";
+  unpinBtn.style.background = "transparent";
+  unpinBtn.style.color = "#374151";
+  unpinBtn.style.cursor = hasPinnedRules ? "pointer" : "not-allowed";
+  unpinBtn.style.outline = "none";
+  unpinBtn.style.transition = "all 120ms ease";
+  unpinBtn.disabled = !hasPinnedRules;
+  unpinBtn.style.opacity = hasPinnedRules ? "1" : "0.55";
+
+  pinControlContainer.appendChild(statusSide);
+  pinControlContainer.appendChild(divider);
+  pinControlContainer.appendChild(unpinBtn);
+
+  unpinBtn.addEventListener("pointerdown", (e) => e.stopPropagation());
+  unpinBtn.addEventListener("click", () => {
+    if (!state.hasPinnedRules()) return;
+    deps.onUnpinAll();
+  });
+  unpinBtn.addEventListener("focus", () => {
+    pinControlContainer.style.borderColor = "#6366f1";
+    pinControlContainer.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.22)";
+  });
+  unpinBtn.addEventListener("blur", () => {
+    pinControlContainer.style.borderColor = "#d1d5db";
+    pinControlContainer.style.boxShadow = "none";
+  });
+  unpinBtn.addEventListener("pointerenter", () => {
+    if (!hasPinnedRules) return;
+    unpinBtn.style.background = "#e5e7eb";
+  });
+  unpinBtn.addEventListener("pointerleave", () => {
+    unpinBtn.style.background = "transparent";
+  });
 
   const evaluateBtn = document.createElement("button");
   evaluateBtn.type = "button";
-  evaluateBtn.textContent = "Evaluate";
+  evaluateBtn.style.display = "inline-flex";
+  evaluateBtn.style.alignItems = "center";
+  evaluateBtn.style.justifyContent = "center";
+  evaluateBtn.style.gap = "6px";
   evaluateBtn.style.width = "100%";
   evaluateBtn.style.padding = "6px 8px";
   evaluateBtn.style.fontSize = "11px";
@@ -197,23 +541,49 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
   evaluateBtn.style.color = "#374151";
   evaluateBtn.style.cursor = "pointer";
   evaluateBtn.style.transition = "all 120ms ease";
+  evaluateBtn.style.outline = "none";
+
+  const refreshIcon = createRotateCcwIcon(13);
+  const refreshText = document.createElement("span");
+  refreshText.textContent = "Refresh Results";
+  evaluateBtn.appendChild(refreshIcon);
+  evaluateBtn.appendChild(refreshText);
 
   evaluateBtn.addEventListener("pointerdown", (e) => e.stopPropagation());
   evaluateBtn.addEventListener("click", () => {
-    void monitor.evaluateNow();
+    void deps.onRefreshRequested();
   });
-
+  evaluateBtn.addEventListener("focus", () => {
+    evaluateBtn.style.borderColor = "#6366f1";
+    evaluateBtn.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.22)";
+  });
+  evaluateBtn.addEventListener("blur", () => {
+    evaluateBtn.style.borderColor = "#d1d5db";
+    evaluateBtn.style.boxShadow = "none";
+  });
   evaluateBtn.addEventListener("pointerenter", () => {
     evaluateBtn.style.background = "#e5e7eb";
     evaluateBtn.style.borderColor = "#9ca3af";
   });
-
   evaluateBtn.addEventListener("pointerleave", () => {
     evaluateBtn.style.background = "#f3f4f6";
     evaluateBtn.style.borderColor = "#d1d5db";
   });
 
-  buttonContainer.appendChild(evaluateBtn);
+  renderFooterStatusBar(status, footerStatusMode, passed, results.length);
+  status.style.marginTop = "6px";
+  status.style.marginLeft = "0";
+  status.style.marginRight = "0";
+  status.style.marginBottom = "0";
+
+  refreshWrap.appendChild(evaluateBtn);
+  actionButtons.appendChild(pinControlContainer);
+  footerRow.appendChild(refreshWrap);
+  footerRow.appendChild(actionButtons);
+  buttonContainer.appendChild(footerRow);
+  buttonContainer.appendChild(status);
   body.appendChild(buttonContainer);
+
+  constraintsScroll.scrollTop = previousScrollTop;
   scheduleClampWidgetIntoViewport();
 }

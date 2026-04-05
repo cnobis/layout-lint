@@ -26,6 +26,38 @@ const { results } = await runLayoutLint({
 });
 ```
 
+## Devtools Widget
+
+```typescript
+import {
+  createLayoutLintMonitor,
+  createLayoutLintWidget,
+  createConsoleReporter,
+} from 'layout-lint/devtools';
+
+const monitor = createLayoutLintMonitor({
+  specText,
+  wasmUrl: './layout_lint.wasm',
+  reporters: [createConsoleReporter()],
+});
+
+createLayoutLintWidget(monitor, {
+  initialPosition: { x: 16, y: 16 },
+  tabsEnabled: true,
+  constraintsPerPage: 10,
+  persistSettings: true,
+});
+```
+
+Widget options:
+
+- `tabsEnabled` (default `true`): enables category tabs (`All`, `Failing`, `Passing`) plus page tabs.
+- `constraintsPerPage` (default `10`): max visible constraints per page when tabs are enabled.
+- `persistSettings` (default `true`): stores widget settings in localStorage.
+- `settingsStorageKey` (default `layout-lint:widget-settings`): custom localStorage key.
+
+In the widget, use the `settings` button to open the settings panel and configure tabs behavior live.
+
 ## License
 
 MIT
