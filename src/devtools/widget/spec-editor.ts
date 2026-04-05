@@ -48,6 +48,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
   let error: string | null = null;
   let diagnostics: LayoutLintDiagnostic[] = [];
   let closeAfterSuccessTimer: number | null = null;
+  const expandedRelatedDiagnosticKeys = new Set<string>();
 
   const clearCloseAfterSuccessTimer = () => {
     if (closeAfterSuccessTimer == null) return;
@@ -57,14 +58,19 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
 
   const formatDiagnostic = (diagnostic: LayoutLintDiagnostic) => {
     const location = `L${diagnostic.range.start.line}:${diagnostic.range.start.column + 1}`;
-    return `${diagnostic.code} ${location} - ${diagnostic.message}`;
+    const suggestion = diagnostic.suggestion ? ` Did you mean \"${diagnostic.suggestion}\"?` : "";
+    return `${diagnostic.code} ${location} - ${diagnostic.message}${suggestion}`;
   };
+
+  const diagnosticKey = (diagnostic: LayoutLintDiagnostic) =>
+    `${diagnostic.code}:${diagnostic.range.startIndex}:${diagnostic.range.endIndex}`;
 
   const close = () => {
     clearCloseAfterSuccessTimer();
     isOpen = false;
     error = null;
     diagnostics = [];
+    expandedRelatedDiagnosticKeys.clear();
     args.updateHeaderToggleStyles();
   };
 
@@ -73,6 +79,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     draft = args.monitor.getSpecText();
     error = null;
     diagnostics = [];
+    expandedRelatedDiagnosticKeys.clear();
     args.updateHeaderToggleStyles();
   };
 
@@ -119,6 +126,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
           // keep prior spec restoration best effort
         }
         diagnostics = errorDiagnostics;
+        expandedRelatedDiagnosticKeys.clear();
         error = `Spec contains ${errorDiagnostics.length} syntax issue${errorDiagnostics.length === 1 ? "" : "s"}.`;
         isOpen = true;
         args.updateHeaderToggleStyles();
@@ -127,6 +135,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
         return;
       }
       diagnostics = [];
+      expandedRelatedDiagnosticKeys.clear();
       args.flashFooterStatusDone();
       closeAfterSuccessTimer = window.setTimeout(() => {
         close();
@@ -141,6 +150,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
       }
       error = cause instanceof Error ? cause.message : "Failed to apply spec.";
       diagnostics = [];
+      expandedRelatedDiagnosticKeys.clear();
       isOpen = true;
       args.updateHeaderToggleStyles();
       args.showFooterErrorAndReset();
@@ -250,7 +260,63 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
 
     for (const diagnostic of diagnostics.slice(0, 4)) {
       const item = document.createElement("div");
-      item.textContent = formatDiagnostic(diagnostic);
+      item.style.display = "grid";
+      item.style.gap = "2px";
+
+      const summary = document.createElement("div");
+      summary.textContent = formatDiagnostic(diagnostic);
+      item.appendChild(summary);
+
+      const related = diagnostic.relatedDiagnostics ?? [];
+      if (related.length > 0) {
+        const key = diagnosticKey(diagnostic);
+        const expanded = expandedRelatedDiagnosticKeys.has(key);
+
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.textContent = expanded
+          ? `Hide ${related.length} related recover${related.length === 1 ? "y" : "ies"}`
+          : `Show ${related.length} related recover${related.length === 1 ? "y" : "ies"}`;
+        toggle.style.fontSize = "10px";
+        toggle.style.fontWeight = "600";
+        toggle.style.color = "#7c2d12";
+        toggle.style.background = "transparent";
+        toggle.style.border = "none";
+        toggle.style.padding = "0";
+        toggle.style.width = "fit-content";
+        toggle.style.cursor = "pointer";
+        toggle.addEventListener("pointerdown", (event) => event.stopPropagation());
+        toggle.addEventListener("click", () => {
+          if (expandedRelatedDiagnosticKeys.has(key)) {
+            expandedRelatedDiagnosticKeys.delete(key);
+          } else {
+            expandedRelatedDiagnosticKeys.add(key);
+          }
+          args.requestRerender();
+        });
+        item.appendChild(toggle);
+
+        if (expanded) {
+          const relatedList = document.createElement("div");
+          relatedList.style.display = "grid";
+          relatedList.style.gap = "1px";
+          relatedList.style.paddingLeft = "10px";
+          relatedList.style.color = "#9a3412";
+
+          for (const relatedDiagnostic of related) {
+            const relatedLocation = `L${relatedDiagnostic.range.start.line}:${relatedDiagnostic.range.start.column + 1}`;
+            const relatedSuggestion = relatedDiagnostic.suggestion
+              ? ` Did you mean \"${relatedDiagnostic.suggestion}\"?`
+              : "";
+            const relatedLine = document.createElement("div");
+            relatedLine.textContent = `- ${relatedDiagnostic.code} ${relatedLocation} - ${relatedDiagnostic.message}${relatedSuggestion}`;
+            relatedList.appendChild(relatedLine);
+          }
+
+          item.appendChild(relatedList);
+        }
+      }
+
       diagnosticsList.appendChild(item);
     }
 

@@ -52,10 +52,22 @@ export interface LayoutLintSourceRange {
   end: LayoutLintSourcePosition;
 }
 
+export interface LayoutLintRelatedDiagnostic {
+  code: string;
+  severity: LayoutLintDiagnosticSeverity;
+  message: string;
+  range: LayoutLintSourceRange;
+  snippet?: string;
+  suggestion?: string;
+}
+
 export interface LayoutLintDiagnostic {
   code: string;
   severity: LayoutLintDiagnosticSeverity;
   message: string;
   range: LayoutLintSourceRange;
   snippet?: string;
+  suggestion?: string;
+  relatedDiagnosticsCount?: number;
+  relatedDiagnostics?: LayoutLintRelatedDiagnostic[];
 }

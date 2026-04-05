@@ -82,6 +82,64 @@ describe('parse diagnostics extraction', () => {
     assert.ok(diagnostics[0].message.includes('Malformed rule'));
   });
 
+  it('collapses adjacent parser recovery diagnostics into a single primary issue', () => {
+    const source = 'nav abave header 10px';
+    const firstError = makeNode({
+      type: 'ERROR',
+      text: 'abave',
+      startIndex: 4,
+      endIndex: 9,
+    });
+    const secondError = makeNode({
+      type: 'ERROR',
+      text: ' ',
+      startIndex: 9,
+      endIndex: 10,
+    });
+    const rootNode = makeNode({
+      type: 'source_file',
+      text: source,
+      startIndex: 0,
+      endIndex: source.length,
+      children: [firstError, secondError],
+      namedChildren: [],
+    });
+
+    const { diagnostics } = extractRules({ rootNode }, source);
+
+    assert.strictEqual(diagnostics.length, 1);
+    assert.strictEqual(diagnostics[0].code, 'LL-PARSE-SYNTAX');
+    assert.strictEqual(diagnostics[0].relatedDiagnosticsCount, 1);
+    assert.strictEqual(diagnostics[0].message, 'Invalid spec syntax near this segment.');
+    assert.strictEqual(diagnostics[0].relatedDiagnostics?.length, 1);
+    assert.strictEqual(diagnostics[0].relatedDiagnostics?.[0].code, 'LL-PARSE-SYNTAX');
+    assert.strictEqual(diagnostics[0].relatedDiagnostics?.[0].range.startIndex, 9);
+  });
+
+  it('adds a typo suggestion for close parse-keyword mistakes', () => {
+    const source = 'nav abave header 10px';
+    const errorNode = makeNode({
+      type: 'ERROR',
+      text: 'abave',
+      startIndex: 4,
+      endIndex: 9,
+    });
+    const rootNode = makeNode({
+      type: 'source_file',
+      text: source,
+      startIndex: 0,
+      endIndex: source.length,
+      children: [errorNode],
+      namedChildren: [],
+    });
+
+    const { diagnostics } = extractRules({ rootNode }, source);
+
+    assert.strictEqual(diagnostics.length, 1);
+    assert.strictEqual(diagnostics[0].code, 'LL-PARSE-SYNTAX');
+    assert.strictEqual(diagnostics[0].suggestion, 'above');
+  });
+
   it('returns no diagnostics for well-formed default relation rules', () => {
     const source = 'nav below header 10px';
     const elementNode = makeNode({ type: 'identifier', text: 'nav', startIndex: 0, endIndex: 3 });
