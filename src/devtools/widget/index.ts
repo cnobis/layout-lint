@@ -4,10 +4,19 @@ import type { RuleResult } from "../../core/types.js";
 import { createOverlayRenderer } from "./overlays.js";
 import { createWidgetState } from "./state.js";
 import { renderWidgetMinimizedStatus, renderWidgetRows } from "./rows.js";
-import type { FooterStatusMode } from "./footer-status.js";
+import { createSpecEditor } from "./spec-editor.js";
+import { createWidgetHeaderControls, setHeaderToggleActive } from "./header-controls.js";
+import { renderWidgetSettingsPanel } from "./settings-panel.js";
+import { createWidgetDragController } from "./drag-controller.js";
+import { createWidgetStatusController } from "./status-controller.js";
+import { createWidgetResizeController } from "./resize-controller.js";
 import {
   DEFAULT_WIDGET_SETTINGS,
   DEFAULT_WIDGET_SETTINGS_STORAGE_KEY,
+  MIN_WIDGET_WIDTH_PX,
+  MAX_WIDGET_WIDTH_PX,
+  MIN_WIDGET_HEIGHT_PX,
+  MAX_WIDGET_HEIGHT_PX,
   clampConstraintsPerPage,
   loadWidgetSettings,
   normalizeWidgetSettings,
@@ -19,7 +28,11 @@ export function createLayoutLintWidget(
   options: LayoutLintWidgetOptions = {}
 ): LayoutLintWidgetController {
   const EXPANDED_WIDGET_WIDTH = 340;
+  const EXPANDED_WIDGET_HEIGHT = 360;
   const MINIMIZED_WIDGET_WIDTH = 248;
+  const FAKE_LOADING_DURATION_MS = 800;
+  const REEVALUATE_STATUS_LABEL = "evaluating...";
+  const SPEC_UPDATE_STATUS_LABEL = "updating spec...";
   const persistSettings = options.persistSettings !== false;
   const settingsStorageKey = options.settingsStorageKey ?? DEFAULT_WIDGET_SETTINGS_STORAGE_KEY;
   const storedSettings = persistSettings
@@ -30,6 +43,9 @@ export function createLayoutLintWidget(
       tabsEnabled: options.tabsEnabled,
       constraintsPerPage: options.constraintsPerPage,
       minimized: options.initialMinimized,
+      statusTransitionDelayEnabled: options.statusTransitionDelayEnabled,
+      widthPx: options.widthPx,
+      heightPx: options.heightPx,
     },
     storedSettings
   );
@@ -40,97 +56,36 @@ export function createLayoutLintWidget(
   root.style.zIndex = "2147483647";
   root.style.top = `${options.initialPosition?.y ?? 16}px`;
   root.style.left = `${options.initialPosition?.x ?? 16}px`;
-  root.style.width = `${initialSettings.minimized ? MINIMIZED_WIDGET_WIDTH : EXPANDED_WIDGET_WIDTH}px`;
-  root.style.maxHeight = "45vh";
+  root.style.width = `${initialSettings.minimized ? MINIMIZED_WIDGET_WIDTH : (initialSettings.widthPx ?? EXPANDED_WIDGET_WIDTH)}px`;
+  root.style.height = initialSettings.minimized ? "auto" : `${initialSettings.heightPx ?? EXPANDED_WIDGET_HEIGHT}px`;
   root.style.overflow = "hidden";
+  root.style.display = "flex";
+  root.style.flexDirection = "column";
   root.style.border = "1px solid #d1d5db";
   root.style.borderRadius = "10px";
   root.style.background = "#ffffff";
   root.style.boxShadow = "0 10px 25px rgba(0,0,0,0.15)";
-  root.style.transition = "width 140ms ease";
+  root.style.transition = "width 140ms ease, height 140ms ease";
   root.style.font = "12px/1.4 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif";
   root.style.color = "#111827";
 
-  const header = document.createElement("div");
-  header.style.padding = "8px 10px";
-  header.style.cursor = "move";
-  header.style.userSelect = "none";
-  header.style.background = "#7a81ff";
-  header.style.color = "#ffffff";
-  header.style.display = "flex";
-  header.style.justifyContent = "space-between";
-  header.style.alignItems = "center";
-
-  const title = document.createElement("span");
-  title.textContent = options.title ?? "layout-lint";
-  title.style.fontFamily = '"Helvetica Neue", Helvetica, Arial, sans-serif';
-  title.style.fontWeight = "300";
-  title.style.letterSpacing = "0.01em";
-  header.appendChild(title);
+  const {
+    header,
+    constraintsToggle,
+    settingsToggle,
+    specToggle,
+    minimizeToggle,
+  } = createWidgetHeaderControls(options.title ?? "layout-lint");
 
   const status = document.createElement("span");
   status.style.fontWeight = "600";
   status.textContent = "…";
 
-  const controls = document.createElement("div");
-  controls.style.display = "flex";
-  controls.style.alignItems = "center";
-  controls.style.gap = "8px";
-
-  const settingsToggle = document.createElement("button");
-  settingsToggle.type = "button";
-  settingsToggle.textContent = "settings";
-  settingsToggle.style.border = "1px solid rgba(255,255,255,0.6)";
-  settingsToggle.style.borderRadius = "999px";
-  settingsToggle.style.background = "transparent";
-  settingsToggle.style.color = "#ffffff";
-  settingsToggle.style.fontSize = "11px";
-  settingsToggle.style.padding = "2px 8px";
-  settingsToggle.style.cursor = "pointer";
-  settingsToggle.style.outline = "none";
-  settingsToggle.style.transition = "box-shadow 120ms ease, border-color 120ms ease";
-  settingsToggle.addEventListener("focus", () => {
-    settingsToggle.style.borderColor = "#c7d2fe";
-    settingsToggle.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.28)";
-  });
-  settingsToggle.addEventListener("blur", () => {
-    settingsToggle.style.borderColor = "rgba(255,255,255,0.6)";
-    settingsToggle.style.boxShadow = "none";
-  });
-
-  const minimizeToggle = document.createElement("button");
-  minimizeToggle.type = "button";
-  minimizeToggle.textContent = "▾";
-  minimizeToggle.title = "minimize widget";
-  minimizeToggle.style.border = "1px solid rgba(255,255,255,0.6)";
-  minimizeToggle.style.borderRadius = "999px";
-  minimizeToggle.style.background = "transparent";
-  minimizeToggle.style.color = "#ffffff";
-  minimizeToggle.style.fontSize = "14px";
-  minimizeToggle.style.fontWeight = "700";
-  minimizeToggle.style.lineHeight = "1";
-  minimizeToggle.style.minWidth = "30px";
-  minimizeToggle.style.padding = "3px 8px";
-  minimizeToggle.style.cursor = "pointer";
-  minimizeToggle.style.outline = "none";
-  minimizeToggle.style.transition = "box-shadow 120ms ease, border-color 120ms ease";
-  minimizeToggle.addEventListener("focus", () => {
-    minimizeToggle.style.borderColor = "#c7d2fe";
-    minimizeToggle.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.28)";
-  });
-  minimizeToggle.addEventListener("blur", () => {
-    minimizeToggle.style.borderColor = "rgba(255,255,255,0.6)";
-    minimizeToggle.style.boxShadow = "none";
-  });
-
   const body = document.createElement("div");
   body.style.padding = "8px 10px";
-  body.style.maxHeight = "calc(45vh - 40px)";
-  body.style.overflow = "auto";
-
-  controls.appendChild(settingsToggle);
-  controls.appendChild(minimizeToggle);
-  header.appendChild(controls);
+  body.style.flex = "1 1 auto";
+  body.style.minHeight = "0";
+  body.style.overflow = "hidden";
 
   root.appendChild(header);
   root.appendChild(body);
@@ -156,63 +111,66 @@ export function createLayoutLintWidget(
 
   let latestResults: RuleResult[] = [];
   let settingsOpen = false;
-  let footerStatusMode: FooterStatusMode = "ready";
-  let footerStatusResetTimer: number | null = null;
-
-  const clearFooterStatusResetTimer = () => {
-    if (footerStatusResetTimer == null) return;
-    window.clearTimeout(footerStatusResetTimer);
-    footerStatusResetTimer = null;
-  };
-
-  const setFooterStatusMode = (mode: FooterStatusMode) => {
-    footerStatusMode = mode;
-    requestRerender();
-  };
-
-  const flashFooterStatusDone = () => {
-    clearFooterStatusResetTimer();
-    footerStatusMode = "done";
-    requestRerender();
-    footerStatusResetTimer = window.setTimeout(() => {
-      footerStatusMode = "ready";
+  let specEditor: ReturnType<typeof createSpecEditor> | null = null;
+  let requestRerender = () => {};
+  const statusController = createWidgetStatusController({
+    defaultReadyActionLabel: REEVALUATE_STATUS_LABEL,
+    requestRerender: () => {
       requestRerender();
-    }, 1600);
-  };
+    },
+  });
 
   const handleRefreshAction = async () => {
-    clearFooterStatusResetTimer();
-    setFooterStatusMode("loading");
+    statusController.clearResetTimer();
+    statusController.setActionLabel(REEVALUATE_STATUS_LABEL);
+    statusController.setMode("loading");
     try {
-      await new Promise<void>((resolve) => {
-        window.setTimeout(resolve, 1200);
-      });
+      if (state.getSettings().statusTransitionDelayEnabled) {
+        await new Promise<void>((resolve) => {
+          window.setTimeout(resolve, FAKE_LOADING_DURATION_MS);
+        });
+      }
       await monitor.evaluateNow();
-      flashFooterStatusDone();
+      statusController.flashDone();
     } catch {
-      footerStatusMode = "error";
-      requestRerender();
-      footerStatusResetTimer = window.setTimeout(() => {
-        footerStatusMode = "ready";
-        requestRerender();
-      }, 1600);
+      statusController.showErrorAndReset();
     }
   };
 
-  const updateSettingsToggleLabel = () => {
-    settingsToggle.textContent = settingsOpen ? "constraints" : "settings";
+  const applyHeaderToggleMode = (button: HTMLButtonElement, isActive: boolean) => {
+    setHeaderToggleActive(button, isActive);
+  };
+
+  const updateHeaderToggleStyles = () => {
+    const isSpecEditorOpen = specEditor?.isOpen() ?? false;
+    const constraintsActive = !state.getSettings().minimized && !settingsOpen && !isSpecEditorOpen;
+    applyHeaderToggleMode(constraintsToggle, constraintsActive);
+    applyHeaderToggleMode(settingsToggle, settingsOpen);
+    applyHeaderToggleMode(specToggle, isSpecEditorOpen);
+    applyHeaderToggleMode(minimizeToggle, state.getSettings().minimized);
   };
 
   const updateMinimizeToggleLabel = () => {
     const isMinimized = state.getSettings().minimized;
-    minimizeToggle.textContent = isMinimized ? "▸" : "▾";
+    minimizeToggle.textContent = isMinimized ? "◂" : "▾";
     minimizeToggle.title = isMinimized ? "expand widget" : "minimize widget";
     minimizeToggle.setAttribute("aria-label", isMinimized ? "expand widget" : "minimize widget");
+    constraintsToggle.style.display = isMinimized ? "none" : "inline-flex";
     settingsToggle.style.display = isMinimized ? "none" : "inline-flex";
+    specToggle.style.display = isMinimized ? "none" : "inline-flex";
+    updateHeaderToggleStyles();
   };
 
-  const applyWidgetWidthForCurrentState = () => {
-    root.style.width = `${state.getSettings().minimized ? MINIMIZED_WIDGET_WIDTH : EXPANDED_WIDGET_WIDTH}px`;
+  const applyWidgetDimensionsForCurrentState = () => {
+    const settings = state.getSettings();
+    if (settings.minimized) {
+      root.style.width = `${MINIMIZED_WIDGET_WIDTH}px`;
+      root.style.height = "auto";
+      return;
+    }
+
+    root.style.width = `${settings.widthPx ?? EXPANDED_WIDGET_WIDTH}px`;
+    root.style.height = `${settings.heightPx ?? EXPANDED_WIDGET_HEIGHT}px`;
   };
 
   const persistCurrentSettings = () => {
@@ -220,7 +178,7 @@ export function createLayoutLintWidget(
     saveWidgetSettings(settingsStorageKey, state.getSettings());
   };
 
-  updateSettingsToggleLabel();
+  updateHeaderToggleStyles();
   updateMinimizeToggleLabel();
 
   const resolveElement = (identifier: string | undefined): HTMLElement | null => {
@@ -317,68 +275,72 @@ export function createLayoutLintWidget(
       );
     }
   };
-
-  let dragging = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
+  const dragController = createWidgetDragController({
+    root,
+    header,
+    onViewportChange: renderActiveHighlight,
+  });
+  const resizeController = createWidgetResizeController({
+    root,
+    getBounds: () => ({
+      minWidth: MIN_WIDGET_WIDTH_PX,
+      maxWidth: MAX_WIDGET_WIDTH_PX,
+      minHeight: MIN_WIDGET_HEIGHT_PX,
+      maxHeight: MAX_WIDGET_HEIGHT_PX,
+    }),
+    onResize: () => {
+      renderActiveHighlight();
+    },
+    onResizeEnd: ({ widthPx, heightPx }) => {
+      state.updateSettings({ widthPx, heightPx });
+      persistCurrentSettings();
+      clampWidgetIntoViewport();
+      renderActiveHighlight();
+    },
+  });
   const clampWidgetIntoViewport = () => {
-    const margin = 8;
-    const rect = root.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    const minLeft = margin;
-    const minTop = margin;
-    const maxLeft = Math.max(minLeft, viewportWidth - rect.width - margin);
-    const maxTop = Math.max(minTop, viewportHeight - rect.height - margin);
-
-    const currentLeft = Number.parseFloat(root.style.left || "0");
-    const currentTop = Number.parseFloat(root.style.top || "0");
-
-    const nextLeft = Math.min(Math.max(currentLeft, minLeft), maxLeft);
-    const nextTop = Math.min(Math.max(currentTop, minTop), maxTop);
-
-    root.style.left = `${nextLeft}px`;
-    root.style.top = `${nextTop}px`;
+    dragController.clampIntoViewport();
   };
-
-  const onPointerMove = (event: PointerEvent) => {
-    if (!dragging) return;
-    root.style.left = `${event.clientX - offsetX}px`;
-    root.style.top = `${event.clientY - offsetY}px`;
-    clampWidgetIntoViewport();
-  };
-
-  const onPointerUp = () => {
-    dragging = false;
-    clampWidgetIntoViewport();
-    window.removeEventListener("pointermove", onPointerMove);
-    window.removeEventListener("pointerup", onPointerUp);
-  };
-
-  const onPointerDown = (event: PointerEvent) => {
-    const targetElement = event.target as HTMLElement | null;
-    if (targetElement?.closest("button")) return;
-
-    dragging = true;
-    const rect = root.getBoundingClientRect();
-    offsetX = event.clientX - rect.left;
-    offsetY = event.clientY - rect.top;
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerup", onPointerUp);
-  };
-
-  header.addEventListener("pointerdown", onPointerDown);
 
   const onTogglePointerDown = (event: PointerEvent) => {
     event.stopPropagation();
   };
 
+  const resetWidgetSize = () => {
+    state.updateSettings({ widthPx: undefined, heightPx: undefined });
+    persistCurrentSettings();
+    applyWidgetDimensionsForCurrentState();
+    requestRerender();
+  };
+
+  const onHeaderDoubleClick = (event: MouseEvent) => {
+    const targetElement = event.target as HTMLElement | null;
+    if (targetElement?.closest("button")) return;
+    event.preventDefault();
+    resetWidgetSize();
+  };
+
   const onSettingsToggleClick = () => {
     if (state.getSettings().minimized) return;
-    settingsOpen = !settingsOpen;
-    updateSettingsToggleLabel();
+    settingsOpen = true;
+    specEditor?.close();
+    updateHeaderToggleStyles();
+    requestRerender();
+  };
+
+  const onConstraintsToggleClick = () => {
+    if (state.getSettings().minimized) return;
+    settingsOpen = false;
+    specEditor?.close();
+    updateHeaderToggleStyles();
+    requestRerender();
+  };
+
+  const onSpecToggleClick = () => {
+    if (state.getSettings().minimized) return;
+    settingsOpen = false;
+    specEditor?.open();
+    updateHeaderToggleStyles();
     requestRerender();
   };
 
@@ -387,11 +349,16 @@ export function createLayoutLintWidget(
     state.updateSettings({ minimized: nextMinimized });
     if (nextMinimized && settingsOpen) {
       settingsOpen = false;
-      updateSettingsToggleLabel();
+      updateHeaderToggleStyles();
+    }
+    if (nextMinimized && specEditor?.isOpen()) {
+      specEditor.close();
     }
     persistCurrentSettings();
     updateMinimizeToggleLabel();
-    applyWidgetWidthForCurrentState();
+    resizeController.setHandlesVisible(!nextMinimized);
+    resizeController.setEnabled(!nextMinimized);
+    applyWidgetDimensionsForCurrentState();
     requestRerender();
   };
 
@@ -407,7 +374,8 @@ export function createLayoutLintWidget(
       status,
       state,
       monitor,
-      footerStatusMode,
+      footerStatusMode: statusController.getMode(),
+      footerStatusActionLabel: statusController.getActionLabel(),
       renderActiveHighlight,
       scheduleClampWidgetIntoViewport,
       requestRerender,
@@ -420,230 +388,33 @@ export function createLayoutLintWidget(
   };
 
   const renderSettingsPanel = () => {
-    body.innerHTML = "";
     status.textContent = "";
-    body.style.display = "block";
-    body.style.flexDirection = "";
-    body.style.overflow = "auto";
-    body.style.minHeight = "";
-    body.style.padding = "8px 10px";
-    body.style.paddingBottom = "8px";
-
-    const section = document.createElement("div");
-    section.style.display = "grid";
-    section.style.gap = "10px";
-    section.style.padding = "10px";
-    section.style.border = "1px solid #dbe3ff";
-    section.style.borderRadius = "10px";
-    section.style.background = "linear-gradient(180deg, #f8faff 0%, #eef2ff 100%)";
-
-    const settings = state.getSettings();
-
-    const createToggleRow = (
-      label: string,
-      description: string,
-      checked: boolean,
-      onChange: (nextValue: boolean) => void
-    ) => {
-      const row = document.createElement("div");
-      row.style.display = "flex";
-      row.style.alignItems = "center";
-      row.style.justifyContent = "space-between";
-      row.style.gap = "10px";
-      row.style.padding = "8px 10px";
-      row.style.border = "1px solid #c7d2fe";
-      row.style.borderRadius = "8px";
-      row.style.background = "rgba(255,255,255,0.85)";
-
-      const textWrap = document.createElement("div");
-      textWrap.style.display = "grid";
-      textWrap.style.gap = "1px";
-
-      const title = document.createElement("div");
-      title.textContent = label;
-      title.style.fontSize = "11px";
-      title.style.fontWeight = "700";
-      title.style.color = "#1f2937";
-
-      const subtitle = document.createElement("div");
-      subtitle.textContent = description;
-      subtitle.style.fontSize = "10px";
-      subtitle.style.color = "#6b7280";
-
-      const toggle = document.createElement("button");
-      toggle.type = "button";
-      toggle.textContent = checked ? "On" : "Off";
-      toggle.style.minWidth = "44px";
-      toggle.style.padding = "3px 10px";
-      toggle.style.borderRadius = "999px";
-      toggle.style.border = checked ? "1px solid #6366f1" : "1px solid #9ca3af";
-      toggle.style.background = checked ? "#e0e7ff" : "#f3f4f6";
-      toggle.style.color = checked ? "#3730a3" : "#4b5563";
-      toggle.style.fontSize = "10px";
-      toggle.style.fontWeight = "700";
-      toggle.style.cursor = "pointer";
-      toggle.style.outline = "none";
-      toggle.style.transition = "box-shadow 120ms ease";
-      toggle.addEventListener("pointerdown", (event) => event.stopPropagation());
-      toggle.addEventListener("focus", () => {
-        toggle.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.22)";
-      });
-      toggle.addEventListener("blur", () => {
-        toggle.style.boxShadow = "none";
-      });
-      toggle.addEventListener("click", () => {
-        onChange(!checked);
-      });
-
-      textWrap.appendChild(title);
-      textWrap.appendChild(subtitle);
-      row.appendChild(textWrap);
-      row.appendChild(toggle);
-      return row;
-    };
-
-    const highlightRow = createToggleRow(
-      "Highlights",
-      "Show overlays on linked elements",
-      settings.highlightsEnabled,
-      (nextValue) => {
-      state.updateSettings({ highlightsEnabled: nextValue });
-      persistCurrentSettings();
-      requestRerender();
-      }
-    );
-
-    const tabsRow = createToggleRow(
-      "Tabs",
-      "Split constraints into navigable pages",
-      settings.tabsEnabled,
-      (nextValue) => {
-      state.updateSettings({ tabsEnabled: nextValue });
-      persistCurrentSettings();
-      requestRerender();
-      }
-    );
-
-    const thresholdWrap = document.createElement("div");
-    thresholdWrap.style.display = "grid";
-    thresholdWrap.style.gap = "4px";
-    thresholdWrap.style.padding = "8px 10px";
-    const thresholdEnabled = settings.tabsEnabled;
-    thresholdWrap.style.border = thresholdEnabled ? "1px solid #c7d2fe" : "1px solid #d1d5db";
-    thresholdWrap.style.borderRadius = "8px";
-    thresholdWrap.style.background = thresholdEnabled ? "rgba(255,255,255,0.85)" : "rgba(243,244,246,0.9)";
-    thresholdWrap.style.opacity = thresholdEnabled ? "1" : "0.8";
-
-    const thresholdLabel = document.createElement("label");
-    thresholdLabel.textContent = "Constraints Per Page";
-    thresholdLabel.style.fontWeight = "700";
-    thresholdLabel.style.fontSize = "11px";
-    thresholdLabel.style.color = "#1f2937";
-
-    const thresholdInput = document.createElement("input");
-    thresholdInput.type = "text";
-    thresholdInput.inputMode = "numeric";
-    thresholdInput.pattern = "[0-9]*";
-    thresholdInput.maxLength = 3;
-    thresholdInput.disabled = !thresholdEnabled;
-    thresholdInput.value = `${settings.constraintsPerPage}`;
-    thresholdInput.style.border = thresholdEnabled ? "1px solid #a5b4fc" : "1px solid #d1d5db";
-    thresholdInput.style.borderRadius = "6px";
-    thresholdInput.style.padding = "6px 8px";
-    thresholdInput.style.fontSize = "12px";
-    thresholdInput.style.background = thresholdEnabled ? "#ffffff" : "#f3f4f6";
-    thresholdInput.style.color = thresholdEnabled ? "#111827" : "#6b7280";
-    thresholdInput.style.outline = "none";
-    thresholdInput.style.boxShadow = "none";
-    thresholdInput.style.transition = "border-color 120ms ease, box-shadow 120ms ease";
-    thresholdInput.addEventListener("pointerdown", (event) => event.stopPropagation());
-
-    const commitThresholdValue = () => {
-      const raw = Number.parseInt(thresholdInput.value, 10);
-      const nextValue = clampConstraintsPerPage(
-        Number.isFinite(raw) ? raw : settings.constraintsPerPage
-      );
-      thresholdInput.value = `${nextValue}`;
-      state.updateSettings({ constraintsPerPage: nextValue });
-      persistCurrentSettings();
-      requestRerender();
-    };
-
-    thresholdInput.addEventListener("input", () => {
-      const digitsOnly = thresholdInput.value.replace(/[^0-9]/g, "").slice(0, 3);
-      if (digitsOnly !== thresholdInput.value) {
-        thresholdInput.value = digitsOnly;
-      }
+    renderWidgetSettingsPanel({
+      body,
+      settings: state.getSettings(),
+      clampConstraintsPerPage,
+      onUpdateSettings: (patch) => {
+        state.updateSettings(patch);
+        persistCurrentSettings();
+        applyWidgetDimensionsForCurrentState();
+        requestRerender();
+      },
+      onResetSize: () => {
+        resetWidgetSize();
+      },
+      onResetDefaults: () => {
+        const { widthPx, heightPx } = state.getSettings();
+        state.resetSettings();
+        state.updateSettings({ widthPx, heightPx });
+        persistCurrentSettings();
+        updateMinimizeToggleLabel();
+        resizeController.setHandlesVisible(!state.getSettings().minimized);
+        resizeController.setEnabled(!state.getSettings().minimized);
+        applyWidgetDimensionsForCurrentState();
+        requestRerender();
+      },
+      scheduleClampWidgetIntoViewport,
     });
-
-    thresholdInput.addEventListener("blur", commitThresholdValue);
-    thresholdInput.addEventListener("focus", () => {
-      thresholdInput.style.borderColor = "#6366f1";
-      thresholdInput.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.22)";
-    });
-    thresholdInput.addEventListener("blur", () => {
-      thresholdInput.style.borderColor = "#a5b4fc";
-      thresholdInput.style.boxShadow = "none";
-    });
-    thresholdInput.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter") {
-        return;
-      }
-      event.preventDefault();
-      commitThresholdValue();
-    });
-
-    const helper = document.createElement("div");
-    helper.style.fontSize = "10px";
-    helper.style.color = "#6b7280";
-    helper.textContent = "Allowed range: 5 to 200.";
-
-    thresholdWrap.appendChild(thresholdLabel);
-    thresholdWrap.appendChild(thresholdInput);
-    thresholdWrap.appendChild(helper);
-
-    const resetButton = document.createElement("button");
-    resetButton.type = "button";
-    resetButton.textContent = "Reset Defaults";
-    resetButton.style.padding = "6px 8px";
-    resetButton.style.fontSize = "11px";
-    resetButton.style.fontWeight = "600";
-    resetButton.style.border = "1px solid #d1d5db";
-    resetButton.style.borderRadius = "6px";
-    resetButton.style.background = "#f3f4f6";
-    resetButton.style.color = "#374151";
-    resetButton.style.cursor = "pointer";
-    resetButton.style.transition = "all 120ms ease";
-    resetButton.style.outline = "none";
-    resetButton.addEventListener("pointerdown", (event) => event.stopPropagation());
-    resetButton.addEventListener("click", () => {
-      state.resetSettings();
-      persistCurrentSettings();
-      requestRerender();
-    });
-    resetButton.addEventListener("focus", () => {
-      resetButton.style.borderColor = "#6366f1";
-      resetButton.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.22)";
-    });
-    resetButton.addEventListener("blur", () => {
-      resetButton.style.borderColor = "#d1d5db";
-      resetButton.style.boxShadow = "none";
-    });
-    resetButton.addEventListener("pointerenter", () => {
-      resetButton.style.background = "#e5e7eb";
-      resetButton.style.borderColor = "#9ca3af";
-    });
-    resetButton.addEventListener("pointerleave", () => {
-      resetButton.style.background = "#f3f4f6";
-      resetButton.style.borderColor = "#d1d5db";
-    });
-
-    section.appendChild(highlightRow);
-    section.appendChild(tabsRow);
-    section.appendChild(thresholdWrap);
-    section.appendChild(resetButton);
-    body.appendChild(section);
-    scheduleClampWidgetIntoViewport();
   };
 
   const renderBody = (results: RuleResult[]) => {
@@ -651,7 +422,8 @@ export function createLayoutLintWidget(
       renderWidgetMinimizedStatus(results, {
         body,
         status,
-        footerStatusMode,
+        footerStatusMode: statusController.getMode(),
+        footerStatusActionLabel: statusController.getActionLabel(),
         scheduleClampWidgetIntoViewport,
       });
       return;
@@ -659,6 +431,10 @@ export function createLayoutLintWidget(
 
     if (settingsOpen) {
       renderSettingsPanel();
+      return;
+    }
+    if (specEditor?.isOpen()) {
+      specEditor.renderPanel({ body, status, scheduleClampWidgetIntoViewport });
       return;
     }
     renderRows(results);
@@ -675,15 +451,33 @@ export function createLayoutLintWidget(
     }
   };
 
-  const requestRerender = () => {
+  requestRerender = () => {
     renderBodyWithObserverPaused(latestResults);
   };
 
+  specEditor = createSpecEditor({
+    monitor,
+    isStatusTransitionDelayEnabled: () => state.getSettings().statusTransitionDelayEnabled,
+    fakeLoadingDurationMs: FAKE_LOADING_DURATION_MS,
+    specUpdateStatusLabel: SPEC_UPDATE_STATUS_LABEL,
+    clearFooterStatusResetTimer: statusController.clearResetTimer,
+    setFooterStatusActionLabel: statusController.setActionLabel,
+    setFooterStatusMode: statusController.setMode,
+    flashFooterStatusDone: statusController.flashDone,
+    showFooterErrorAndReset: statusController.showErrorAndReset,
+    requestRerender,
+    updateHeaderToggleStyles,
+  });
+
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key !== "Escape") return;
+    if (specEditor?.isOpen()) {
+      specEditor.cancel();
+      return;
+    }
     if (settingsOpen) {
       settingsOpen = false;
-      updateSettingsToggleLabel();
+      updateHeaderToggleStyles();
       requestRerender();
       return;
     }
@@ -695,39 +489,43 @@ export function createLayoutLintWidget(
 
   settingsToggle.addEventListener("pointerdown", onTogglePointerDown);
   settingsToggle.addEventListener("click", onSettingsToggleClick);
+  constraintsToggle.addEventListener("pointerdown", onTogglePointerDown);
+  constraintsToggle.addEventListener("click", onConstraintsToggleClick);
+  specToggle.addEventListener("pointerdown", onTogglePointerDown);
+  specToggle.addEventListener("click", onSpecToggleClick);
   minimizeToggle.addEventListener("pointerdown", onTogglePointerDown);
   minimizeToggle.addEventListener("click", onMinimizeToggleClick);
+  header.addEventListener("dblclick", onHeaderDoubleClick);
   window.addEventListener("keydown", onKeyDown);
 
-  const onViewportChange = () => {
-    clampWidgetIntoViewport();
-    renderActiveHighlight();
-  };
-
-  window.addEventListener("resize", onViewportChange);
-  window.addEventListener("scroll", onViewportChange, true);
-  window.requestAnimationFrame(() => {
-    clampWidgetIntoViewport();
-  });
+  dragController.setup();
+  resizeController.setup();
+  resizeController.setHandlesVisible(!state.getSettings().minimized);
+  resizeController.setEnabled(!state.getSettings().minimized);
 
   const unsubscribe = monitor.subscribe((result) => {
     latestResults = result.results;
     state.applyResults(latestResults);
+    if (specEditor?.isOpen()) return;
     renderBodyWithObserverPaused(latestResults);
   });
 
   return {
     destroy: () => {
-      clearFooterStatusResetTimer();
+      statusController.destroy();
       unsubscribe();
-      header.removeEventListener("pointerdown", onPointerDown);
+      dragController.destroy();
+      resizeController.destroy();
       settingsToggle.removeEventListener("pointerdown", onTogglePointerDown);
       settingsToggle.removeEventListener("click", onSettingsToggleClick);
+      constraintsToggle.removeEventListener("pointerdown", onTogglePointerDown);
+      constraintsToggle.removeEventListener("click", onConstraintsToggleClick);
+      specToggle.removeEventListener("pointerdown", onTogglePointerDown);
+      specToggle.removeEventListener("click", onSpecToggleClick);
       minimizeToggle.removeEventListener("pointerdown", onTogglePointerDown);
       minimizeToggle.removeEventListener("click", onMinimizeToggleClick);
+      header.removeEventListener("dblclick", onHeaderDoubleClick);
       window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("resize", onViewportChange);
-      window.removeEventListener("scroll", onViewportChange, true);
       clearHighlights();
       highlightLayer.remove();
       root.remove();

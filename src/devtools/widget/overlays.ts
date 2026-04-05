@@ -7,6 +7,7 @@ export interface LabelRect {
 
 export function createOverlayRenderer(highlightLayer: HTMLDivElement) {
   const placedLabelRects: LabelRect[] = [];
+  const transparentLabelsEnabled = true;
 
   const getNumberBadgeStyles = (color: string) => {
     const normalized = color.toLowerCase();
@@ -34,6 +35,13 @@ export function createOverlayRenderer(highlightLayer: HTMLDivElement) {
       background: "#f3f4f6",
       color: "#111827",
     };
+  };
+
+  const getHeadlineTextColor = (color: string) => {
+    const normalized = color.toLowerCase();
+    if (normalized === "#059669") return "#065f46";
+    if (normalized === "#dc2626") return "#991b1b";
+    return "#334155";
   };
 
   const clear = () => {
@@ -68,8 +76,17 @@ export function createOverlayRenderer(highlightLayer: HTMLDivElement) {
     label.style.padding = "4px 7px";
     label.style.border = `1px solid ${color}`;
     label.style.borderRadius = "6px";
-    label.style.background = "rgba(255,255,255,0.96)";
+    label.style.display = "inline-flex";
+    label.style.alignItems = "center";
+    label.style.gap = "6px";
+    label.style.background = transparentLabelsEnabled ? "rgba(255,255,255,0.62)" : "rgba(255,255,255,0.96)";
     label.style.color = "#111827";
+    label.style.textShadow = "none";
+    label.style.backdropFilter = transparentLabelsEnabled ? "blur(2px) saturate(110%)" : "none";
+    label.style.setProperty(
+      "-webkit-backdrop-filter",
+      transparentLabelsEnabled ? "blur(2px) saturate(110%)" : "none"
+    );
     label.style.font = "11px/1.35 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif";
     label.style.whiteSpace = "nowrap";
     label.style.overflow = "hidden";
@@ -79,6 +96,11 @@ export function createOverlayRenderer(highlightLayer: HTMLDivElement) {
     if (numberedLabelMatch && numberedLabelMatch[2]) {
       const firstSegment = numberedLabelMatch[1];
       const remainder = numberedLabelMatch[2];
+      const head = document.createElement("span");
+      head.style.display = "inline-flex";
+      head.style.alignItems = "center";
+      head.style.gap = "6px";
+
       const numberPart = document.createElement("span");
       const badgeStyles = getNumberBadgeStyles(color);
       numberPart.style.display = "inline-flex";
@@ -93,25 +115,17 @@ export function createOverlayRenderer(highlightLayer: HTMLDivElement) {
       numberPart.style.border = badgeStyles.border;
       numberPart.style.background = badgeStyles.background;
       numberPart.style.color = badgeStyles.color;
-      numberPart.style.marginRight = "4px";
+      numberPart.style.flex = "0 0 auto";
       numberPart.textContent = firstSegment;
-      label.appendChild(numberPart);
+      head.appendChild(numberPart);
 
-      const roleStartIndex = remainder.lastIndexOf(" (");
-      if (roleStartIndex > 0 && remainder.endsWith(")")) {
-        const namePart = document.createElement("span");
-        namePart.style.fontWeight = "700";
-        namePart.textContent = remainder.slice(0, roleStartIndex);
-        label.appendChild(namePart);
+      const headText = document.createElement("span");
+      headText.style.fontWeight = "600";
+      headText.style.color = getHeadlineTextColor(color);
+      headText.textContent = remainder;
+      head.appendChild(headText);
 
-        const rolePart = document.createElement("span");
-        rolePart.textContent = remainder.slice(roleStartIndex);
-        label.appendChild(rolePart);
-      } else {
-        const remainderPart = document.createElement("span");
-        remainderPart.textContent = remainder;
-        label.appendChild(remainderPart);
-      }
+      label.appendChild(head);
     } else {
       label.textContent = text;
     }

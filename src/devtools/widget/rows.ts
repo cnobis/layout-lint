@@ -11,6 +11,7 @@ export interface RenderRowsDeps {
   state: WidgetState;
   monitor: LayoutLintMonitorController;
   footerStatusMode: FooterStatusMode;
+  footerStatusActionLabel: string;
   renderActiveHighlight: () => void;
   scheduleClampWidgetIntoViewport: () => void;
   requestRerender: () => void;
@@ -18,8 +19,8 @@ export interface RenderRowsDeps {
   onRefreshRequested: () => void | Promise<void>;
 }
 
-export function renderWidgetMinimizedStatus(results: RuleResult[], deps: Pick<RenderRowsDeps, "body" | "status" | "footerStatusMode" | "scheduleClampWidgetIntoViewport">) {
-  const { body, status, footerStatusMode, scheduleClampWidgetIntoViewport } = deps;
+export function renderWidgetMinimizedStatus(results: RuleResult[], deps: Pick<RenderRowsDeps, "body" | "status" | "footerStatusMode" | "footerStatusActionLabel" | "scheduleClampWidgetIntoViewport">) {
+  const { body, status, footerStatusMode, footerStatusActionLabel, scheduleClampWidgetIntoViewport } = deps;
   const passed = results.filter((rule) => rule.pass).length;
 
   body.innerHTML = "";
@@ -33,7 +34,7 @@ export function renderWidgetMinimizedStatus(results: RuleResult[], deps: Pick<Re
   minimizedBarWrap.style.background = "#ffffff";
 
   styleFooterStatusBar(status);
-  renderFooterStatusBar(status, footerStatusMode, passed, results.length);
+  renderFooterStatusBar(status, footerStatusMode, passed, results.length, footerStatusActionLabel);
   status.style.margin = "0";
 
   minimizedBarWrap.appendChild(status);
@@ -170,7 +171,8 @@ const buildMeta = (item: RuleResult) => {
 };
 
 export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
-  const { body, status, state, footerStatusMode, renderActiveHighlight, scheduleClampWidgetIntoViewport, requestRerender } = deps;
+  const { body, status, state, footerStatusMode, footerStatusActionLabel, renderActiveHighlight, scheduleClampWidgetIntoViewport, requestRerender } = deps;
+  const useNeutralConstraintStyling = footerStatusMode === "loading";
 
   const existingScroll = body.querySelector("[data-widget-constraints-scroll='true']") as HTMLDivElement | null;
   const previousScrollTop = existingScroll?.scrollTop ?? 0;
@@ -185,7 +187,7 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
   if (results.length === 0) {
     body.textContent = "No rules";
     styleFooterStatusBar(status);
-    renderFooterStatusBar(status, footerStatusMode, 0, 0);
+    renderFooterStatusBar(status, footerStatusMode, 0, 0, footerStatusActionLabel);
     scheduleClampWidgetIntoViewport();
     return;
   }
@@ -300,6 +302,8 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
   constraintsScroll.style.minHeight = "0";
   constraintsScroll.style.overflowY = "auto";
   constraintsScroll.style.overflowX = "hidden";
+  constraintsScroll.style.borderTop = "1px solid #e5e7eb";
+  constraintsScroll.style.paddingTop = "6px";
   constraintsScroll.style.paddingRight = "2px";
   constraintsScroll.style.paddingBottom = "2px";
   body.appendChild(constraintsScroll);
@@ -316,7 +320,7 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
     row.style.borderRadius = "6px";
     row.style.padding = "6px 8px";
     row.style.marginBottom = "6px";
-    row.style.background = item.pass ? "#ecfdf5" : "#fef2f2";
+    row.style.background = useNeutralConstraintStyling ? "#f8fafc" : item.pass ? "#ecfdf5" : "#fef2f2";
     row.style.cursor = "pointer";
     if (isPinned) {
       row.style.borderColor = "#7a81ff";
@@ -338,22 +342,22 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
     numberBadge.style.fontSize = "10px";
     numberBadge.style.fontWeight = "700";
     numberBadge.style.lineHeight = "1.3";
-    numberBadge.style.border = item.pass ? "1px solid #34d399" : "1px solid #f87171";
-    numberBadge.style.background = item.pass ? "#d1fae5" : "#fee2e2";
-    numberBadge.style.color = item.pass ? "#065f46" : "#991b1b";
+    numberBadge.style.border = useNeutralConstraintStyling ? "1px solid #cbd5e1" : item.pass ? "1px solid #34d399" : "1px solid #f87171";
+    numberBadge.style.background = useNeutralConstraintStyling ? "#e2e8f0" : item.pass ? "#d1fae5" : "#fee2e2";
+    numberBadge.style.color = useNeutralConstraintStyling ? "#475569" : item.pass ? "#065f46" : "#991b1b";
     numberBadge.textContent = `${ruleNumber}`;
 
     const headText = document.createElement("span");
     headText.style.fontWeight = "600";
-    headText.style.color = item.pass ? "#065f46" : "#991b1b";
-    headText.textContent = buildHeadline(item);
+    headText.style.color = useNeutralConstraintStyling ? "#334155" : item.pass ? "#065f46" : "#991b1b";
+    headText.textContent = useNeutralConstraintStyling ? buildHeadline(item).replace(/^[✓✗]\s+/, "• ") : buildHeadline(item);
 
     head.appendChild(numberBadge);
     head.appendChild(headText);
 
     const meta = document.createElement("div");
     meta.style.fontSize = "11px";
-    meta.style.color = "#374151";
+    meta.style.color = useNeutralConstraintStyling ? "#64748b" : "#374151";
     meta.textContent = buildMeta(item);
 
     const onRowEnter = () => {
@@ -570,7 +574,7 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
     evaluateBtn.style.borderColor = "#d1d5db";
   });
 
-  renderFooterStatusBar(status, footerStatusMode, passed, results.length);
+  renderFooterStatusBar(status, footerStatusMode, passed, results.length, footerStatusActionLabel);
   status.style.marginTop = "6px";
   status.style.marginLeft = "0";
   status.style.marginRight = "0";

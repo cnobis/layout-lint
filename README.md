@@ -53,10 +53,15 @@ Widget options:
 
 - `tabsEnabled` (default `true`): enables category tabs (`All`, `Failing`, `Passing`) plus page tabs.
 - `constraintsPerPage` (default `10`): max visible constraints per page when tabs are enabled.
+- `statusTransitionDelayEnabled` (default `true`): enables/disables the short status transition delay for reevaluate/spec-apply actions.
+- `widthPx` (default `340`): initial expanded widget width in pixels.
+- `heightPx` (default `360`): initial expanded widget height in pixels.
 - `persistSettings` (default `true`): stores widget settings in localStorage.
 - `settingsStorageKey` (default `layout-lint:widget-settings`): custom localStorage key.
 
 In the widget, use the `settings` button to open the settings panel and configure tabs behavior live.
+Use `Reset Size` in settings to restore default expanded width/height without resetting the rest of your widget preferences.
+Use the `spec` button to edit the layout DSL directly in the widget, then apply changes with the `Apply` button or `Cmd/Ctrl+Enter`.
 
 ## License
 

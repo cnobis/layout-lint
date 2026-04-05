@@ -179,15 +179,33 @@ export function createWidgetState(options: CreateWidgetStateOptions): WidgetStat
     getRuleKey,
     getSettings: () => settings,
     updateSettings: (patch) => {
+      const hasWidthPatch = Object.prototype.hasOwnProperty.call(patch, "widthPx");
+      const hasHeightPatch = Object.prototype.hasOwnProperty.call(patch, "heightPx");
       settings = {
         highlightsEnabled:
           typeof patch.highlightsEnabled === "boolean" ? patch.highlightsEnabled : settings.highlightsEnabled,
         tabsEnabled: typeof patch.tabsEnabled === "boolean" ? patch.tabsEnabled : settings.tabsEnabled,
         minimized: typeof patch.minimized === "boolean" ? patch.minimized : settings.minimized,
+        statusTransitionDelayEnabled:
+          typeof patch.statusTransitionDelayEnabled === "boolean"
+            ? patch.statusTransitionDelayEnabled
+            : settings.statusTransitionDelayEnabled,
         constraintsPerPage:
           typeof patch.constraintsPerPage === "number" && Number.isFinite(patch.constraintsPerPage)
             ? clampConstraintsPerPage(patch.constraintsPerPage)
             : settings.constraintsPerPage,
+        widthPx:
+          hasWidthPatch && typeof patch.widthPx === "number" && Number.isFinite(patch.widthPx)
+            ? Math.round(patch.widthPx)
+            : hasWidthPatch
+              ? undefined
+              : settings.widthPx,
+        heightPx:
+          hasHeightPatch && typeof patch.heightPx === "number" && Number.isFinite(patch.heightPx)
+            ? Math.round(patch.heightPx)
+            : hasHeightPatch
+              ? undefined
+              : settings.heightPx,
       };
       syncPages();
       syncActiveRuleVisibility();

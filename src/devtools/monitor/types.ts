@@ -17,6 +17,7 @@ export interface LayoutLintMonitorController {
   start(): void;
   stop(): void;
   evaluateNow(): Promise<RunLayoutLintResult>;
+  getSpecText(): string;
   setSpecText(specText: string): void;
   getLatestResult(): RunLayoutLintResult | null;
   subscribe(listener: (result: RunLayoutLintResult) => void): () => void;
