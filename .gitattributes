@@ -2,8 +2,10 @@
 
 # Generated source files
 src/*.json linguist-generated
-src/parser.c linguist-generated
-src/tree_sitter/* linguist-generated
+
+# Parser sources should remain visible in diffs and language stats
+src/parser.c linguist-generated=false
+src/tree_sitter/* linguist-generated=false
 
 # C bindings
 bindings/c/** linguist-generated
