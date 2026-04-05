@@ -5,6 +5,7 @@ export const DEFAULT_WIDGET_SETTINGS: LayoutLintWidgetSettings = {
   tabsEnabled: true,
   constraintsPerPage: 10,
   minimized: false,
+  statusTransitionDelayEnabled: true,
 };
 
 export const DEFAULT_WIDGET_SETTINGS_STORAGE_KEY = "layout-lint:widget-settings";
@@ -33,6 +34,10 @@ export const normalizeWidgetSettings = (
     typeof partial?.highlightsEnabled === "boolean" ? partial.highlightsEnabled : fallback.highlightsEnabled;
   const tabsEnabled = typeof partial?.tabsEnabled === "boolean" ? partial.tabsEnabled : fallback.tabsEnabled;
   const minimized = typeof partial?.minimized === "boolean" ? partial.minimized : fallback.minimized;
+  const statusTransitionDelayEnabled =
+    typeof partial?.statusTransitionDelayEnabled === "boolean"
+      ? partial.statusTransitionDelayEnabled
+      : fallback.statusTransitionDelayEnabled;
   const constraintsValue = toFiniteNumber(partial?.constraintsPerPage);
   const constraintsPerPage = clampConstraintsPerPage(constraintsValue ?? fallback.constraintsPerPage);
 
@@ -41,6 +46,7 @@ export const normalizeWidgetSettings = (
     tabsEnabled,
     constraintsPerPage,
     minimized,
+    statusTransitionDelayEnabled,
   };
 };
 

@@ -23,7 +23,8 @@ export const renderFooterStatusBar = (
   status: HTMLSpanElement,
   mode: FooterStatusMode,
   passed: number,
-  total: number
+  total: number,
+  actionLabel = "reevaluating..."
 ) => {
   status.innerHTML = "";
   const allConstraintsMet = total > 0 && passed === total;
@@ -63,9 +64,9 @@ export const renderFooterStatusBar = (
 
   left.appendChild(liveDot);
   if (mode === "loading") {
-    left.appendChild(createStatusWord("reevaluating...", "#64748b"));
+    left.appendChild(createStatusWord(actionLabel, "#64748b"));
   } else if (mode === "done") {
-    left.appendChild(createStatusWord("reevaluating...", "#166534"));
+    left.appendChild(createStatusWord(actionLabel, "#166534"));
     left.appendChild(createStatusWord("done", "#166534"));
   } else if (mode === "error") {
     left.appendChild(createStatusWord("error", "#b91c1c"));

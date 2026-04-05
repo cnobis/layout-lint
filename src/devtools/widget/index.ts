@@ -20,6 +20,9 @@ export function createLayoutLintWidget(
 ): LayoutLintWidgetController {
   const EXPANDED_WIDGET_WIDTH = 340;
   const MINIMIZED_WIDGET_WIDTH = 248;
+  const FAKE_LOADING_DURATION_MS = 800;
+  const REEVALUATE_STATUS_LABEL = "reevaluating...";
+  const SPEC_UPDATE_STATUS_LABEL = "updating spec...";
   const persistSettings = options.persistSettings !== false;
   const settingsStorageKey = options.settingsStorageKey ?? DEFAULT_WIDGET_SETTINGS_STORAGE_KEY;
   const storedSettings = persistSettings
@@ -30,6 +33,7 @@ export function createLayoutLintWidget(
       tabsEnabled: options.tabsEnabled,
       constraintsPerPage: options.constraintsPerPage,
       minimized: options.initialMinimized,
+      statusTransitionDelayEnabled: options.statusTransitionDelayEnabled,
     },
     storedSettings
   );
@@ -66,6 +70,8 @@ export function createLayoutLintWidget(
   title.style.fontFamily = '"Helvetica Neue", Helvetica, Arial, sans-serif';
   title.style.fontWeight = "300";
   title.style.letterSpacing = "0.01em";
+  title.style.whiteSpace = "nowrap";
+  title.style.flexShrink = "0";
   header.appendChild(title);
 
   const status = document.createElement("span");
@@ -76,6 +82,25 @@ export function createLayoutLintWidget(
   controls.style.display = "flex";
   controls.style.alignItems = "center";
   controls.style.gap = "8px";
+
+  const constraintsToggle = document.createElement("button");
+  constraintsToggle.type = "button";
+  constraintsToggle.textContent = "constraints";
+  constraintsToggle.style.border = "1px solid rgba(255,255,255,0.6)";
+  constraintsToggle.style.borderRadius = "999px";
+  constraintsToggle.style.background = "transparent";
+  constraintsToggle.style.color = "#ffffff";
+  constraintsToggle.style.fontSize = "11px";
+  constraintsToggle.style.padding = "2px 8px";
+  constraintsToggle.style.cursor = "pointer";
+  constraintsToggle.style.outline = "none";
+  constraintsToggle.style.transition = "box-shadow 120ms ease, border-color 120ms ease, background-color 120ms ease, color 120ms ease";
+  constraintsToggle.addEventListener("focus", () => {
+    constraintsToggle.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.28)";
+  });
+  constraintsToggle.addEventListener("blur", () => {
+    constraintsToggle.style.boxShadow = "none";
+  });
 
   const settingsToggle = document.createElement("button");
   settingsToggle.type = "button";
@@ -88,14 +113,31 @@ export function createLayoutLintWidget(
   settingsToggle.style.padding = "2px 8px";
   settingsToggle.style.cursor = "pointer";
   settingsToggle.style.outline = "none";
-  settingsToggle.style.transition = "box-shadow 120ms ease, border-color 120ms ease";
+  settingsToggle.style.transition = "box-shadow 120ms ease, border-color 120ms ease, background-color 120ms ease, color 120ms ease";
   settingsToggle.addEventListener("focus", () => {
-    settingsToggle.style.borderColor = "#c7d2fe";
     settingsToggle.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.28)";
   });
   settingsToggle.addEventListener("blur", () => {
-    settingsToggle.style.borderColor = "rgba(255,255,255,0.6)";
     settingsToggle.style.boxShadow = "none";
+  });
+
+  const specToggle = document.createElement("button");
+  specToggle.type = "button";
+  specToggle.textContent = "spec";
+  specToggle.style.border = "1px solid rgba(255,255,255,0.6)";
+  specToggle.style.borderRadius = "999px";
+  specToggle.style.background = "transparent";
+  specToggle.style.color = "#ffffff";
+  specToggle.style.fontSize = "11px";
+  specToggle.style.padding = "2px 8px";
+  specToggle.style.cursor = "pointer";
+  specToggle.style.outline = "none";
+  specToggle.style.transition = "box-shadow 120ms ease, border-color 120ms ease, background-color 120ms ease, color 120ms ease";
+  specToggle.addEventListener("focus", () => {
+    specToggle.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.28)";
+  });
+  specToggle.addEventListener("blur", () => {
+    specToggle.style.boxShadow = "none";
   });
 
   const minimizeToggle = document.createElement("button");
@@ -113,13 +155,11 @@ export function createLayoutLintWidget(
   minimizeToggle.style.padding = "3px 8px";
   minimizeToggle.style.cursor = "pointer";
   minimizeToggle.style.outline = "none";
-  minimizeToggle.style.transition = "box-shadow 120ms ease, border-color 120ms ease";
+  minimizeToggle.style.transition = "box-shadow 120ms ease, border-color 120ms ease, background-color 120ms ease, color 120ms ease";
   minimizeToggle.addEventListener("focus", () => {
-    minimizeToggle.style.borderColor = "#c7d2fe";
     minimizeToggle.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.28)";
   });
   minimizeToggle.addEventListener("blur", () => {
-    minimizeToggle.style.borderColor = "rgba(255,255,255,0.6)";
     minimizeToggle.style.boxShadow = "none";
   });
 
@@ -128,6 +168,8 @@ export function createLayoutLintWidget(
   body.style.maxHeight = "calc(45vh - 40px)";
   body.style.overflow = "auto";
 
+  controls.appendChild(specToggle);
+  controls.appendChild(constraintsToggle);
   controls.appendChild(settingsToggle);
   controls.appendChild(minimizeToggle);
   header.appendChild(controls);
@@ -156,7 +198,11 @@ export function createLayoutLintWidget(
 
   let latestResults: RuleResult[] = [];
   let settingsOpen = false;
+  let specEditorOpen = false;
+  let specEditorDraft = monitor.getSpecText();
+  let specEditorError: string | null = null;
   let footerStatusMode: FooterStatusMode = "ready";
+  let footerStatusActionLabel = REEVALUATE_STATUS_LABEL;
   let footerStatusResetTimer: number | null = null;
 
   const clearFooterStatusResetTimer = () => {
@@ -170,23 +216,27 @@ export function createLayoutLintWidget(
     requestRerender();
   };
 
-  const flashFooterStatusDone = () => {
+  const flashFooterStatusDone = (nextReadyActionLabel = REEVALUATE_STATUS_LABEL) => {
     clearFooterStatusResetTimer();
     footerStatusMode = "done";
     requestRerender();
     footerStatusResetTimer = window.setTimeout(() => {
       footerStatusMode = "ready";
+      footerStatusActionLabel = nextReadyActionLabel;
       requestRerender();
     }, 1600);
   };
 
   const handleRefreshAction = async () => {
     clearFooterStatusResetTimer();
+    footerStatusActionLabel = REEVALUATE_STATUS_LABEL;
     setFooterStatusMode("loading");
     try {
-      await new Promise<void>((resolve) => {
-        window.setTimeout(resolve, 1200);
-      });
+      if (state.getSettings().statusTransitionDelayEnabled) {
+        await new Promise<void>((resolve) => {
+          window.setTimeout(resolve, FAKE_LOADING_DURATION_MS);
+        });
+      }
       await monitor.evaluateNow();
       flashFooterStatusDone();
     } catch {
@@ -194,13 +244,24 @@ export function createLayoutLintWidget(
       requestRerender();
       footerStatusResetTimer = window.setTimeout(() => {
         footerStatusMode = "ready";
+        footerStatusActionLabel = REEVALUATE_STATUS_LABEL;
         requestRerender();
       }, 1600);
     }
   };
 
-  const updateSettingsToggleLabel = () => {
-    settingsToggle.textContent = settingsOpen ? "constraints" : "settings";
+  const applyHeaderToggleMode = (button: HTMLButtonElement, isActive: boolean) => {
+    button.style.borderColor = isActive ? "#ffffff" : "rgba(255,255,255,0.6)";
+    button.style.background = isActive ? "#ffffff" : "transparent";
+    button.style.color = isActive ? "#4f46e5" : "#ffffff";
+  };
+
+  const updateHeaderToggleStyles = () => {
+    const constraintsActive = !state.getSettings().minimized && !settingsOpen && !specEditorOpen;
+    applyHeaderToggleMode(constraintsToggle, constraintsActive);
+    applyHeaderToggleMode(settingsToggle, settingsOpen);
+    applyHeaderToggleMode(specToggle, specEditorOpen);
+    applyHeaderToggleMode(minimizeToggle, state.getSettings().minimized);
   };
 
   const updateMinimizeToggleLabel = () => {
@@ -208,7 +269,10 @@ export function createLayoutLintWidget(
     minimizeToggle.textContent = isMinimized ? "▸" : "▾";
     minimizeToggle.title = isMinimized ? "expand widget" : "minimize widget";
     minimizeToggle.setAttribute("aria-label", isMinimized ? "expand widget" : "minimize widget");
+    constraintsToggle.style.display = isMinimized ? "none" : "inline-flex";
     settingsToggle.style.display = isMinimized ? "none" : "inline-flex";
+    specToggle.style.display = isMinimized ? "none" : "inline-flex";
+    updateHeaderToggleStyles();
   };
 
   const applyWidgetWidthForCurrentState = () => {
@@ -220,7 +284,7 @@ export function createLayoutLintWidget(
     saveWidgetSettings(settingsStorageKey, state.getSettings());
   };
 
-  updateSettingsToggleLabel();
+  updateHeaderToggleStyles();
   updateMinimizeToggleLabel();
 
   const resolveElement = (identifier: string | undefined): HTMLElement | null => {
@@ -377,8 +441,89 @@ export function createLayoutLintWidget(
 
   const onSettingsToggleClick = () => {
     if (state.getSettings().minimized) return;
-    settingsOpen = !settingsOpen;
-    updateSettingsToggleLabel();
+    settingsOpen = true;
+    specEditorOpen = false;
+    specEditorError = null;
+    updateHeaderToggleStyles();
+    requestRerender();
+  };
+
+  const onConstraintsToggleClick = () => {
+    if (state.getSettings().minimized) return;
+    settingsOpen = false;
+    closeSpecEditor();
+    updateHeaderToggleStyles();
+    requestRerender();
+  };
+
+  const closeSpecEditor = () => {
+    specEditorOpen = false;
+    specEditorError = null;
+    updateHeaderToggleStyles();
+  };
+
+  const cancelSpecEditorChanges = () => {
+    specEditorDraft = monitor.getSpecText();
+    closeSpecEditor();
+    requestRerender();
+  };
+
+  const applySpecEditorChanges = async () => {
+    const nextSpec = specEditorDraft;
+    if (!nextSpec.trim()) {
+      specEditorError = "Spec cannot be empty.";
+      requestRerender();
+      return;
+    }
+
+    const previousSpec = monitor.getSpecText();
+    if (nextSpec === previousSpec) {
+      closeSpecEditor();
+      requestRerender();
+      return;
+    }
+
+    try {
+      clearFooterStatusResetTimer();
+      footerStatusActionLabel = SPEC_UPDATE_STATUS_LABEL;
+      specEditorOpen = false;
+      setFooterStatusMode("loading");
+      if (state.getSettings().statusTransitionDelayEnabled) {
+        await new Promise<void>((resolve) => {
+          window.setTimeout(resolve, FAKE_LOADING_DURATION_MS);
+        });
+      }
+      monitor.setSpecText(nextSpec);
+      await monitor.evaluateNow();
+      closeSpecEditor();
+      flashFooterStatusDone();
+    } catch (error) {
+      monitor.setSpecText(previousSpec);
+      try {
+        await monitor.evaluateNow();
+      } catch {
+        // keep prior spec restoration best effort
+      }
+      specEditorError = error instanceof Error ? error.message : "Failed to apply spec.";
+      specEditorOpen = true;
+      updateHeaderToggleStyles();
+      footerStatusMode = "error";
+      requestRerender();
+      footerStatusResetTimer = window.setTimeout(() => {
+        footerStatusMode = "ready";
+        footerStatusActionLabel = REEVALUATE_STATUS_LABEL;
+        requestRerender();
+      }, 1600);
+    }
+  };
+
+  const onSpecToggleClick = () => {
+    if (state.getSettings().minimized) return;
+    settingsOpen = false;
+    specEditorOpen = true;
+    specEditorDraft = monitor.getSpecText();
+    specEditorError = null;
+    updateHeaderToggleStyles();
     requestRerender();
   };
 
@@ -387,7 +532,10 @@ export function createLayoutLintWidget(
     state.updateSettings({ minimized: nextMinimized });
     if (nextMinimized && settingsOpen) {
       settingsOpen = false;
-      updateSettingsToggleLabel();
+      updateHeaderToggleStyles();
+    }
+    if (nextMinimized && specEditorOpen) {
+      closeSpecEditor();
     }
     persistCurrentSettings();
     updateMinimizeToggleLabel();
@@ -408,6 +556,7 @@ export function createLayoutLintWidget(
       state,
       monitor,
       footerStatusMode,
+      footerStatusActionLabel,
       renderActiveHighlight,
       scheduleClampWidgetIntoViewport,
       requestRerender,
@@ -519,6 +668,17 @@ export function createLayoutLintWidget(
       settings.tabsEnabled,
       (nextValue) => {
       state.updateSettings({ tabsEnabled: nextValue });
+      persistCurrentSettings();
+      requestRerender();
+      }
+    );
+
+    const fakeLoadingRow = createToggleRow(
+      "Status Transition Delay",
+      "Show a short status animation before reevaluate/apply",
+      settings.statusTransitionDelayEnabled,
+      (nextValue) => {
+      state.updateSettings({ statusTransitionDelayEnabled: nextValue });
       persistCurrentSettings();
       requestRerender();
       }
@@ -641,7 +801,131 @@ export function createLayoutLintWidget(
     section.appendChild(highlightRow);
     section.appendChild(tabsRow);
     section.appendChild(thresholdWrap);
+    section.appendChild(fakeLoadingRow);
     section.appendChild(resetButton);
+    body.appendChild(section);
+    scheduleClampWidgetIntoViewport();
+  };
+
+  const renderSpecEditorPanel = () => {
+    body.innerHTML = "";
+    status.textContent = "";
+    body.style.display = "block";
+    body.style.flexDirection = "";
+    body.style.overflow = "auto";
+    body.style.minHeight = "";
+    body.style.padding = "8px 10px";
+    body.style.paddingBottom = "8px";
+
+    const section = document.createElement("div");
+    section.style.display = "grid";
+    section.style.gap = "8px";
+    section.style.padding = "10px";
+    section.style.border = "1px solid #dbe3ff";
+    section.style.borderRadius = "10px";
+    section.style.background = "linear-gradient(180deg, #f8faff 0%, #eef2ff 100%)";
+
+    const heading = document.createElement("div");
+    heading.textContent = "Edit Layout Spec";
+    heading.style.fontSize = "12px";
+    heading.style.fontWeight = "700";
+    heading.style.color = "#1f2937";
+
+    const helper = document.createElement("div");
+    helper.textContent = "Apply with Cmd/Ctrl+Enter.";
+    helper.style.fontSize = "10px";
+    helper.style.color = "#6b7280";
+
+    const textArea = document.createElement("textarea");
+    textArea.value = specEditorDraft;
+    textArea.spellcheck = false;
+    textArea.rows = 10;
+    textArea.style.width = "100%";
+    textArea.style.boxSizing = "border-box";
+    textArea.style.resize = "vertical";
+    textArea.style.minHeight = "160px";
+    textArea.style.padding = "8px";
+    textArea.style.border = "1px solid #a5b4fc";
+    textArea.style.borderRadius = "8px";
+    textArea.style.fontSize = "11px";
+    textArea.style.fontFamily = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+    textArea.style.lineHeight = "1.4";
+    textArea.style.background = "#ffffff";
+    textArea.style.color = "#1f2937";
+    textArea.style.outline = "none";
+    textArea.addEventListener("pointerdown", (event) => event.stopPropagation());
+    textArea.addEventListener("input", () => {
+      specEditorDraft = textArea.value;
+      specEditorError = null;
+    });
+    textArea.addEventListener("keydown", (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+        event.preventDefault();
+        void applySpecEditorChanges();
+        return;
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        cancelSpecEditorChanges();
+      }
+    });
+
+    const actions = document.createElement("div");
+    actions.style.display = "flex";
+    actions.style.justifyContent = "space-between";
+    actions.style.alignItems = "center";
+    actions.style.gap = "8px";
+
+    const errorText = document.createElement("span");
+    errorText.style.fontSize = "10px";
+    errorText.style.color = "#b91c1c";
+    errorText.textContent = specEditorError ?? "";
+
+    const actionButtons = document.createElement("div");
+    actionButtons.style.display = "flex";
+    actionButtons.style.gap = "6px";
+
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.textContent = "Cancel";
+    cancelButton.style.padding = "6px 8px";
+    cancelButton.style.fontSize = "11px";
+    cancelButton.style.fontWeight = "600";
+    cancelButton.style.border = "1px solid #d1d5db";
+    cancelButton.style.borderRadius = "6px";
+    cancelButton.style.background = "#f3f4f6";
+    cancelButton.style.color = "#374151";
+    cancelButton.style.cursor = "pointer";
+    cancelButton.addEventListener("pointerdown", (event) => event.stopPropagation());
+    cancelButton.addEventListener("click", () => {
+      cancelSpecEditorChanges();
+    });
+
+    const applyButton = document.createElement("button");
+    applyButton.type = "button";
+    applyButton.textContent = "Apply";
+    applyButton.style.padding = "6px 10px";
+    applyButton.style.fontSize = "11px";
+    applyButton.style.fontWeight = "700";
+    applyButton.style.border = "1px solid #6366f1";
+    applyButton.style.borderRadius = "6px";
+    applyButton.style.background = "#e0e7ff";
+    applyButton.style.color = "#3730a3";
+    applyButton.style.cursor = "pointer";
+    applyButton.addEventListener("pointerdown", (event) => event.stopPropagation());
+    applyButton.addEventListener("click", () => {
+      void applySpecEditorChanges();
+    });
+
+    actionButtons.appendChild(cancelButton);
+    actionButtons.appendChild(applyButton);
+    actions.appendChild(errorText);
+    actions.appendChild(actionButtons);
+
+    section.appendChild(heading);
+    section.appendChild(helper);
+    section.appendChild(textArea);
+    section.appendChild(actions);
     body.appendChild(section);
     scheduleClampWidgetIntoViewport();
   };
@@ -652,6 +936,7 @@ export function createLayoutLintWidget(
         body,
         status,
         footerStatusMode,
+        footerStatusActionLabel,
         scheduleClampWidgetIntoViewport,
       });
       return;
@@ -659,6 +944,10 @@ export function createLayoutLintWidget(
 
     if (settingsOpen) {
       renderSettingsPanel();
+      return;
+    }
+    if (specEditorOpen) {
+      renderSpecEditorPanel();
       return;
     }
     renderRows(results);
@@ -681,9 +970,13 @@ export function createLayoutLintWidget(
 
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key !== "Escape") return;
+    if (specEditorOpen) {
+      cancelSpecEditorChanges();
+      return;
+    }
     if (settingsOpen) {
       settingsOpen = false;
-      updateSettingsToggleLabel();
+      updateHeaderToggleStyles();
       requestRerender();
       return;
     }
@@ -695,6 +988,10 @@ export function createLayoutLintWidget(
 
   settingsToggle.addEventListener("pointerdown", onTogglePointerDown);
   settingsToggle.addEventListener("click", onSettingsToggleClick);
+  constraintsToggle.addEventListener("pointerdown", onTogglePointerDown);
+  constraintsToggle.addEventListener("click", onConstraintsToggleClick);
+  specToggle.addEventListener("pointerdown", onTogglePointerDown);
+  specToggle.addEventListener("click", onSpecToggleClick);
   minimizeToggle.addEventListener("pointerdown", onTogglePointerDown);
   minimizeToggle.addEventListener("click", onMinimizeToggleClick);
   window.addEventListener("keydown", onKeyDown);
@@ -713,6 +1010,7 @@ export function createLayoutLintWidget(
   const unsubscribe = monitor.subscribe((result) => {
     latestResults = result.results;
     state.applyResults(latestResults);
+    if (specEditorOpen) return;
     renderBodyWithObserverPaused(latestResults);
   });
 
@@ -723,6 +1021,10 @@ export function createLayoutLintWidget(
       header.removeEventListener("pointerdown", onPointerDown);
       settingsToggle.removeEventListener("pointerdown", onTogglePointerDown);
       settingsToggle.removeEventListener("click", onSettingsToggleClick);
+      constraintsToggle.removeEventListener("pointerdown", onTogglePointerDown);
+      constraintsToggle.removeEventListener("click", onConstraintsToggleClick);
+      specToggle.removeEventListener("pointerdown", onTogglePointerDown);
+      specToggle.removeEventListener("click", onSpecToggleClick);
       minimizeToggle.removeEventListener("pointerdown", onTogglePointerDown);
       minimizeToggle.removeEventListener("click", onMinimizeToggleClick);
       window.removeEventListener("keydown", onKeyDown);

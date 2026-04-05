@@ -151,6 +151,7 @@ export function createLayoutLintMonitor(options: LayoutLintMonitorOptions): Layo
     start,
     stop,
     evaluateNow,
+    getSpecText: () => specText,
     setSpecText,
     getLatestResult: () => latestResult,
     subscribe,

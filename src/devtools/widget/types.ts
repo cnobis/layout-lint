@@ -5,6 +5,7 @@ export interface LayoutLintWidgetSettings {
   tabsEnabled: boolean;
   constraintsPerPage: number;
   minimized: boolean;
+  statusTransitionDelayEnabled: boolean;
 }
 
 export interface LayoutLintWidgetOptions {
@@ -13,6 +14,7 @@ export interface LayoutLintWidgetOptions {
   tabsEnabled?: boolean;
   constraintsPerPage?: number;
   initialMinimized?: boolean;
+  statusTransitionDelayEnabled?: boolean;
   persistSettings?: boolean;
   settingsStorageKey?: string;
 }
