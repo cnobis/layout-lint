@@ -5,6 +5,7 @@ interface RenderWidgetSettingsPanelArgs {
   settings: LayoutLintWidgetSettings;
   clampConstraintsPerPage: (value: number) => number;
   onUpdateSettings: (patch: Partial<LayoutLintWidgetSettings>) => void;
+  onResetSize: () => void;
   onResetDefaults: () => void;
   scheduleClampWidgetIntoViewport: () => void;
 }
@@ -14,6 +15,7 @@ export const renderWidgetSettingsPanel = ({
   settings,
   clampConstraintsPerPage,
   onUpdateSettings,
+  onResetSize,
   onResetDefaults,
   scheduleClampWidgetIntoViewport,
 }: RenderWidgetSettingsPanelArgs) => {
@@ -115,8 +117,8 @@ export const renderWidgetSettingsPanel = ({
   );
 
   const fakeLoadingRow = createToggleRow(
-    "Status Transition Delay",
-    "Show a short status animation before reevaluate/apply",
+    "Delay",
+    "Show brief visual feedback until result updates",
     settings.statusTransitionDelayEnabled,
     (nextValue) => {
       onUpdateSettings({ statusTransitionDelayEnabled: nextValue });
@@ -191,51 +193,67 @@ export const renderWidgetSettingsPanel = ({
   const helper = document.createElement("div");
   helper.style.fontSize = "10px";
   helper.style.color = "#6b7280";
-  helper.textContent = "Allowed range: 5 to 200.";
+  helper.textContent = "Allowed range: 5 to 200";
 
   thresholdWrap.appendChild(thresholdLabel);
   thresholdWrap.appendChild(thresholdInput);
   thresholdWrap.appendChild(helper);
 
-  const resetButton = document.createElement("button");
-  resetButton.type = "button";
-  resetButton.textContent = "Reset Defaults";
-  resetButton.style.padding = "6px 8px";
-  resetButton.style.fontSize = "11px";
-  resetButton.style.fontWeight = "600";
-  resetButton.style.border = "1px solid #d1d5db";
-  resetButton.style.borderRadius = "6px";
-  resetButton.style.background = "#f3f4f6";
-  resetButton.style.color = "#374151";
-  resetButton.style.cursor = "pointer";
-  resetButton.style.transition = "all 120ms ease";
-  resetButton.style.outline = "none";
-  resetButton.addEventListener("pointerdown", (event) => event.stopPropagation());
-  resetButton.addEventListener("click", () => {
+  const createActionButton = (label: string, onClick: () => void) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.style.padding = "6px 8px";
+    button.style.fontSize = "11px";
+    button.style.fontWeight = "600";
+    button.style.border = "1px solid #d1d5db";
+    button.style.borderRadius = "6px";
+    button.style.background = "#f3f4f6";
+    button.style.color = "#374151";
+    button.style.cursor = "pointer";
+    button.style.transition = "all 120ms ease";
+    button.style.outline = "none";
+    button.addEventListener("pointerdown", (event) => event.stopPropagation());
+    button.addEventListener("click", onClick);
+    button.addEventListener("focus", () => {
+      button.style.borderColor = "#6366f1";
+      button.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.22)";
+    });
+    button.addEventListener("blur", () => {
+      button.style.borderColor = "#d1d5db";
+      button.style.boxShadow = "none";
+    });
+    button.addEventListener("pointerenter", () => {
+      button.style.background = "#e5e7eb";
+      button.style.borderColor = "#9ca3af";
+    });
+    button.addEventListener("pointerleave", () => {
+      button.style.background = "#f3f4f6";
+      button.style.borderColor = "#d1d5db";
+    });
+    return button;
+  };
+
+  const actionButtons = document.createElement("div");
+  actionButtons.style.display = "flex";
+  actionButtons.style.gap = "8px";
+
+  const resetSizeButton = createActionButton("Reset Size", () => {
+    onResetSize();
+  });
+
+  const resetDefaultsButton = createActionButton("Reset Defaults", () => {
     onResetDefaults();
   });
-  resetButton.addEventListener("focus", () => {
-    resetButton.style.borderColor = "#6366f1";
-    resetButton.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.22)";
-  });
-  resetButton.addEventListener("blur", () => {
-    resetButton.style.borderColor = "#d1d5db";
-    resetButton.style.boxShadow = "none";
-  });
-  resetButton.addEventListener("pointerenter", () => {
-    resetButton.style.background = "#e5e7eb";
-    resetButton.style.borderColor = "#9ca3af";
-  });
-  resetButton.addEventListener("pointerleave", () => {
-    resetButton.style.background = "#f3f4f6";
-    resetButton.style.borderColor = "#d1d5db";
-  });
+
+  actionButtons.appendChild(resetDefaultsButton);
+  actionButtons.appendChild(resetSizeButton);
 
   section.appendChild(highlightRow);
   section.appendChild(tabsRow);
   section.appendChild(thresholdWrap);
   section.appendChild(fakeLoadingRow);
-  section.appendChild(resetButton);
+  section.appendChild(actionButtons);
   body.appendChild(section);
   scheduleClampWidgetIntoViewport();
 };

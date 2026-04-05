@@ -9,9 +9,14 @@ import { createWidgetHeaderControls, setHeaderToggleActive } from "./header-cont
 import { renderWidgetSettingsPanel } from "./settings-panel.js";
 import { createWidgetDragController } from "./drag-controller.js";
 import { createWidgetStatusController } from "./status-controller.js";
+import { createWidgetResizeController } from "./resize-controller.js";
 import {
   DEFAULT_WIDGET_SETTINGS,
   DEFAULT_WIDGET_SETTINGS_STORAGE_KEY,
+  MIN_WIDGET_WIDTH_PX,
+  MAX_WIDGET_WIDTH_PX,
+  MIN_WIDGET_HEIGHT_PX,
+  MAX_WIDGET_HEIGHT_PX,
   clampConstraintsPerPage,
   loadWidgetSettings,
   normalizeWidgetSettings,
@@ -23,6 +28,7 @@ export function createLayoutLintWidget(
   options: LayoutLintWidgetOptions = {}
 ): LayoutLintWidgetController {
   const EXPANDED_WIDGET_WIDTH = 340;
+  const EXPANDED_WIDGET_HEIGHT = 360;
   const MINIMIZED_WIDGET_WIDTH = 248;
   const FAKE_LOADING_DURATION_MS = 800;
   const REEVALUATE_STATUS_LABEL = "reevaluating...";
@@ -38,6 +44,8 @@ export function createLayoutLintWidget(
       constraintsPerPage: options.constraintsPerPage,
       minimized: options.initialMinimized,
       statusTransitionDelayEnabled: options.statusTransitionDelayEnabled,
+      widthPx: options.widthPx,
+      heightPx: options.heightPx,
     },
     storedSettings
   );
@@ -48,14 +56,16 @@ export function createLayoutLintWidget(
   root.style.zIndex = "2147483647";
   root.style.top = `${options.initialPosition?.y ?? 16}px`;
   root.style.left = `${options.initialPosition?.x ?? 16}px`;
-  root.style.width = `${initialSettings.minimized ? MINIMIZED_WIDGET_WIDTH : EXPANDED_WIDGET_WIDTH}px`;
-  root.style.maxHeight = "45vh";
+  root.style.width = `${initialSettings.minimized ? MINIMIZED_WIDGET_WIDTH : (initialSettings.widthPx ?? EXPANDED_WIDGET_WIDTH)}px`;
+  root.style.height = initialSettings.minimized ? "auto" : `${initialSettings.heightPx ?? EXPANDED_WIDGET_HEIGHT}px`;
   root.style.overflow = "hidden";
+  root.style.display = "flex";
+  root.style.flexDirection = "column";
   root.style.border = "1px solid #d1d5db";
   root.style.borderRadius = "10px";
   root.style.background = "#ffffff";
   root.style.boxShadow = "0 10px 25px rgba(0,0,0,0.15)";
-  root.style.transition = "width 140ms ease";
+  root.style.transition = "width 140ms ease, height 140ms ease";
   root.style.font = "12px/1.4 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif";
   root.style.color = "#111827";
 
@@ -73,8 +83,9 @@ export function createLayoutLintWidget(
 
   const body = document.createElement("div");
   body.style.padding = "8px 10px";
-  body.style.maxHeight = "calc(45vh - 40px)";
-  body.style.overflow = "auto";
+  body.style.flex = "1 1 auto";
+  body.style.minHeight = "0";
+  body.style.overflow = "hidden";
 
   root.appendChild(header);
   root.appendChild(body);
@@ -150,8 +161,16 @@ export function createLayoutLintWidget(
     updateHeaderToggleStyles();
   };
 
-  const applyWidgetWidthForCurrentState = () => {
-    root.style.width = `${state.getSettings().minimized ? MINIMIZED_WIDGET_WIDTH : EXPANDED_WIDGET_WIDTH}px`;
+  const applyWidgetDimensionsForCurrentState = () => {
+    const settings = state.getSettings();
+    if (settings.minimized) {
+      root.style.width = `${MINIMIZED_WIDGET_WIDTH}px`;
+      root.style.height = "auto";
+      return;
+    }
+
+    root.style.width = `${settings.widthPx ?? EXPANDED_WIDGET_WIDTH}px`;
+    root.style.height = `${settings.heightPx ?? EXPANDED_WIDGET_HEIGHT}px`;
   };
 
   const persistCurrentSettings = () => {
@@ -261,12 +280,44 @@ export function createLayoutLintWidget(
     header,
     onViewportChange: renderActiveHighlight,
   });
+  const resizeController = createWidgetResizeController({
+    root,
+    getBounds: () => ({
+      minWidth: MIN_WIDGET_WIDTH_PX,
+      maxWidth: MAX_WIDGET_WIDTH_PX,
+      minHeight: MIN_WIDGET_HEIGHT_PX,
+      maxHeight: MAX_WIDGET_HEIGHT_PX,
+    }),
+    onResize: () => {
+      renderActiveHighlight();
+    },
+    onResizeEnd: ({ widthPx, heightPx }) => {
+      state.updateSettings({ widthPx, heightPx });
+      persistCurrentSettings();
+      clampWidgetIntoViewport();
+      renderActiveHighlight();
+    },
+  });
   const clampWidgetIntoViewport = () => {
     dragController.clampIntoViewport();
   };
 
   const onTogglePointerDown = (event: PointerEvent) => {
     event.stopPropagation();
+  };
+
+  const resetWidgetSize = () => {
+    state.updateSettings({ widthPx: undefined, heightPx: undefined });
+    persistCurrentSettings();
+    applyWidgetDimensionsForCurrentState();
+    requestRerender();
+  };
+
+  const onHeaderDoubleClick = (event: MouseEvent) => {
+    const targetElement = event.target as HTMLElement | null;
+    if (targetElement?.closest("button")) return;
+    event.preventDefault();
+    resetWidgetSize();
   };
 
   const onSettingsToggleClick = () => {
@@ -305,7 +356,9 @@ export function createLayoutLintWidget(
     }
     persistCurrentSettings();
     updateMinimizeToggleLabel();
-    applyWidgetWidthForCurrentState();
+    resizeController.setHandlesVisible(!nextMinimized);
+    resizeController.setEnabled(!nextMinimized);
+    applyWidgetDimensionsForCurrentState();
     requestRerender();
   };
 
@@ -343,11 +396,21 @@ export function createLayoutLintWidget(
       onUpdateSettings: (patch) => {
         state.updateSettings(patch);
         persistCurrentSettings();
+        applyWidgetDimensionsForCurrentState();
         requestRerender();
       },
+      onResetSize: () => {
+        resetWidgetSize();
+      },
       onResetDefaults: () => {
+        const { widthPx, heightPx } = state.getSettings();
         state.resetSettings();
+        state.updateSettings({ widthPx, heightPx });
         persistCurrentSettings();
+        updateMinimizeToggleLabel();
+        resizeController.setHandlesVisible(!state.getSettings().minimized);
+        resizeController.setEnabled(!state.getSettings().minimized);
+        applyWidgetDimensionsForCurrentState();
         requestRerender();
       },
       scheduleClampWidgetIntoViewport,
@@ -432,9 +495,13 @@ export function createLayoutLintWidget(
   specToggle.addEventListener("click", onSpecToggleClick);
   minimizeToggle.addEventListener("pointerdown", onTogglePointerDown);
   minimizeToggle.addEventListener("click", onMinimizeToggleClick);
+  header.addEventListener("dblclick", onHeaderDoubleClick);
   window.addEventListener("keydown", onKeyDown);
 
   dragController.setup();
+  resizeController.setup();
+  resizeController.setHandlesVisible(!state.getSettings().minimized);
+  resizeController.setEnabled(!state.getSettings().minimized);
 
   const unsubscribe = monitor.subscribe((result) => {
     latestResults = result.results;
@@ -448,6 +515,7 @@ export function createLayoutLintWidget(
       statusController.destroy();
       unsubscribe();
       dragController.destroy();
+      resizeController.destroy();
       settingsToggle.removeEventListener("pointerdown", onTogglePointerDown);
       settingsToggle.removeEventListener("click", onSettingsToggleClick);
       constraintsToggle.removeEventListener("pointerdown", onTogglePointerDown);
@@ -456,6 +524,7 @@ export function createLayoutLintWidget(
       specToggle.removeEventListener("click", onSpecToggleClick);
       minimizeToggle.removeEventListener("pointerdown", onTogglePointerDown);
       minimizeToggle.removeEventListener("click", onMinimizeToggleClick);
+      header.removeEventListener("dblclick", onHeaderDoubleClick);
       window.removeEventListener("keydown", onKeyDown);
       clearHighlights();
       highlightLayer.remove();

@@ -105,15 +105,18 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
   const renderPanel = ({ body, status, scheduleClampWidgetIntoViewport }: RenderSpecEditorPanelArgs) => {
     body.innerHTML = "";
     status.textContent = "";
-    body.style.display = "block";
-    body.style.flexDirection = "";
-    body.style.overflow = "auto";
-    body.style.minHeight = "";
+    body.style.display = "flex";
+    body.style.flexDirection = "column";
+    body.style.overflow = "hidden";
+    body.style.minHeight = "0";
     body.style.padding = "8px 10px";
     body.style.paddingBottom = "8px";
 
     const section = document.createElement("div");
-    section.style.display = "grid";
+    section.style.display = "flex";
+    section.style.flexDirection = "column";
+    section.style.flex = "1 1 auto";
+    section.style.minHeight = "0";
     section.style.gap = "8px";
     section.style.padding = "10px";
     section.style.border = "1px solid #dbe3ff";
@@ -121,7 +124,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     section.style.background = "linear-gradient(180deg, #f8faff 0%, #eef2ff 100%)";
 
     const heading = document.createElement("div");
-    heading.textContent = "Edit Layout Spec";
+    heading.textContent = "Edit Layout Specification";
     heading.style.fontSize = "12px";
     heading.style.fontWeight = "700";
     heading.style.color = "#1f2937";
@@ -134,11 +137,12 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     const textArea = document.createElement("textarea");
     textArea.value = draft;
     textArea.spellcheck = false;
-    textArea.rows = 10;
+    textArea.rows = 12;
     textArea.style.width = "100%";
+    textArea.style.flex = "1 1 auto";
     textArea.style.boxSizing = "border-box";
-    textArea.style.resize = "vertical";
-    textArea.style.minHeight = "160px";
+    textArea.style.resize = "none";
+    textArea.style.minHeight = "220px";
     textArea.style.padding = "8px";
     textArea.style.border = "1px solid #a5b4fc";
     textArea.style.borderRadius = "8px";
