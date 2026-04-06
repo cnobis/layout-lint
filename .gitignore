@@ -1,3 +1,9 @@
+# Thesis and notes are kept local for privacy and agent support.
+# Never tracked or pushed to the main repo.
+thesis/
+notes/
+*.tex
+*.bib
 # Logs
 logs
 *.log
