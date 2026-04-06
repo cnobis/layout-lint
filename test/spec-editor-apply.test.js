@@ -15,6 +15,8 @@ class FakeElement {
     this.parentElement = null;
     this.innerHTML = '';
     this.attributes = new Map();
+    this.scrollTop = 0;
+    this.scrollLeft = 0;
   }
 
   appendChild(child) {
@@ -22,6 +24,20 @@ class FakeElement {
     child.parentNode = this;
     child.parentElement = this;
     return child;
+  }
+
+  removeChild(child) {
+    const index = this.children.indexOf(child);
+    if (index >= 0) {
+      this.children.splice(index, 1);
+      child.parentNode = null;
+      child.parentElement = null;
+    }
+    return child;
+  }
+
+  get firstChild() {
+    return this.children[0] ?? null;
   }
 
   addEventListener(type, handler) {
@@ -64,6 +80,15 @@ class FakeElement {
     };
   }
 }
+
+const findFirstDescendant = (root, predicate) => {
+  if (predicate(root)) return root;
+  for (const child of root.children ?? []) {
+    const match = findFirstDescendant(child, predicate);
+    if (match) return match;
+  }
+  return null;
+};
 
 const installFakeDom = () => {
   const previousWindow = global.window;
@@ -169,7 +194,7 @@ describe('spec editor apply flow', () => {
     assert.strictEqual(body.children[1].children[0], status);
 
     const section = body.children[0];
-    const textArea = section.children[2];
+    const textArea = findFirstDescendant(section, (node) => node.tagName === 'textarea');
     textArea.value = 'nav above header 10px';
     textArea.dispatchEvent({ type: 'input' });
 
@@ -232,7 +257,7 @@ describe('spec editor apply flow', () => {
     });
 
     const section = body.children[0];
-    const textArea = section.children[2];
+    const textArea = findFirstDescendant(section, (node) => node.tagName === 'textarea');
     textArea.value = 'nav abave header 10px';
     textArea.dispatchEvent({ type: 'input' });
 
@@ -244,5 +269,54 @@ describe('spec editor apply flow', () => {
     assert.ok(modes.includes('loading'));
     assert.deepStrictEqual(monitor.setSpecTextCalls, ['nav abave header 10px', 'nav below header 10px']);
     assert.strictEqual(monitor.getSpecText(), 'nav below header 10px');
+  });
+
+  it('renders a syntax mirror with token classification', async () => {
+    const monitor = makeMonitor('nav below header 10px');
+
+    const editor = createSpecEditor({
+      monitor: monitor.controller,
+      isStatusTransitionDelayEnabled: () => false,
+      fakeLoadingDurationMs: 0,
+      specUpdateStatusLabel: 'parsing spec...',
+      clearFooterStatusResetTimer: () => {},
+      setFooterStatusActionLabel: () => {},
+      setFooterStatusMode: () => {},
+      flashFooterStatusDone: () => {},
+      showFooterErrorAndReset: () => {},
+      requestRerender: () => {},
+      updateHeaderToggleStyles: () => {},
+    });
+
+    editor.open();
+
+    const body = new FakeElement('div');
+    const status = new FakeElement('span');
+    editor.renderPanel({
+      body,
+      status,
+      footerStatusMode: 'ready',
+      footerStatusActionLabel: 'evaluating...',
+      footerDiagnosticsSummary: { total: 0, errors: 0, warnings: 0 },
+      footerPassedCount: 1,
+      footerTotalCount: 1,
+      scheduleClampWidgetIntoViewport: () => {},
+    });
+
+    const section = body.children[0];
+    const syntaxLayer = findFirstDescendant(section, (node) => node.dataset?.layoutLintSyntaxLayer === 'true');
+    assert.ok(syntaxLayer);
+
+    const syntaxMirror = findFirstDescendant(syntaxLayer, (node) => node.tagName === 'pre');
+    assert.ok(syntaxMirror);
+
+    const syntaxTokens = [];
+    for (const child of syntaxMirror.children) {
+      syntaxTokens.push({ text: child.textContent, kind: child.dataset.layoutLintSyntaxKind });
+    }
+
+    assert.ok(syntaxTokens.some((token) => token.text === 'below' && token.kind === 'keyword'));
+    assert.ok(syntaxTokens.some((token) => token.text === 'nav' && token.kind === 'identifier'));
+    assert.ok(syntaxTokens.some((token) => token.text === '10px' && token.kind === 'number'));
   });
 });
