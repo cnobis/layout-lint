@@ -197,9 +197,12 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
 
     const heading = document.createElement("div");
     heading.textContent = "Edit Layout Specification";
-    heading.style.fontSize = "12px";
+    heading.style.fontSize = "9px";
     heading.style.fontWeight = "700";
+    heading.style.textTransform = "uppercase";
+    heading.style.letterSpacing = "0.06em";
     heading.style.color = "#1f2937";
+    heading.style.padding = "4px 2px 0";
     heading.style.flex = "0 0 auto";
 
     const helper = document.createElement("div");
