@@ -23,7 +23,7 @@ The demo page then renders those results.
 ## 2. DSL and Grammar Layer
 
 ### 2.1 Source Grammar
-- Primary grammar definition: `grammar.js`
+- Primary grammar definition: `grammar.js`g
 - Grammar name: `layout_lint`
 - Entry rule: `source_file` → repeated `rule`
 

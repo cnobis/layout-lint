@@ -30,7 +30,7 @@ export function createLayoutLintWidget(
 ): LayoutLintWidgetController {
   const EXPANDED_WIDGET_WIDTH = 340;
   const EXPANDED_WIDGET_HEIGHT = 360;
-  const MINIMIZED_WIDGET_WIDTH = 248;
+  const MINIMIZED_WIDGET_WIDTH = 180;
   const FAKE_LOADING_DURATION_MS = 800;
   const REEVALUATE_STATUS_LABEL = "evaluating...";
   const SPEC_UPDATE_STATUS_LABEL = "parsing spec...";
@@ -396,9 +396,10 @@ export function createLayoutLintWidget(
   });
 
   const renderSettingsPanel = () => {
-    status.textContent = "";
+    const { passed, total } = summarizeResults(latestResults);
     renderWidgetSettingsPanel({
       body,
+      status,
       settings: state.getSettings(),
       clampConstraintsPerPage,
       onUpdateSettings: (patch) => {
@@ -421,6 +422,11 @@ export function createLayoutLintWidget(
         applyWidgetDimensionsForCurrentState();
         requestRerender();
       },
+      footerStatusMode: statusController.getMode(),
+      footerStatusActionLabel: statusController.getActionLabel(),
+      footerDiagnosticsSummary: latestDiagnosticsSummary,
+      footerPassedCount: passed,
+      footerTotalCount: total,
       scheduleClampWidgetIntoViewport,
     });
   };
@@ -452,6 +458,7 @@ export function createLayoutLintWidget(
         footerDiagnosticsSummary: latestDiagnosticsSummary,
         footerPassedCount: passed,
         footerTotalCount: total,
+        editorBackground: state.getSettings().editorBackground,
         scheduleClampWidgetIntoViewport,
       });
       return;

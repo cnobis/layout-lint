@@ -1,7 +1,12 @@
+// Toggle this constant to switch editor implementations for development/testing
+const USE_HIGHLIGHTED_EDITOR = true;
 import type { LayoutLintMonitorController } from "../monitor/types.js";
 import type { FooterDiagnosticsSummary, FooterStatusMode } from "./footer-status.js";
 import type { LayoutLintDiagnostic } from "../../core/types.js";
 import { createFooterStatusContainer, renderFooterStatusBar, styleFooterStatusBar } from "./footer-status.js";
+import { HighlightedEditorView } from "./highlighted-editor-view.js";
+import type { EditorView } from "./editor-view.js";
+import { PlainTextareaEditorView } from "./editor-view.js";
 
 interface RenderSpecEditorPanelArgs {
   body: HTMLDivElement;
@@ -11,6 +16,7 @@ interface RenderSpecEditorPanelArgs {
   footerDiagnosticsSummary: FooterDiagnosticsSummary;
   footerPassedCount: number;
   footerTotalCount: number;
+  editorBackground: string;
   scheduleClampWidgetIntoViewport: () => void;
 }
 
@@ -166,6 +172,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     footerDiagnosticsSummary,
     footerPassedCount,
     footerTotalCount,
+    editorBackground,
     scheduleClampWidgetIntoViewport,
   }: RenderSpecEditorPanelArgs) => {
     body.innerHTML = "";
@@ -201,31 +208,18 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     helper.style.color = "#6b7280";
     helper.style.flex = "0 0 auto";
 
-    const textArea = document.createElement("textarea");
-    textArea.value = draft;
-    textArea.spellcheck = false;
-    textArea.rows = 12;
-    textArea.style.width = "100%";
-    textArea.style.flex = "1 1 auto";
-    textArea.style.minHeight = "0";
-    textArea.style.boxSizing = "border-box";
-    textArea.style.resize = "none";
-    textArea.style.padding = "8px";
-    textArea.style.border = "1px solid #a5b4fc";
-    textArea.style.borderRadius = "8px";
-    textArea.style.fontSize = "11px";
-    textArea.style.fontFamily = "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
-    textArea.style.lineHeight = "1.4";
-    textArea.style.background = "#ffffff";
-    textArea.style.color = "#1f2937";
-    textArea.style.outline = "none";
-    textArea.addEventListener("pointerdown", (event) => event.stopPropagation());
-    textArea.addEventListener("input", () => {
-      draft = textArea.value;
+    const editorView: EditorView = USE_HIGHLIGHTED_EDITOR
+      ? new HighlightedEditorView(draft)
+      : new PlainTextareaEditorView(draft, { rows: 12 });
+    editorView.setBackground(editorBackground);
+    const editorEl = editorView.getElement();
+    editorEl.addEventListener("pointerdown", (event: PointerEvent) => event.stopPropagation());
+    editorView.onChange((value: string) => {
+      draft = value;
       error = null;
       diagnostics = [];
     });
-    textArea.addEventListener("keydown", (event) => {
+    editorEl.addEventListener("keydown", (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
         event.preventDefault();
         void apply();
@@ -369,7 +363,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
 
     section.appendChild(heading);
     section.appendChild(helper);
-    section.appendChild(textArea);
+    section.appendChild(editorEl);
     section.appendChild(actions);
     section.appendChild(diagnosticsList);
     body.appendChild(section);

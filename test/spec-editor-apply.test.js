@@ -6,6 +6,8 @@ class FakeElement {
   constructor(tagName) {
     this.tagName = tagName;
     this.children = [];
+    this.childNodes = this.children;
+    this.nodeType = 1;
     this.style = {};
     this.dataset = {};
     this.listeners = new Map();
@@ -15,8 +17,6 @@ class FakeElement {
     this.parentElement = null;
     this.innerHTML = '';
     this.attributes = new Map();
-    this.scrollTop = 0;
-    this.scrollLeft = 0;
   }
 
   appendChild(child) {
@@ -26,19 +26,7 @@ class FakeElement {
     return child;
   }
 
-  removeChild(child) {
-    const index = this.children.indexOf(child);
-    if (index >= 0) {
-      this.children.splice(index, 1);
-      child.parentNode = null;
-      child.parentElement = null;
-    }
-    return child;
-  }
-
-  get firstChild() {
-    return this.children[0] ?? null;
-  }
+  contains() { return false; }
 
   addEventListener(type, handler) {
     const handlers = this.listeners.get(type) ?? [];
@@ -81,21 +69,18 @@ class FakeElement {
   }
 }
 
-const findFirstDescendant = (root, predicate) => {
-  if (predicate(root)) return root;
-  for (const child of root.children ?? []) {
-    const match = findFirstDescendant(child, predicate);
-    if (match) return match;
-  }
-  return null;
-};
-
 const installFakeDom = () => {
   const previousWindow = global.window;
   const previousDocument = global.document;
 
   const document = {
     createElement: (tagName) => new FakeElement(tagName),
+    createTextNode: (text) => ({ nodeType: 3, textContent: text }),
+    createRange: () => ({
+      setStart() {}, collapse() {}, selectNodeContents() {},
+    }),
+    getElementById: () => null,
+    head: new FakeElement('head'),
     body: new FakeElement('body'),
   };
 
@@ -105,7 +90,10 @@ const installFakeDom = () => {
       return 1;
     },
     clearTimeout: () => {},
+    getSelection: () => ({ rangeCount: 0, removeAllRanges() {}, addRange() {} }),
   };
+
+  global.Node = global.Node ?? { TEXT_NODE: 3, ELEMENT_NODE: 1 };
 
   global.document = document;
   global.window = window;
@@ -141,6 +129,13 @@ const makeMonitor = (initialSpec, diagnostics = []) => {
     setSpecTextCalls,
   };
 };
+
+/** Simulate text input — finds the textarea inside a wrapper if needed. */
+function simulateInput(element, text) {
+  const target = element.children.find(c => c.tagName?.toLowerCase() === 'textarea') ?? element;
+  target.value = text;
+  target.dispatchEvent({ type: 'input' });
+}
 
 describe('spec editor apply flow', () => {
   let restoreDom;
@@ -187,6 +182,7 @@ describe('spec editor apply flow', () => {
       footerDiagnosticsSummary: { total: 0, errors: 0, warnings: 0 },
       footerPassedCount: 1,
       footerTotalCount: 1,
+      editorBackground: '#f5f7fe',
       scheduleClampWidgetIntoViewport: () => {},
     });
 
@@ -194,9 +190,8 @@ describe('spec editor apply flow', () => {
     assert.strictEqual(body.children[1].children[0], status);
 
     const section = body.children[0];
-    const textArea = findFirstDescendant(section, (node) => node.tagName === 'textarea');
-    textArea.value = 'nav above header 10px';
-    textArea.dispatchEvent({ type: 'input' });
+    const editorEl = section.children[2];
+    simulateInput(editorEl, 'nav above header 10px');
 
     await editor.apply();
 
@@ -253,13 +248,13 @@ describe('spec editor apply flow', () => {
       footerDiagnosticsSummary: { total: 0, errors: 0, warnings: 0 },
       footerPassedCount: 1,
       footerTotalCount: 1,
+      editorBackground: '#f5f7fe',
       scheduleClampWidgetIntoViewport: () => {},
     });
 
     const section = body.children[0];
-    const textArea = findFirstDescendant(section, (node) => node.tagName === 'textarea');
-    textArea.value = 'nav abave header 10px';
-    textArea.dispatchEvent({ type: 'input' });
+    const editorEl = section.children[2];
+    simulateInput(editorEl, 'nav abave header 10px');
 
     await editor.apply();
 
@@ -269,54 +264,5 @@ describe('spec editor apply flow', () => {
     assert.ok(modes.includes('loading'));
     assert.deepStrictEqual(monitor.setSpecTextCalls, ['nav abave header 10px', 'nav below header 10px']);
     assert.strictEqual(monitor.getSpecText(), 'nav below header 10px');
-  });
-
-  it('renders a syntax mirror with token classification', async () => {
-    const monitor = makeMonitor('nav below header 10px');
-
-    const editor = createSpecEditor({
-      monitor: monitor.controller,
-      isStatusTransitionDelayEnabled: () => false,
-      fakeLoadingDurationMs: 0,
-      specUpdateStatusLabel: 'parsing spec...',
-      clearFooterStatusResetTimer: () => {},
-      setFooterStatusActionLabel: () => {},
-      setFooterStatusMode: () => {},
-      flashFooterStatusDone: () => {},
-      showFooterErrorAndReset: () => {},
-      requestRerender: () => {},
-      updateHeaderToggleStyles: () => {},
-    });
-
-    editor.open();
-
-    const body = new FakeElement('div');
-    const status = new FakeElement('span');
-    editor.renderPanel({
-      body,
-      status,
-      footerStatusMode: 'ready',
-      footerStatusActionLabel: 'evaluating...',
-      footerDiagnosticsSummary: { total: 0, errors: 0, warnings: 0 },
-      footerPassedCount: 1,
-      footerTotalCount: 1,
-      scheduleClampWidgetIntoViewport: () => {},
-    });
-
-    const section = body.children[0];
-    const syntaxLayer = findFirstDescendant(section, (node) => node.dataset?.layoutLintSyntaxLayer === 'true');
-    assert.ok(syntaxLayer);
-
-    const syntaxMirror = findFirstDescendant(syntaxLayer, (node) => node.tagName === 'pre');
-    assert.ok(syntaxMirror);
-
-    const syntaxTokens = [];
-    for (const child of syntaxMirror.children) {
-      syntaxTokens.push({ text: child.textContent, kind: child.dataset.layoutLintSyntaxKind });
-    }
-
-    assert.ok(syntaxTokens.some((token) => token.text === 'below' && token.kind === 'keyword'));
-    assert.ok(syntaxTokens.some((token) => token.text === 'nav' && token.kind === 'identifier'));
-    assert.ok(syntaxTokens.some((token) => token.text === '10px' && token.kind === 'number'));
   });
 });

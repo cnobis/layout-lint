@@ -1,22 +1,37 @@
 import type { LayoutLintWidgetSettings } from "./types.js";
+import { EDITOR_BACKGROUNDS } from "./types.js";
+import type { FooterStatusMode, FooterDiagnosticsSummary } from "./footer-status.js";
+import { createFooterStatusContainer, styleFooterStatusBar, renderFooterStatusBar } from "./footer-status.js";
 
 interface RenderWidgetSettingsPanelArgs {
   body: HTMLDivElement;
+  status: HTMLSpanElement;
   settings: LayoutLintWidgetSettings;
   clampConstraintsPerPage: (value: number) => number;
   onUpdateSettings: (patch: Partial<LayoutLintWidgetSettings>) => void;
   onResetSize: () => void;
   onResetDefaults: () => void;
+  footerStatusMode: FooterStatusMode;
+  footerStatusActionLabel: string;
+  footerDiagnosticsSummary: FooterDiagnosticsSummary | undefined;
+  footerPassedCount: number;
+  footerTotalCount: number;
   scheduleClampWidgetIntoViewport: () => void;
 }
 
 export const renderWidgetSettingsPanel = ({
   body,
+  status,
   settings,
   clampConstraintsPerPage,
   onUpdateSettings,
   onResetSize,
   onResetDefaults,
+  footerStatusMode,
+  footerStatusActionLabel,
+  footerDiagnosticsSummary,
+  footerPassedCount,
+  footerTotalCount,
   scheduleClampWidgetIntoViewport,
 }: RenderWidgetSettingsPanelArgs) => {
   body.innerHTML = "";
@@ -25,7 +40,7 @@ export const renderWidgetSettingsPanel = ({
   body.style.overflow = "hidden";
   body.style.minHeight = "0";
   body.style.padding = "8px 10px";
-  body.style.paddingBottom = "8px";
+  body.style.paddingBottom = "0";
 
   const section = document.createElement("div");
   section.style.display = "flex";
@@ -33,11 +48,23 @@ export const renderWidgetSettingsPanel = ({
   section.style.flex = "1 1 auto";
   section.style.minHeight = "0";
   section.style.overflowY = "auto";
-  section.style.gap = "10px";
+  section.style.gap = "6px";
   section.style.padding = "10px";
   section.style.border = "1px solid #dbe3ff";
   section.style.borderRadius = "10px";
   section.style.background = "linear-gradient(180deg, #f8faff 0%, #eef2ff 100%)";
+
+  const createSectionHeader = (text: string) => {
+    const header = document.createElement("div");
+    header.textContent = text;
+    header.style.fontSize = "9px";
+    header.style.fontWeight = "700";
+    header.style.textTransform = "uppercase";
+    header.style.letterSpacing = "0.06em";
+    header.style.color = "#6366f1";
+    header.style.padding = "4px 2px 0";
+    return header;
+  };
 
   const createToggleRow = (
     label: string,
@@ -102,6 +129,9 @@ export const renderWidgetSettingsPanel = ({
     return row;
   };
 
+  // --- Display section ---
+  const displayHeader = createSectionHeader("Display");
+
   const highlightRow = createToggleRow(
     "Highlights",
     "Show overlays on linked elements",
@@ -111,21 +141,24 @@ export const renderWidgetSettingsPanel = ({
     }
   );
 
-  const tabsRow = createToggleRow(
-    "Tabs",
-    "Split constraints into navigable pages",
-    settings.tabsEnabled,
-    (nextValue) => {
-      onUpdateSettings({ tabsEnabled: nextValue });
-    }
-  );
-
   const fakeLoadingRow = createToggleRow(
     "Delay",
     "Show brief visual feedback until result updates",
     settings.statusTransitionDelayEnabled,
     (nextValue) => {
       onUpdateSettings({ statusTransitionDelayEnabled: nextValue });
+    }
+  );
+
+  // --- Constraints section ---
+  const constraintsHeader = createSectionHeader("Constraints");
+
+  const tabsRow = createToggleRow(
+    "Tabs",
+    "Split constraints into navigable pages",
+    settings.tabsEnabled,
+    (nextValue) => {
+      onUpdateSettings({ tabsEnabled: nextValue });
     }
   );
 
@@ -203,10 +236,78 @@ export const renderWidgetSettingsPanel = ({
   thresholdWrap.appendChild(thresholdInput);
   thresholdWrap.appendChild(helper);
 
+  // --- Spec Editor section ---
+  const specHeader = createSectionHeader("Spec Editor");
+
+  const bgRow = document.createElement("div");
+  bgRow.style.display = "flex";
+  bgRow.style.alignItems = "center";
+  bgRow.style.justifyContent = "space-between";
+  bgRow.style.gap = "10px";
+  bgRow.style.padding = "8px 10px";
+  bgRow.style.border = "1px solid #c7d2fe";
+  bgRow.style.borderRadius = "8px";
+  bgRow.style.background = "rgba(255,255,255,0.85)";
+
+  const bgTextWrap = document.createElement("div");
+  bgTextWrap.style.display = "grid";
+  bgTextWrap.style.gap = "1px";
+
+  const bgTitle = document.createElement("div");
+  bgTitle.textContent = "Editor Background";
+  bgTitle.style.fontSize = "11px";
+  bgTitle.style.fontWeight = "700";
+  bgTitle.style.color = "#1f2937";
+
+  const bgSubtitle = document.createElement("div");
+  bgSubtitle.textContent = "Syntax editor backdrop color";
+  bgSubtitle.style.fontSize = "10px";
+  bgSubtitle.style.color = "#6b7280";
+
+  bgTextWrap.appendChild(bgTitle);
+  bgTextWrap.appendChild(bgSubtitle);
+
+  const swatchWrap = document.createElement("div");
+  swatchWrap.style.display = "flex";
+  swatchWrap.style.gap = "6px";
+
+  for (const bg of EDITOR_BACKGROUNDS) {
+    const isActive = settings.editorBackground === bg.value;
+    const swatch = document.createElement("button");
+    swatch.type = "button";
+    swatch.title = bg.label;
+    swatch.style.width = "22px";
+    swatch.style.height = "22px";
+    swatch.style.borderRadius = "5px";
+    swatch.style.border = isActive ? "2px solid #6366f1" : "1px solid #9ca3af";
+    swatch.style.background = bg.value;
+    swatch.style.cursor = "pointer";
+    swatch.style.outline = "none";
+    swatch.style.padding = "0";
+    swatch.style.boxShadow = isActive ? "0 0 0 2px rgba(99, 102, 241, 0.22)" : "none";
+    swatch.style.transition = "border-color 120ms ease, box-shadow 120ms ease";
+    swatch.addEventListener("pointerdown", (event) => event.stopPropagation());
+    swatch.addEventListener("focus", () => {
+      swatch.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.22)";
+    });
+    swatch.addEventListener("blur", () => {
+      if (!isActive) swatch.style.boxShadow = "none";
+    });
+    swatch.addEventListener("click", () => {
+      onUpdateSettings({ editorBackground: bg.value });
+    });
+    swatchWrap.appendChild(swatch);
+  }
+
+  bgRow.appendChild(bgTextWrap);
+  bgRow.appendChild(swatchWrap);
+
+  // --- Reset section ---
   const createActionButton = (label: string, onClick: () => void) => {
     const button = document.createElement("button");
     button.type = "button";
     button.textContent = label;
+    button.style.flex = "1 1 0";
     button.style.padding = "6px 8px";
     button.style.fontSize = "11px";
     button.style.fontWeight = "600";
@@ -238,27 +339,46 @@ export const renderWidgetSettingsPanel = ({
     return button;
   };
 
-  const actionButtons = document.createElement("div");
-  actionButtons.style.display = "flex";
-  actionButtons.style.gap = "8px";
-  actionButtons.style.marginTop = "auto";
-
-  const resetSizeButton = createActionButton("Reset Size", () => {
-    onResetSize();
-  });
+  const resetRow = document.createElement("div");
+  resetRow.style.display = "flex";
+  resetRow.style.gap = "8px";
+  resetRow.style.marginTop = "auto";
+  resetRow.style.padding = "2px 0 0";
 
   const resetDefaultsButton = createActionButton("Reset Defaults", () => {
     onResetDefaults();
   });
+  const resetSizeButton = createActionButton("Reset Size", () => {
+    onResetSize();
+  });
 
-  actionButtons.appendChild(resetDefaultsButton);
-  actionButtons.appendChild(resetSizeButton);
+  resetRow.appendChild(resetDefaultsButton);
+  resetRow.appendChild(resetSizeButton);
 
+  // --- Assemble ---
+  section.appendChild(displayHeader);
   section.appendChild(highlightRow);
+  section.appendChild(fakeLoadingRow);
+  section.appendChild(constraintsHeader);
   section.appendChild(tabsRow);
   section.appendChild(thresholdWrap);
-  section.appendChild(fakeLoadingRow);
-  section.appendChild(actionButtons);
+  section.appendChild(specHeader);
+  section.appendChild(bgRow);
+  section.appendChild(resetRow);
   body.appendChild(section);
+
+  const footerContainer = createFooterStatusContainer();
+  footerContainer.style.marginTop = "6px";
+  footerContainer.style.paddingTop = "0";
+  footerContainer.style.borderTop = "none";
+  styleFooterStatusBar(status);
+  renderFooterStatusBar(status, footerStatusMode, footerPassedCount, footerTotalCount, footerStatusActionLabel, footerDiagnosticsSummary);
+  status.style.marginTop = "0";
+  status.style.marginLeft = "0";
+  status.style.marginRight = "0";
+  status.style.marginBottom = "0";
+  footerContainer.appendChild(status);
+  body.appendChild(footerContainer);
+
   scheduleClampWidgetIntoViewport();
 };

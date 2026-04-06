@@ -16,6 +16,7 @@ const makeDefaults = () => ({
   constraintsPerPage: 10,
   minimized: false,
   statusTransitionDelayEnabled: true,
+  editorBackground: '#f5f7fe',
   widthPx: 420,
   heightPx: 360,
 });
