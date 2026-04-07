@@ -31,6 +31,8 @@ export interface LayoutLintWidgetOptions {
   heightPx?: number;
   persistSettings?: boolean;
   settingsStorageKey?: string;
+  wasmUrl?: string;
+  locateFile?: (path: string) => string;
 }
 
 export interface LayoutLintWidgetController {

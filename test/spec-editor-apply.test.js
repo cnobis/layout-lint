@@ -149,7 +149,7 @@ describe('spec editor apply flow', () => {
   });
 
   it('renders the footer bar in spec mode and closes only after a clean apply', async () => {
-    const monitor = makeMonitor('nav below header 10px');
+    const monitor = makeMonitor('nav below header 10px;');
     const actionLabels = [];
     const modes = [];
     let flashDoneCalls = 0;
@@ -191,19 +191,19 @@ describe('spec editor apply flow', () => {
 
     const section = body.children[0];
     const editorEl = section.children[2];
-    simulateInput(editorEl, 'nav above header 10px');
+    simulateInput(editorEl, 'nav above header 10px;');
 
     await editor.apply();
 
     assert.strictEqual(editor.isOpen(), false);
-    assert.deepStrictEqual(monitor.setSpecTextCalls, ['nav above header 10px']);
+    assert.deepStrictEqual(monitor.setSpecTextCalls, ['nav above header 10px;']);
     assert.ok(actionLabels.includes('parsing spec...'));
     assert.ok(modes.includes('loading'));
     assert.strictEqual(flashDoneCalls, 1);
   });
 
   it('keeps the spec editor open when diagnostics are returned', async () => {
-    const monitor = makeMonitor('nav below header 10px', [
+    const monitor = makeMonitor('nav below header 10px;', [
       {
         code: 'LL-PARSE-SYNTAX',
         severity: 'error',
@@ -254,7 +254,7 @@ describe('spec editor apply flow', () => {
 
     const section = body.children[0];
     const editorEl = section.children[2];
-    simulateInput(editorEl, 'nav abave header 10px');
+    simulateInput(editorEl, 'nav abave header 10px;');
 
     await editor.apply();
 
@@ -262,7 +262,7 @@ describe('spec editor apply flow', () => {
     assert.strictEqual(errorResetCalls, 1);
     assert.ok(actionLabels.includes('parsing spec...'));
     assert.ok(modes.includes('loading'));
-    assert.deepStrictEqual(monitor.setSpecTextCalls, ['nav abave header 10px', 'nav below header 10px']);
-    assert.strictEqual(monitor.getSpecText(), 'nav below header 10px');
+    assert.deepStrictEqual(monitor.setSpecTextCalls, ['nav abave header 10px;', 'nav below header 10px;']);
+    assert.strictEqual(monitor.getSpecText(), 'nav below header 10px;');
   });
 });

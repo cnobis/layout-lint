@@ -1,5 +1,7 @@
 // EditorView abstraction for pluggable editor implementations
 
+import type { Highlighter } from "./tree-sitter-highlight.js";
+
 export interface EditorView {
   getValue(): string;
   setValue(value: string): void;
@@ -8,6 +10,7 @@ export interface EditorView {
   destroy(): void;
   getElement(): HTMLElement;
   setBackground(color: string): void;
+  setHighlighter?(highlighter: Highlighter): void;
 }
 
 export class PlainTextareaEditorView implements EditorView {

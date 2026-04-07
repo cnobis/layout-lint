@@ -188,25 +188,25 @@ one more record before dawn.</p>
     </section>
 
     <pre id="spec" hidden>
-lounge-main below lounge-header 0px
-menu-panel right-of now-playing-panel 28px
-menu-panel aligned-top now-playing-panel
-greeting-line below welcome-line 8px
-quote-line below greeting-line 8px
-css-sample below quote-line 20px
-chip-row below css-sample 12px
-welcome-line text starts "Welcome"
-css-sample text is "Shinjuku Basement Session Log"
-css-sample css text-transform is "none"
-css-sample css text-transform starts "no"
-css-sample css text-transform ends "one"
-css-sample css text-transform contains "on"
-css-sample css text-transform matches "n.ne"
-css-sample css font-family contains "Mincho"
-welcome-line text lowercase starts "welcome"
-greeting-line text uppercase contains "VINYL SHELF"
-quote-line text singleline lowercase contains "steady bass"
-quote-line text singleline lowercase matches "quiet cups, steady bass, one more record before dawn\."
+lounge-main below lounge-header 0px;
+menu-panel right-of now-playing-panel 28px;
+menu-panel aligned-top now-playing-panel;
+greeting-line below welcome-line 8px;
+quote-line below greeting-line 8px;
+css-sample below quote-line 20px;
+chip-row below css-sample 12px;
+welcome-line text starts "Welcome";
+css-sample text is "Shinjuku Basement Session Log";
+css-sample css text-transform is "none";
+css-sample css text-transform starts "no";
+css-sample css text-transform ends "one";
+css-sample css text-transform contains "on";
+css-sample css text-transform matches "n.ne";
+css-sample css font-family contains "Mincho";
+welcome-line text lowercase starts "welcome";
+greeting-line text uppercase contains "VINYL SHELF";
+quote-line text singleline lowercase contains "steady bass";
+quote-line text singleline lowercase matches "quiet cups, steady bass, one more record before dawn\.";
     </pre>
   </main>
 
@@ -231,7 +231,9 @@ quote-line text singleline lowercase matches "quiet cups, steady bass, one more 
     });
 
     createLayoutLintWidget(monitor, {
-      initialPosition: { x: window.innerWidth - 360, y: window.innerHeight - 400 }
+      initialPosition: { x: window.innerWidth - 360, y: window.innerHeight - 400 },
+      wasmUrl: "../../layout_lint.wasm",
+      locateFile
     });
 
     const body = document.body;

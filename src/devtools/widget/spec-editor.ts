@@ -7,6 +7,7 @@ import { createFooterStatusContainer, renderFooterStatusBar, styleFooterStatusBa
 import { HighlightedEditorView } from "./highlighted-editor-view.js";
 import type { EditorView } from "./editor-view.js";
 import { PlainTextareaEditorView } from "./editor-view.js";
+import { initHighlighter } from "./tree-sitter-highlight.js";
 
 interface RenderSpecEditorPanelArgs {
   body: HTMLDivElement;
@@ -32,6 +33,8 @@ interface CreateSpecEditorArgs {
   showFooterErrorAndReset: () => void;
   requestRerender: () => void;
   updateHeaderToggleStyles: () => void;
+  wasmUrl?: string;
+  locateFile?: (path: string) => string;
 }
 
 export interface SpecEditorController {
@@ -215,6 +218,16 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
       ? new HighlightedEditorView(draft)
       : new PlainTextareaEditorView(draft, { rows: 12 });
     editorView.setBackground(editorBackground);
+
+    // Async tree-sitter highlighter init — non-blocking, falls back to naive on failure
+    if (args.wasmUrl && editorView.setHighlighter) {
+      const ev = editorView;
+      void initHighlighter(args.wasmUrl, args.locateFile).then((highlighter) => {
+        if (highlighter && ev.setHighlighter) {
+          ev.setHighlighter(highlighter);
+        }
+      });
+    }
     const editorEl = editorView.getElement();
     editorEl.addEventListener("pointerdown", (event: PointerEvent) => event.stopPropagation());
     editorView.onChange((value: string) => {

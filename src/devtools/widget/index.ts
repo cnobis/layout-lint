@@ -503,6 +503,8 @@ export function createLayoutLintWidget(
     showFooterErrorAndReset: statusController.showErrorAndReset,
     requestRerender,
     updateHeaderToggleStyles,
+    wasmUrl: options.wasmUrl,
+    locateFile: options.locateFile,
   });
 
   const onKeyDown = (event: KeyboardEvent) => {

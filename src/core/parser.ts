@@ -1,17 +1,27 @@
 // @ts-expect-error no types for this local js
 import { Parser, Language } from "../../demo/web-tree-sitter.js";
 
-let _parserPromise: Promise<Parser> | null = null;
+let _initPromise: Promise<{ parser: Parser; language: Language }> | null = null;
 
-export async function getParser(wasmUrl: string, locateFile?: (path: string) => string): Promise<Parser> {
-  if (!_parserPromise) {
-    _parserPromise = (async () => {
+function ensureInit(wasmUrl: string, locateFile?: (path: string) => string): Promise<{ parser: Parser; language: Language }> {
+  if (!_initPromise) {
+    _initPromise = (async () => {
       await Parser.init({ locateFile });
-      const lang = await Language.load(wasmUrl);
+      const language = await Language.load(wasmUrl);
       const parser = new Parser();
-      parser.setLanguage(lang);
-      return parser;
+      parser.setLanguage(language);
+      return { parser, language };
     })();
   }
-  return _parserPromise;
+  return _initPromise;
+}
+
+export async function getParser(wasmUrl: string, locateFile?: (path: string) => string): Promise<Parser> {
+  const { parser } = await ensureInit(wasmUrl, locateFile);
+  return parser;
+}
+
+export async function getLanguage(wasmUrl: string, locateFile?: (path: string) => string): Promise<Language> {
+  const { language } = await ensureInit(wasmUrl, locateFile);
+  return language;
 }

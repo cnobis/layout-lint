@@ -194,12 +194,12 @@
     </section>
 
     <pre id="spec" hidden>
-  chain-1 equal-gap-x [chain-2 chain-3 chain-4 chain-5 chain-6] 2px
-  logo-1 equal-gap-x [logo-2 logo-3 logo-4] 0px
-  center-test centered horizontally inside center-ref
-  center-test centered vertically inside center-ref
-  align-item-1 aligned horizontally all align-item-2
-  textfield near button 10px left
+  chain-1 equal-gap-x [chain-2 chain-3 chain-4 chain-5 chain-6] 2px;
+  logo-1 equal-gap-x [logo-2 logo-3 logo-4] 0px;
+  center-test centered horizontally inside center-ref;
+  center-test centered vertically inside center-ref;
+  align-item-1 aligned horizontally all align-item-2;
+  textfield near button 10px left;
     </pre>
   </main>
 
@@ -224,7 +224,9 @@
     });
 
     createLayoutLintWidget(monitor, {
-      initialPosition: { x: window.innerWidth - 360, y: window.innerHeight - 410 }
+      initialPosition: { x: window.innerWidth - 360, y: window.innerHeight - 410 },
+      wasmUrl: "../../layout_lint.wasm",
+      locateFile
     });
 
     const trustStrip = document.getElementById("trust-strip");
