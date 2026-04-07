@@ -268,7 +268,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     diagnosticsList.style.overflow = "auto";
     diagnosticsList.style.padding = diagnostics.length > 0 ? "2px 0 0" : "0";
 
-    for (const diagnostic of diagnostics.slice(0, 4)) {
+    for (const diagnostic of diagnostics) {
       const item = document.createElement("div");
       item.style.display = "grid";
       item.style.gap = "2px";
@@ -328,12 +328,6 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
       }
 
       diagnosticsList.appendChild(item);
-    }
-
-    if (diagnostics.length > 4) {
-      const overflow = document.createElement("div");
-      overflow.textContent = `...and ${diagnostics.length - 4} more`;
-      diagnosticsList.appendChild(overflow);
     }
 
     const actionButtons = document.createElement("div");

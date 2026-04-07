@@ -141,7 +141,7 @@ export function evaluateRules(
       const container = r.target ? resolve(r.target) : null;
 
       if (!element || !container) {
-        const missing = !element ? r.element : r.target || "unknown";
+        const missing = [!element ? r.element : null, r.target && !container ? r.target : null].filter(Boolean).join(", ");
         return { ...r, pass: false, actual: null, reason: `Element not found: ${missing}` };
       }
 
@@ -162,7 +162,7 @@ export function evaluateRules(
       const b = r.target ? resolve(r.target) : null;
       
       if (!a || !b) {
-        const missing = !a ? r.element : r.target || "unknown";
+        const missing = [!a ? r.element : null, r.target && !b ? r.target : null].filter(Boolean).join(", ");
         return { ...r, pass: false, actual: null, reason: `Element not found: ${missing}` };
       }
       
@@ -177,14 +177,8 @@ export function evaluateRules(
     const c = r.target2 ? resolve(r.target2) : null;
     const d = measure(r.relation, a, b, c);
     if (d == null) {
-      const missing = !a
-        ? r.element
-        : (!b && r.target
-            ? r.target
-            : (!c && r.target2
-                ? r.target2
-                : "unknown"));
-      return { ...r, pass: false, actual: null, reason: !a ? `Element not found: ${missing}` : undefined };
+      const missing = [!a ? r.element : null, r.target && !b ? r.target : null, r.target2 && !c ? r.target2 : null].filter(Boolean).join(", ");
+      return { ...r, pass: false, actual: null, reason: missing ? `Element not found: ${missing}` : undefined };
     }
     const pass = evaluateMeasuredRulePass(r, d);
     return { ...r, actual: d, pass: applyNegation(r, pass) };
