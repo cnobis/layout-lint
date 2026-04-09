@@ -314,7 +314,7 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
   constraintsScroll.style.minHeight = "0";
   constraintsScroll.style.overflowY = "auto";
   constraintsScroll.style.overflowX = "hidden";
-  constraintsScroll.style.borderTop = "1px solid #e5e7eb";
+  constraintsScroll.style.borderTop = hasMultiplePages ? "1px solid #e5e7eb" : "none";
   constraintsScroll.style.paddingTop = "6px";
   constraintsScroll.style.paddingRight = "2px";
   constraintsScroll.style.paddingBottom = "2px";

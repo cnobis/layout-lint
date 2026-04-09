@@ -71,23 +71,23 @@
   </footer>
 
   <pre id="spec" hidden>
-header above nav 0px
-gallery below nav 5px
-footer below gallery 50px
-featured-badge inside gallery
-featured-badge not inside header
-featured-badge partially inside gallery
-featured-badge width 180px
-featured-badge width < 181px
-featured-badge height > 60px
-featured-badge height < 220px
-artwork-1-image width 100% of artwork-1/width
-artwork-2-image width 100% of artwork-2/width
-artwork-1-info width 95 to 100% of artwork-1/width
-artwork-1-image height < 100% of artwork-1/height
-artwork-2 right-of artwork-1 0px
-artwork-2 below artwork-1 0px
-artwork-3 below artwork-2 0px
+header above nav 0px;
+gallery below nav 5px;
+footer below gallery 50px;
+featured-badge inside gallery;
+featured-badge not inside header;
+featured-badge partially inside gallery;
+featured-badge width 180px;
+featured-badge width < 181px;
+featured-badge height > 60px;
+featured-badge height < 220px;
+artwork-1-image width 100% of artwork-1/width;
+artwork-2-image width 100% of artwork-2/width;
+artwork-1-info width 95 to 100% of artwork-1/width;
+artwork-1-image height < 100% of artwork-1/height;
+artwork-2 right-of artwork-1 0px;
+artwork-2 below artwork-1 0px;
+artwork-3 below artwork-2 0px;
   </pre>
 
   <script type="module">
@@ -114,7 +114,9 @@ artwork-3 below artwork-2 0px
       initialPosition: { x: window.innerWidth - 360, y: window.innerHeight - 400 },
       tabsEnabled: true,
       constraintsPerPage: 10,
-      persistSettings: true
+      persistSettings: true,
+      wasmUrl: "../../layout_lint.wasm",
+      locateFile
     });
 
     const badge = document.getElementById("featured-badge");

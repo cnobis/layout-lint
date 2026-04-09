@@ -1,4 +1,5 @@
-import type { LayoutLintWidgetSettings } from "../widget/types.js";
+import type { LayoutLintWidgetSettings, EditorBackground } from "../widget/types.js";
+import { EDITOR_BACKGROUNDS } from "../widget/types.js";
 
 export const DEFAULT_WIDGET_SETTINGS: LayoutLintWidgetSettings = {
   highlightsEnabled: true,
@@ -6,6 +7,7 @@ export const DEFAULT_WIDGET_SETTINGS: LayoutLintWidgetSettings = {
   constraintsPerPage: 10,
   minimized: false,
   statusTransitionDelayEnabled: true,
+  editorBackground: "#f5f7fe",
 };
 
 export const DEFAULT_WIDGET_SETTINGS_STORAGE_KEY = "layout-lint:widget-settings";
@@ -50,6 +52,11 @@ export const normalizeWidgetSettings = (
     typeof partial?.statusTransitionDelayEnabled === "boolean"
       ? partial.statusTransitionDelayEnabled
       : fallback.statusTransitionDelayEnabled;
+  const validBgs = EDITOR_BACKGROUNDS.map((b) => b.value) as string[];
+  const editorBackground: EditorBackground =
+    typeof partial?.editorBackground === "string" && validBgs.includes(partial.editorBackground)
+      ? partial.editorBackground
+      : fallback.editorBackground;
   const widthValue = toFiniteNumber(partial?.widthPx);
   const heightValue = toFiniteNumber(partial?.heightPx);
   const constraintsValue = toFiniteNumber(partial?.constraintsPerPage);
@@ -61,6 +68,7 @@ export const normalizeWidgetSettings = (
     constraintsPerPage,
     minimized,
     statusTransitionDelayEnabled,
+    editorBackground,
     widthPx: widthValue != null ? clampWidgetWidthPx(widthValue) : fallback.widthPx,
     heightPx: heightValue != null ? clampWidgetHeightPx(heightValue) : fallback.heightPx,
   };

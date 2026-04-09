@@ -132,4 +132,33 @@ Use this format for every new bug:
 - **Verification**: `npm run build:ts && npm test` passes; hover state remains stable after scrolling the page.
 - **General principle**: Global scroll listeners used for reevaluation must ignore self-owned UI scroll contexts, not only self-owned mutation records.
 
+## 11) Unsaved VS Code buffers cause stale `dist/` output
+
+- **Symptom**: After extensive edits to `spec-editor.ts`, `highlighted-editor-view.ts`, and `editor-view.ts`, `npm run build:ts` exited cleanly but the demo kept showing the old plain textarea editor—none of the new `HighlightedEditorView` code was visible. Confirmed three separate times across rebuilds.
+- **Root cause**: The `read_file` tool reads from VS Code's in-memory buffer, not from disk. All edits were made via the editor tool (which updates the buffer) but were never saved to the filesystem. `tsc` reads from disk, so it kept compiling the original source. `dist/devtools/widget/spec-editor.js` never contained `USE_HIGHLIGHTED_EDITOR` or the `HighlightedEditorView` import despite `tsc` reporting success.
+- **Fix applied**:
+  - Ran `workbench.action.files.saveAll` to flush all VS Code buffers to disk.
+  - Verified with `cat` (which reads from disk) that the source matched expectations before rebuilding.
+  - Ran `rm -rf dist && npm run build:ts` and confirmed `dist/` contained the new code.
+  - Also fixed test shim: the fake DOM in `spec-editor-apply.test.js` was missing `createTextNode`, `createRange`, `getElementById`, `document.head`, `window.getSelection`, `Node` constants, `FakeElement.contains()`, `.childNodes`, and `.nodeType` needed by the new `HighlightedEditorView`. Added a `simulateInput()` helper to cover both textarea and contenteditable editors.
+  - Guarded `ensureEditorStyles()` against non-browser environments (`typeof document === "undefined"`).
+- **Where**: `src/devtools/widget/highlighted-editor-view.ts`, `src/devtools/widget/spec-editor.ts`, `test/spec-editor-apply.test.js`.
+- **Verification**: `cat` on disk matches buffer; `rm -rf dist && npm run build:ts && npm test` — all 91 tests pass; `grep` confirms `USE_HIGHLIGHTED_EDITOR` and `HighlightedEditorView` present in `dist/devtools/widget/spec-editor.js`.
+- **General principle**: Always verify on-disk state with `cat` or terminal `grep` after edits — `read_file` reflects the editor buffer, not what `tsc` (or any external tool) will see. When compiled output doesn't match expectations, check whether files were actually saved before investigating other causes.
+
+## 12) ContentEditable cursor snap-back and overlay border artifacts
+
+- **Symptom**: In the highlighted spec editor, pressing Enter (especially two consecutive Enters) caused the cursor to snap back to the end of the first line. Additionally, when the spec was long enough to scroll or had error diagnostics visible, black border outlines appeared around the editor area.
+- **Root cause**: Two separate issues:
+  1. **Cursor snap-back**: The `contenteditable` div approach required manual DOM-to-text extraction (`extractText`) and cursor save/restore (`computeCursorOffset`/`placeCursorAtOffset`) after every debounced re-render. Chrome wraps new lines in `<div>` elements and uses trailing `<br>` placeholders inside them. These were double-counted or skipped inconsistently across the three functions, causing offset mismatches that placed the caret at the wrong position after re-render. Multiple fix attempts (placeholder detection, `skipTrailingBr` flags, capturing offset at input time) could not fully account for Chrome's unpredictable contenteditable mutations.
+  2. **Border artifacts**: The textarea and highlight overlay both inherited `border: 1px solid #23272e` from a shared CSS rule. The overlay set `border-color: transparent` but still occupied 1px of border space, causing a visual offset between the two layers.
+- **Fix applied**:
+  - Replaced the `contenteditable` div with a **textarea + overlay** architecture: a real `<textarea>` (transparent text, visible caret) handles all input natively with zero cursor management, while an absolutely-positioned `<div>` overlay behind it renders syntax-highlighted tokens with `pointer-events: none`.
+  - Removed all `extractText`, `computeCursorOffset`, `placeCursorAtOffset`, debounce timer, and `suppressInputEvent` logic — none of it is needed with a native textarea.
+  - Moved `border` and `background` to the wrapper div; both textarea and overlay now have `border: none` so there are no double borders.
+  - Scroll positions are synced via a `scroll` event listener on the textarea.
+- **Where**: `src/devtools/widget/highlighted-editor-view.ts`, `test/spec-editor-apply.test.js`.
+- **Verification**: `rm -rf dist && npm run build:ts && npm test` — all 91 tests pass; cursor behaves natively (single Enter, double Enter, arrow keys); no border artifacts when scrolling or with error diagnostics.
+- **General principle**: Avoid fighting `contenteditable` with manual cursor management — the browser's DOM mutations are unpredictable across engines. Use a textarea for input and a transparent overlay for highlighting instead.
+
 

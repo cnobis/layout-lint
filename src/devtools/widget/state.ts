@@ -206,6 +206,10 @@ export function createWidgetState(options: CreateWidgetStateOptions): WidgetStat
             : hasHeightPatch
               ? undefined
               : settings.heightPx,
+        editorBackground:
+          typeof patch.editorBackground === "string" && patch.editorBackground
+            ? patch.editorBackground
+            : settings.editorBackground,
       };
       syncPages();
       syncActiveRuleVisibility();

@@ -11,8 +11,8 @@ module.exports = grammar({
   name: "layout_lint",
 
   rules: {
-    // entry point
-    source_file: $ => repeat($.rule),
+    // entry point – each rule must end with a semicolon
+    source_file: $ => repeat(seq($.rule, ';')),
 
     // a rule looks like:  <element> <relation> <target> [<distance>]
     // or for absolute rules: <element> <relation> <distance>
