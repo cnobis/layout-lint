@@ -2,6 +2,12 @@
 
 import type { Highlighter } from "./tree-sitter-highlight.js";
 
+export interface DiagnosticRange {
+  startIndex: number;
+  endIndex: number;
+  severity: "error" | "warning";
+}
+
 export interface EditorView {
   getValue(): string;
   setValue(value: string): void;
@@ -11,6 +17,8 @@ export interface EditorView {
   getElement(): HTMLElement;
   setBackground(color: string): void;
   setHighlighter?(highlighter: Highlighter): void;
+  setDiagnosticRanges?(ranges: DiagnosticRange[]): void;
+  flashRange?(startIndex: number, endIndex: number): void;
 }
 
 export class PlainTextareaEditorView implements EditorView {

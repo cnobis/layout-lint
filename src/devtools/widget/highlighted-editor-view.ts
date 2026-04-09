@@ -1,4 +1,4 @@
-import type { EditorView } from "./editor-view.js";
+import type { EditorView, DiagnosticRange } from "./editor-view.js";
 import type { Highlighter } from "./tree-sitter-highlight.js";
 
 const EDITOR_STYLE_ID = "ll-highlighted-editor-style";
@@ -57,7 +57,9 @@ const EDITOR_CSS = `
 .ll-editor-wrapper[data-editor-theme="dark"] .token.operator { color: #f48fb1; }
 .ll-editor-wrapper[data-editor-theme="dark"] .token.property { color: #ce93d8; }
 .ll-editor-wrapper[data-editor-theme="dark"] .token.punctuation { color: #9e9e9e; }
-.ll-editor-wrapper[data-editor-theme="dark"] .token.error { color: #ef5350; text-decoration: wavy underline #ef5350; }
+.ll-editor-wrapper[data-editor-theme="dark"] .token.error { color: #ef5350; text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #ef5350; text-decoration-skip-ink: none; text-underline-offset: 2px; }
+.ll-editor-wrapper[data-editor-theme="dark"] .token.diagnostic-error { text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #ef5350; text-decoration-skip-ink: none; text-underline-offset: 2px; }
+.ll-editor-wrapper[data-editor-theme="dark"] .token.diagnostic-warning { text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #fbbf24; text-decoration-skip-ink: none; text-underline-offset: 2px; }
 /* Light theme */
 .ll-editor-wrapper[data-editor-theme="light"] { border: 1px solid #c7d2fe; }
 .ll-editor-wrapper[data-editor-theme="light"] textarea { caret-color: #1f2937; }
@@ -71,7 +73,9 @@ const EDITOR_CSS = `
 .ll-editor-wrapper[data-editor-theme="light"] .token.operator { color: #be185d; }
 .ll-editor-wrapper[data-editor-theme="light"] .token.property { color: #7e22ce; }
 .ll-editor-wrapper[data-editor-theme="light"] .token.punctuation { color: #6b7280; }
-.ll-editor-wrapper[data-editor-theme="light"] .token.error { color: #dc2626; text-decoration: wavy underline #dc2626; }
+.ll-editor-wrapper[data-editor-theme="light"] .token.error { color: #dc2626; text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #dc2626; text-decoration-skip-ink: none; text-underline-offset: 2px; }
+.ll-editor-wrapper[data-editor-theme="light"] .token.diagnostic-error { text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #dc2626; text-decoration-skip-ink: none; text-underline-offset: 2px; }
+.ll-editor-wrapper[data-editor-theme="light"] .token.diagnostic-warning { text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #d97706; text-decoration-skip-ink: none; text-underline-offset: 2px; }
 /* Warm theme */
 .ll-editor-wrapper[data-editor-theme="warm"] { border: 1px solid #d9d9cf; }
 .ll-editor-wrapper[data-editor-theme="warm"] textarea { caret-color: #292524; }
@@ -85,7 +89,9 @@ const EDITOR_CSS = `
 .ll-editor-wrapper[data-editor-theme="warm"] .token.operator { color: #be185d; }
 .ll-editor-wrapper[data-editor-theme="warm"] .token.property { color: #7e22ce; }
 .ll-editor-wrapper[data-editor-theme="warm"] .token.punctuation { color: #78716c; }
-.ll-editor-wrapper[data-editor-theme="warm"] .token.error { color: #dc2626; text-decoration: wavy underline #dc2626; }
+.ll-editor-wrapper[data-editor-theme="warm"] .token.error { color: #dc2626; text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #dc2626; text-decoration-skip-ink: none; text-underline-offset: 2px; }
+.ll-editor-wrapper[data-editor-theme="warm"] .token.diagnostic-error { text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #dc2626; text-decoration-skip-ink: none; text-underline-offset: 2px; }
+.ll-editor-wrapper[data-editor-theme="warm"] .token.diagnostic-warning { text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #d97706; text-decoration-skip-ink: none; text-underline-offset: 2px; }
 /* Dusk theme */
 .ll-editor-wrapper[data-editor-theme="dusk"] { border: 1px solid #3d2e42; }
 .ll-editor-wrapper[data-editor-theme="dusk"] textarea { caret-color: #e8d5ee; }
@@ -99,7 +105,18 @@ const EDITOR_CSS = `
 .ll-editor-wrapper[data-editor-theme="dusk"] .token.operator { color: #f9a8d4; }
 .ll-editor-wrapper[data-editor-theme="dusk"] .token.property { color: #d8b4fe; }
 .ll-editor-wrapper[data-editor-theme="dusk"] .token.punctuation { color: #a89db0; }
-.ll-editor-wrapper[data-editor-theme="dusk"] .token.error { color: #f87171; text-decoration: wavy underline #f87171; }
+.ll-editor-wrapper[data-editor-theme="dusk"] .token.error { color: #f87171; text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #f87171; text-decoration-skip-ink: none; text-underline-offset: 2px; }
+.ll-editor-wrapper[data-editor-theme="dusk"] .token.diagnostic-error { text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #f87171; text-decoration-skip-ink: none; text-underline-offset: 2px; }
+.ll-editor-wrapper[data-editor-theme="dusk"] .token.diagnostic-warning { text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #fbbf24; text-decoration-skip-ink: none; text-underline-offset: 2px; }
+/* Flash highlight animation for click-to-locate */
+@keyframes ll-flash-highlight {
+  0% { background-color: rgba(99, 102, 241, 0.35); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4); border-radius: 2px; }
+  70% { background-color: rgba(99, 102, 241, 0.15); box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.2); }
+  100% { background-color: transparent; box-shadow: none; }
+}
+.ll-editor-wrapper span.flash-highlight {
+  animation: ll-flash-highlight 1s ease-out forwards;
+}
 `;
 
 function ensureEditorStyles(): void {
@@ -118,6 +135,7 @@ export class HighlightedEditorView implements EditorView {
   private changeCb: ((value: string) => void) | null = null;
   private externalTokens: Array<{ text: string; className?: string }> | null = null;
   private highlighter: Highlighter | null = null;
+  private diagnosticRanges: DiagnosticRange[] = [];
 
   constructor(initialValue: string) {
     ensureEditorStyles();
@@ -183,34 +201,86 @@ export class HighlightedEditorView implements EditorView {
   }
 
   private renderTokens(tokens: Array<{ text: string; className?: string }>) {
+    let cursor = 0;
     for (const token of tokens) {
       if (token.text === "\n") {
         this.overlay.appendChild(document.createElement("br"));
+        cursor += 1;
       } else if (token.text.includes("\n")) {
         // Handle multi-line tokens (e.g., strings spanning lines)
         const parts = token.text.split("\n");
         for (let i = 0; i < parts.length; i++) {
-          if (i > 0) this.overlay.appendChild(document.createElement("br"));
+          if (i > 0) {
+            this.overlay.appendChild(document.createElement("br"));
+            cursor += 1;
+          }
           if (parts[i].length > 0) {
-            if (token.className) {
-              const span = document.createElement("span");
-              span.className = token.className;
-              span.textContent = parts[i];
-              this.overlay.appendChild(span);
-            } else {
-              this.overlay.appendChild(document.createTextNode(parts[i]));
-            }
+            this.appendWithDiagnostics(parts[i], token.className, cursor);
+            cursor += parts[i].length;
           }
         }
-      } else if (token.className) {
-        const span = document.createElement("span");
-        span.className = token.className;
-        span.textContent = token.text;
-        this.overlay.appendChild(span);
       } else {
-        this.overlay.appendChild(document.createTextNode(token.text));
+        this.appendWithDiagnostics(token.text, token.className, cursor);
+        cursor += token.text.length;
       }
     }
+  }
+
+  /** Append text, splitting into sub-spans where diagnostic ranges overlap */
+  private appendWithDiagnostics(text: string, className: string | undefined, offset: number) {
+    if (this.diagnosticRanges.length === 0) {
+      this.appendSpan(text, className, undefined, offset);
+      return;
+    }
+
+    // Find overlapping diagnostics for this text range
+    const end = offset + text.length;
+    const overlapping = this.diagnosticRanges.filter(
+      (d) => d.startIndex < end && d.endIndex > offset,
+    );
+
+    if (overlapping.length === 0) {
+      this.appendSpan(text, className, undefined, offset);
+      return;
+    }
+
+    // Build split points
+    const cuts = new Set<number>();
+    cuts.add(offset);
+    cuts.add(end);
+    for (const d of overlapping) {
+      if (d.startIndex > offset && d.startIndex < end) cuts.add(d.startIndex);
+      if (d.endIndex > offset && d.endIndex < end) cuts.add(d.endIndex);
+    }
+    const sorted = [...cuts].sort((a, b) => a - b);
+
+    for (let i = 0; i < sorted.length - 1; i++) {
+      const sliceStart = sorted[i] - offset;
+      const sliceEnd = sorted[i + 1] - offset;
+      const sliceText = text.slice(sliceStart, sliceEnd);
+      if (!sliceText) continue;
+
+      const diagForSlice = overlapping.find(
+        (d) => d.startIndex <= sorted[i] && d.endIndex >= sorted[i + 1],
+      );
+      const diagClass = diagForSlice
+        ? `diagnostic-${diagForSlice.severity}`
+        : undefined;
+
+      this.appendSpan(sliceText, className, diagClass, sorted[i]);
+    }
+  }
+
+  private appendSpan(text: string, className?: string, extraClass?: string, charOffset?: number) {
+    const span = document.createElement("span");
+    const combined = [className, extraClass].filter(Boolean).join(" ");
+    if (combined) span.className = combined;
+    span.textContent = text;
+    if (charOffset !== undefined) {
+      span.dataset.charStart = String(charOffset);
+      span.dataset.charEnd = String(charOffset + text.length);
+    }
+    this.overlay.appendChild(span);
   }
 
   private renderNaiveHighlight(text: string) {
@@ -278,5 +348,29 @@ export class HighlightedEditorView implements EditorView {
     } else {
       this.wrapper.dataset.editorTheme = "dark";
     }
+  }
+
+  setDiagnosticRanges(ranges: DiagnosticRange[]) {
+    this.diagnosticRanges = ranges;
+    this.renderHighlight(this.textarea.value);
+  }
+
+  flashRange(startIndex: number, endIndex: number) {
+    const CLASS = "flash-highlight";
+    const spans = this.overlay.querySelectorAll<HTMLSpanElement>("span[data-char-start]");
+    const matched: HTMLSpanElement[] = [];
+    for (const span of spans) {
+      const s = Number(span.dataset.charStart);
+      const e = Number(span.dataset.charEnd);
+      if (s < endIndex && e > startIndex) matched.push(span);
+    }
+    for (const span of matched) {
+      span.classList.remove(CLASS);
+      void span.offsetWidth; // reflow to restart animation
+      span.classList.add(CLASS);
+    }
+    window.setTimeout(() => {
+      for (const span of matched) span.classList.remove(CLASS);
+    }, 1000);
   }
 }
