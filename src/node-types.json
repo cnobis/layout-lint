@@ -30,11 +30,6 @@
     "fields": {}
   },
   {
-    "type": "css_match_mode",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "direction",
     "named": true,
     "fields": {}
@@ -58,6 +53,16 @@
     "type": "inside_clause",
     "named": true,
     "fields": {
+      "direction": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "direction",
+            "named": true
+          }
+        ]
+      },
       "distance": {
         "multiple": false,
         "required": true,
@@ -67,21 +72,11 @@
             "named": true
           }
         ]
-      },
-      "side": {
-        "multiple": true,
-        "required": true,
-        "types": [
-          {
-            "type": "inside_side",
-            "named": true
-          }
-        ]
       }
     }
   },
   {
-    "type": "inside_side",
+    "type": "match_mode",
     "named": true,
     "fields": {}
   },
@@ -260,7 +255,7 @@
         "required": false,
         "types": [
           {
-            "type": "css_match_mode",
+            "type": "match_mode",
             "named": true
           }
         ]
@@ -414,7 +409,7 @@
         "required": false,
         "types": [
           {
-            "type": "text_match_mode",
+            "type": "match_mode",
             "named": true
           }
         ]
@@ -489,11 +484,6 @@
   },
   {
     "type": "ternary_relation",
-    "named": true,
-    "fields": {}
-  },
-  {
-    "type": "text_match_mode",
     "named": true,
     "fields": {}
   },
@@ -594,6 +584,11 @@
   {
     "type": "centered",
     "named": false
+  },
+  {
+    "type": "comment",
+    "named": true,
+    "extra": true
   },
   {
     "type": "contains",

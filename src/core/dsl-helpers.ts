@@ -259,7 +259,7 @@ export function extractInsideOffsets(node: NodeLike, txt: NodeTextReader): Array
     const offsetPx = parseSignedDistanceToken(distanceToken);
     if (offsetPx == null) continue;
 
-    const sideNodes = clause.childrenForFieldName("side");
+    const sideNodes = clause.childrenForFieldName("direction");
     const sides = sideNodes
       .map((sideNode) => txt(sideNode))
       .filter(Boolean);

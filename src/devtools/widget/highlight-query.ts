@@ -2,6 +2,9 @@
 export const HIGHLIGHTS_SCM = `
 ; highlights.scm — tree-sitter highlight query for the layout-lint DSL
 
+; ─── Comments ─────────────────────────────────────────────────────────
+(comment) @comment
+
 ; ─── Keywords ────────────────────────────────────────────────────────
 (relation) @keyword
 (ternary_relation) @keyword
@@ -13,9 +16,7 @@ export const HIGHLIGHTS_SCM = `
 (centered_scope) @keyword
 (count_scope) @keyword
 (direction) @keyword
-(inside_side) @keyword
-(text_match_mode) @keyword
-(css_match_mode) @keyword
+(match_mode) @keyword
 (text_operation) @keyword
 
 "count" @keyword

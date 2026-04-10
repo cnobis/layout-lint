@@ -5,6 +5,7 @@ import { HIGHLIGHTS_SCM } from "./highlight-query.js";
 
 /** CSS class for each capture name produced by highlights.scm */
 export const CAPTURE_CLASS: Record<string, string> = {
+  comment: "token comment",
   keyword: "token keyword",
   number: "token number",
   unit: "token unit",

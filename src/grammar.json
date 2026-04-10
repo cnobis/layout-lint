@@ -1,6 +1,7 @@
 {
   "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/grammar.schema.json",
   "name": "layout_lint",
+  "word": "identifier",
   "rules": {
     "source_file": {
       "type": "REPEAT",
@@ -14,6 +15,22 @@
           {
             "type": "STRING",
             "value": ";"
+          }
+        ]
+      }
+    },
+    "comment": {
+      "type": "TOKEN",
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "STRING",
+            "value": "//"
+          },
+          {
+            "type": "PATTERN",
+            "value": ".*"
           }
         ]
       }
@@ -473,7 +490,7 @@
               "name": "text_match_mode",
               "content": {
                 "type": "SYMBOL",
-                "name": "text_match_mode"
+                "name": "match_mode"
               }
             },
             {
@@ -530,7 +547,7 @@
               "name": "css_match_mode",
               "content": {
                 "type": "SYMBOL",
-                "name": "css_match_mode"
+                "name": "match_mode"
               }
             },
             {
@@ -1153,20 +1170,20 @@
         },
         {
           "type": "FIELD",
-          "name": "side",
+          "name": "direction",
           "content": {
             "type": "SYMBOL",
-            "name": "inside_side"
+            "name": "direction"
           }
         },
         {
           "type": "REPEAT",
           "content": {
             "type": "FIELD",
-            "name": "side",
+            "name": "direction",
             "content": {
               "type": "SYMBOL",
-              "name": "inside_side"
+              "name": "direction"
             }
           }
         },
@@ -1185,27 +1202,6 @@
       ]
     },
     "direction": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "left"
-        },
-        {
-          "type": "STRING",
-          "value": "right"
-        },
-        {
-          "type": "STRING",
-          "value": "top"
-        },
-        {
-          "type": "STRING",
-          "value": "bottom"
-        }
-      ]
-    },
-    "inside_side": {
       "type": "CHOICE",
       "members": [
         {
@@ -1353,32 +1349,7 @@
         }
       ]
     },
-    "text_match_mode": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "is"
-        },
-        {
-          "type": "STRING",
-          "value": "contains"
-        },
-        {
-          "type": "STRING",
-          "value": "starts"
-        },
-        {
-          "type": "STRING",
-          "value": "ends"
-        },
-        {
-          "type": "STRING",
-          "value": "matches"
-        }
-      ]
-    },
-    "css_match_mode": {
+    "match_mode": {
       "type": "CHOICE",
       "members": [
         {
@@ -1596,6 +1567,10 @@
     {
       "type": "PATTERN",
       "value": "\\s"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "comment"
     }
   ],
   "conflicts": [],

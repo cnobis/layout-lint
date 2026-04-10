@@ -10,9 +10,18 @@
 module.exports = grammar({
   name: "layout_lint",
 
+  word: $ => $.identifier,
+
+  extras: $ => [
+    /\s/,
+    $.comment,
+  ],
+
   rules: {
     // entry point – each rule must end with a semicolon
     source_file: $ => repeat(seq($.rule, ';')),
+
+    comment: $ => token(seq('//', /.*/)),
 
     // a rule looks like:  <element> <relation> <target> [<distance>]
     // or for absolute rules: <element> <relation> <distance>
@@ -87,7 +96,7 @@ module.exports = grammar({
         optional(field("negated", "not")),
         "text",
         repeat(field("text_operation", $.text_operation)),
-        field("text_match_mode", $.text_match_mode),
+        field("text_match_mode", $.match_mode),
         field("text_value", $.quoted_text)
       ),
       // css rules: element css property is|contains|starts|ends|matches "..."
@@ -96,7 +105,7 @@ module.exports = grammar({
         optional(field("negated", "not")),
         "css",
         field("css_property", $.css_property),
-        field("css_match_mode", $.css_match_mode),
+        field("css_match_mode", $.match_mode),
         field("css_value", $.quoted_text)
       ),
       // size rules (relative): element width|height [<|<=|>|>=] percentage of target/width|height
@@ -185,20 +194,16 @@ module.exports = grammar({
       optional(",")
     ),
 
-    // inside clause: signed_distance side [side ...] [, ...]
+    // inside clause: signed_distance direction [direction ...] [, ...]
     inside_clause: $ => seq(
       field("distance", $.signed_distance),
-      field("side", $.inside_side),
-      repeat(field("side", $.inside_side)),
+      field("direction", $.direction),
+      repeat(field("direction", $.direction)),
       optional(",")
     ),
 
     // direction: left, right, top, bottom
     direction: $ => choice(
-      "left", "right", "top", "bottom"
-    ),
-
-    inside_side: $ => choice(
       "left", "right", "top", "bottom"
     ),
 
@@ -218,9 +223,7 @@ module.exports = grammar({
 
     comparator: $ => choice("<=", ">=", "<", ">"),
 
-    text_match_mode: $ => choice("is", "contains", "starts", "ends", "matches"),
-
-    css_match_mode: $ => choice("is", "contains", "starts", "ends", "matches"),
+    match_mode: $ => choice("is", "contains", "starts", "ends", "matches"),
 
     text_operation: $ => choice("lowercase", "uppercase", "singleline"),
 
