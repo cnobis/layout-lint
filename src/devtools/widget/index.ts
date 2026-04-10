@@ -111,6 +111,7 @@ export function createLayoutLintWidget(
   const getEqualGapConnectorPoints = overlays.getEqualGapConnectorPoints;
 
   let latestResults: RuleResult[] = [];
+  let latestDefinitions: Map<string, string> = new Map();
   let latestDiagnosticsSummary: FooterDiagnosticsSummary = { total: 0, errors: 0, warnings: 0 };
   let settingsOpen = false;
   let specEditor: ReturnType<typeof createSpecEditor> | null = null;
@@ -186,6 +187,25 @@ export function createLayoutLintWidget(
   const resolveElement = (identifier: string | undefined): HTMLElement | null => {
     if (!identifier) return null;
 
+    // 1. Exact definition match
+    const selector = latestDefinitions.get(identifier);
+    if (selector) return document.querySelector<HTMLElement>(selector);
+
+    // 2. Wildcard definition match: card-1 → prefix "card-", index 1
+    for (const [name, wcSelector] of latestDefinitions) {
+      if (!name.endsWith("*")) continue;
+      const prefix = name.slice(0, -1);
+      if (identifier.startsWith(prefix)) {
+        const suffix = identifier.slice(prefix.length);
+        const index = Number(suffix);
+        if (Number.isInteger(index) && index >= 1) {
+          const elements = Array.from(document.querySelectorAll<HTMLElement>(wcSelector));
+          return elements[index - 1] ?? null;
+        }
+      }
+    }
+
+    // 3. Fallback: getElementById / CSS.escape
     const byId = document.getElementById(identifier);
     if (byId) return byId;
 
@@ -543,6 +563,7 @@ export function createLayoutLintWidget(
 
   const unsubscribe = monitor.subscribe((result) => {
     latestResults = result.results;
+    latestDefinitions = result.definitions ?? new Map();
     latestDiagnosticsSummary = summarizeDiagnostics(result.diagnostics);
     state.applyResults(latestResults);
     if (specEditor?.isOpen()) return;

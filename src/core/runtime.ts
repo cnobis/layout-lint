@@ -14,6 +14,7 @@ export interface RunLayoutLintResult {
   rules: Rule[];
   results: RuleResult[];
   diagnostics?: LayoutLintDiagnostic[];
+  definitions?: Map<string, string>;
 }
 
 const syntheticRangeForResult = (rule: Rule, index: number) =>
@@ -63,10 +64,51 @@ export async function runLayoutLint({
 
   const parser = await getParser(wasmUrl, locateFile);
   const tree = parser.parse(specText);
-  const { rules, diagnostics: parseDiagnostics } = extractRules(tree, specText);
-  const results = evaluateRules(rules, resolve);
+  const { rules, definitions, diagnostics: parseDiagnostics } = extractRules(tree, specText);
+
+  const baseResolve = resolve ?? ((id: string) => document.getElementById(id));
+
+  // Pre-compute wildcard definitions (keys ending with *) for numbered lookups
+  const wildcardDefs: { prefix: string; selector: string }[] = [];
+  for (const [name, selector] of definitions) {
+    if (name.endsWith("*")) {
+      wildcardDefs.push({ prefix: name.slice(0, -1), selector });
+    }
+  }
+
+  // Cache querySelectorAll results per selector to avoid repeated DOM queries
+  const wildcardCache = new Map<string, HTMLElement[]>();
+
+  const resolveWithDefinitions = (id: string): HTMLElement | null => {
+    // 1. Exact match in definitions
+    const selector = definitions.get(id);
+    if (selector) return document.querySelector<HTMLElement>(selector);
+
+    // 2. Wildcard match: card-1 → prefix "card-", index 1
+    for (const { prefix, selector: wcSelector } of wildcardDefs) {
+      if (id.startsWith(prefix)) {
+        const suffix = id.slice(prefix.length);
+        const index = Number(suffix);
+        if (Number.isInteger(index) && index >= 1) {
+          if (!wildcardCache.has(wcSelector)) {
+            wildcardCache.set(
+              wcSelector,
+              Array.from(document.querySelectorAll<HTMLElement>(wcSelector))
+            );
+          }
+          const elements = wildcardCache.get(wcSelector)!;
+          return elements[index - 1] ?? null;
+        }
+      }
+    }
+
+    // 3. Fallback to base resolution
+    return baseResolve(id);
+  };
+
+  const results = evaluateRules(rules, resolveWithDefinitions);
   const semanticDiagnostics = collectSemanticDiagnostics(results);
   const diagnostics = [...parseDiagnostics, ...semanticDiagnostics];
 
-  return { rules, results, diagnostics };
+  return { rules, results, diagnostics, definitions };
 }

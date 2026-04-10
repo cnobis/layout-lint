@@ -13,6 +13,7 @@ import {
   buildTextRule,
   buildVisibilityRule,
   detectInsideRelation,
+  parseQuotedTextToken,
   type NodeLike,
   type NodeTextReader,
   extractRuleNodeInfo,
@@ -75,6 +76,8 @@ export function parsePercentageToken(token: string): {
 
 export interface ExtractRulesResult {
   rules: Rule[];
+  definitions: Map<string, string>;
+  groups: Map<string, string[]>;
   diagnostics: LayoutLintDiagnostic[];
 }
 
@@ -123,6 +126,9 @@ const DSL_KEYWORDS = [
   "to",
   "px",
   "not",
+  "define",
+  "as",
+  "group",
 ];
 
 const levenshteinDistance = (a: string, b: string) => {
@@ -259,11 +265,13 @@ function collectSyntaxDiagnostics(node: NodeLike | null, source: string, diagnos
 }
 
 export function extractRules(tree: Tree | null, source: string): ExtractRulesResult {
-  if (!tree) return { rules: [], diagnostics: [] };
+  if (!tree) return { rules: [], definitions: new Map(), groups: new Map(), diagnostics: [] };
 
   const root = tree.rootNode;
   const txt: NodeTextReader = (node) => (node ? source.slice(node.startIndex, node.endIndex) : "");
   const rules: Rule[] = [];
+  const definitions = new Map<string, string>();
+  const groups = new Map<string, string[]>();
   const diagnostics: LayoutLintDiagnostic[] = [];
 
   const syntaxDiagnostics: LayoutLintDiagnostic[] = [];
@@ -273,6 +281,28 @@ export function extractRules(tree: Tree | null, source: string): ExtractRulesRes
   for (let i = 0; i < root.namedChildCount; i++) {
     const node = root.namedChild(i) as unknown as NodeLike | null;
     if (!node) continue;
+
+    if (node.type === "comment") continue;
+
+    if (node.type === "definition") {
+      const nameNode = node.childForFieldName("name");
+      const name = txt(nameNode);
+      const selectorRaw = txt(node.childForFieldName("selector"));
+      if (name && selectorRaw) {
+        definitions.set(name, parseQuotedTextToken(selectorRaw));
+      }
+      continue;
+    }
+
+    if (node.type === "group_definition") {
+      const name = txt(node.childForFieldName("name"));
+      const memberNodes = node.childrenForFieldName("member");
+      const members = memberNodes.map((n: NodeLike) => txt(n)).filter(Boolean);
+      if (name && members.length > 0) {
+        groups.set(name, members);
+      }
+      continue;
+    }
 
     const {
       element,
@@ -431,5 +461,29 @@ export function extractRules(tree: Tree | null, source: string): ExtractRulesRes
     rules.push(withSourceRange(buildDefaultRelationRule(element, negated, relation, target, target2, distance), node, source));
   }
 
-  return { rules, diagnostics };
+  // Expand group references: rules with element starting with '@' are cloned per group member
+  const expandedRules: Rule[] = [];
+  for (const rule of rules) {
+    if (rule.element.startsWith("@")) {
+      const groupName = rule.element.slice(1);
+      const members = groups.get(groupName);
+      if (members) {
+        for (const member of members) {
+          expandedRules.push({ ...rule, element: member });
+        }
+      } else {
+        diagnostics.push({
+          code: "LL-SEMANTIC-UNKNOWN-GROUP",
+          severity: "error",
+          message: `Unknown group: @${groupName}`,
+          range: rule.sourceRange ?? getSourceRange(source, 0, 0),
+          snippet: rule.element,
+        });
+      }
+    } else {
+      expandedRules.push(rule);
+    }
+  }
+
+  return { rules: expandedRules, definitions, groups, diagnostics };
 }

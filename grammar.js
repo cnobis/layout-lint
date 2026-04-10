@@ -18,10 +18,37 @@ module.exports = grammar({
   ],
 
   rules: {
-    // entry point – each rule must end with a semicolon
-    source_file: $ => repeat(seq($.rule, ';')),
+    // entry point – each statement (definition, group, or rule) must end with a semicolon
+    source_file: $ => repeat(choice(
+      seq($.definition, ';'),
+      seq($.group_definition, ';'),
+      seq($.rule, ';')
+    )),
 
-    comment: $ => token(seq('//', /.*/)),
+    // define <name> as "<selector>";  (name may end with * for multi-element definitions)
+    definition: $ => seq(
+      "define",
+      field("name", choice($.wildcard_name, $.identifier)),
+      "as",
+      field("selector", $.quoted_text)
+    ),
+
+    // wildcard name like card-* for querySelectorAll definitions
+    wildcard_name: $ => /[a-zA-Z_][a-zA-Z0-9_-]*\*/,
+
+    // group <name> as member1, member2, ...;
+    group_definition: $ => seq(
+      "group",
+      field("name", $.identifier),
+      "as",
+      field("member", $.identifier),
+      repeat(seq(",", field("member", $.identifier)))
+    ),
+
+    // @groupName reference (expands to one rule per group member)
+    group_reference: $ => token(seq('@', /[a-zA-Z_][a-zA-Z0-9_-]*/)),
+
+    comment: $ => token(seq('#', /.*/)),
 
     // a rule looks like:  <element> <relation> <target> [<distance>]
     // or for absolute rules: <element> <relation> <distance>
@@ -53,7 +80,7 @@ module.exports = grammar({
       ),
       // near rules: element near target [distance direction [, ...]] 
       seq(
-        field("element", $.identifier),
+        field("element", choice($.identifier, $.group_reference)),
         optional(field("negated", "not")),
         "near",
         field("target", $.identifier),
@@ -61,7 +88,7 @@ module.exports = grammar({
       ),
       // inside rules: element inside target [signed_distance side [side ...] [, ...]]
       seq(
-        field("element", $.identifier),
+        field("element", choice($.identifier, $.group_reference)),
         optional(field("negated", "not")),
         "inside",
         field("target", $.identifier),
@@ -69,7 +96,7 @@ module.exports = grammar({
       ),
       // partially inside rules: element partially inside target [signed_distance side [side ...] [, ...]]
       seq(
-        field("element", $.identifier),
+        field("element", choice($.identifier, $.group_reference)),
         optional(field("negated", "not")),
         "partially",
         "inside",
@@ -78,13 +105,13 @@ module.exports = grammar({
       ),
       // visibility rules: element visible|absent
       seq(
-        field("element", $.identifier),
+        field("element", choice($.identifier, $.group_reference)),
         optional(field("negated", "not")),
         field("visibility_relation", $.visibility_relation)
       ),
       // size rules (absolute): element width|height [<|<=|>|>=] distance
       seq(
-        field("element", $.identifier),
+        field("element", choice($.identifier, $.group_reference)),
         optional(field("negated", "not")),
         field("size_property", $.size_property),
         optional(field("comparator", $.comparator)),
@@ -92,7 +119,7 @@ module.exports = grammar({
       ),
       // text rules: element text is|contains|starts|ends|matches "..."
       seq(
-        field("element", $.identifier),
+        field("element", choice($.identifier, $.group_reference)),
         optional(field("negated", "not")),
         "text",
         repeat(field("text_operation", $.text_operation)),
@@ -101,7 +128,7 @@ module.exports = grammar({
       ),
       // css rules: element css property is|contains|starts|ends|matches "..."
       seq(
-        field("element", $.identifier),
+        field("element", choice($.identifier, $.group_reference)),
         optional(field("negated", "not")),
         "css",
         field("css_property", $.css_property),
@@ -110,7 +137,7 @@ module.exports = grammar({
       ),
       // size rules (relative): element width|height [<|<=|>|>=] percentage of target/width|height
       seq(
-        field("element", $.identifier),
+        field("element", choice($.identifier, $.group_reference)),
         optional(field("negated", "not")),
         field("size_property", $.size_property),
         optional(field("comparator", $.comparator)),
@@ -122,7 +149,7 @@ module.exports = grammar({
       ),
       // Galen-style alignment syntax: element aligned horizontally|vertically ... target [distance]
       seq(
-        field("element", $.identifier),
+        field("element", choice($.identifier, $.group_reference)),
         optional(field("negated", "not")),
         "aligned",
         field("aligned_axis", $.aligned_axis),
@@ -132,7 +159,7 @@ module.exports = grammar({
       ),
       // centered syntax sugar: element centered horizontally|vertically|all inside|on target [distance]
       seq(
-        field("element", $.identifier),
+        field("element", choice($.identifier, $.group_reference)),
         optional(field("negated", "not")),
         "centered",
         field("centered_axis", $.centered_axis),
@@ -142,7 +169,7 @@ module.exports = grammar({
       ),
       // relative rules: element relation target [distance]
       seq(
-        field("element", $.identifier),
+        field("element", choice($.identifier, $.group_reference)),
         optional(field("negated", "not")),
         field("relation", $.relation),
         field("target", $.identifier),
@@ -150,7 +177,7 @@ module.exports = grammar({
       ),
       // ternary equal-gap rules: element relation target target [distance]
       seq(
-        field("element", $.identifier),
+        field("element", choice($.identifier, $.group_reference)),
         optional(field("negated", "not")),
         field("relation", $.ternary_relation),
         field("target", $.identifier),
@@ -159,7 +186,7 @@ module.exports = grammar({
       ),
       // chain equal-gap rules: element relation [target target target ...] [distance]
       seq(
-        field("element", $.identifier),
+        field("element", choice($.identifier, $.group_reference)),
         optional(field("negated", "not")),
         field("relation", $.ternary_relation),
         "[",
@@ -171,7 +198,7 @@ module.exports = grammar({
       ),
       // absolute rules: element relation distance
       seq(
-        field("element", $.identifier),
+        field("element", choice($.identifier, $.group_reference)),
         optional(field("negated", "not")),
         field("relation", $.relation),
         field("distance", $.distance)
@@ -249,6 +276,7 @@ module.exports = grammar({
     object_pattern: $ => token(/[a-zA-Z_][a-zA-Z0-9_.#*-]*/),
 
     // identifiers = simple names (e.g. header, button, loginBtn, featured-badge)
+    // NOTE: identifier must not match trailing * — that is handled by wildcard_name
     identifier: $ => /[a-zA-Z_][a-zA-Z0-9_-]*/,
 
     // number = integer

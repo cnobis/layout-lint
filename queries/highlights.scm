@@ -32,6 +32,9 @@
 "centered" @keyword
 "text" @keyword
 "css" @keyword
+"define" @keyword
+"as" @keyword
+"group" @keyword
 
 ; ─── Numbers & Units ─────────────────────────────────────────────────
 (number) @number
@@ -41,6 +44,8 @@
 
 ; ─── Variables (element identifiers) ─────────────────────────────────
 (identifier) @variable
+(wildcard_name) @variable
+(group_reference) @variable
 
 ; ─── Strings ─────────────────────────────────────────────────────────
 (quoted_text) @string

@@ -16,6 +16,7 @@ npm install layout-lint
 import { runLayoutLint } from 'layout-lint';
 
 const spec = `
+  // position constraints
   nav below header 20px
   sidebar left-of content
 `;

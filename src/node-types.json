@@ -30,6 +30,36 @@
     "fields": {}
   },
   {
+    "type": "definition",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "wildcard_name",
+            "named": true
+          }
+        ]
+      },
+      "selector": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "quoted_text",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "direction",
     "named": true,
     "fields": {}
@@ -47,6 +77,32 @@
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "group_definition",
+    "named": true,
+    "fields": {
+      "member": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -295,6 +351,10 @@
         "required": false,
         "types": [
           {
+            "type": "group_reference",
+            "named": true
+          },
+          {
             "type": "identifier",
             "named": true
           }
@@ -476,6 +536,14 @@
       "required": false,
       "types": [
         {
+          "type": "definition",
+          "named": true
+        },
+        {
+          "type": "group_definition",
+          "named": true
+        },
+        {
           "type": "rule",
           "named": true
         }
@@ -574,6 +642,10 @@
     "named": false
   },
   {
+    "type": "as",
+    "named": false
+  },
+  {
     "type": "below",
     "named": false
   },
@@ -607,6 +679,10 @@
     "named": true
   },
   {
+    "type": "define",
+    "named": false
+  },
+  {
     "type": "distance-from-top",
     "named": false
   },
@@ -621,6 +697,14 @@
   {
     "type": "equal-gap-y",
     "named": false
+  },
+  {
+    "type": "group",
+    "named": false
+  },
+  {
+    "type": "group_reference",
+    "named": true
   },
   {
     "type": "height",
@@ -753,5 +837,9 @@
   {
     "type": "width",
     "named": false
+  },
+  {
+    "type": "wildcard_name",
+    "named": true
   }
 ]
