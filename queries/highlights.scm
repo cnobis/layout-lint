@@ -1,6 +1,9 @@
 ; highlights.scm — tree-sitter highlight query for the layout-lint DSL
 ; Maps CST node types to highlight capture names used by the editor themes.
 
+; ─── Comments ─────────────────────────────────────────────────────────
+(comment) @comment
+
 ; ─── Keywords ────────────────────────────────────────────────────────
 ; Relation keywords
 (relation) @keyword
@@ -13,9 +16,7 @@
 (centered_scope) @keyword
 (count_scope) @keyword
 (direction) @keyword
-(inside_side) @keyword
-(text_match_mode) @keyword
-(css_match_mode) @keyword
+(match_mode) @keyword
 (text_operation) @keyword
 
 ; Bare keyword literals in rules
@@ -31,6 +32,9 @@
 "centered" @keyword
 "text" @keyword
 "css" @keyword
+"define" @keyword
+"as" @keyword
+"group" @keyword
 
 ; ─── Numbers & Units ─────────────────────────────────────────────────
 (number) @number
@@ -40,6 +44,8 @@
 
 ; ─── Variables (element identifiers) ─────────────────────────────────
 (identifier) @variable
+(wildcard_name) @variable
+(group_reference) @variable
 
 ; ─── Strings ─────────────────────────────────────────────────────────
 (quoted_text) @string

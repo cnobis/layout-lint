@@ -30,9 +30,34 @@
     "fields": {}
   },
   {
-    "type": "css_match_mode",
+    "type": "definition",
     "named": true,
-    "fields": {}
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "wildcard_name",
+            "named": true
+          }
+        ]
+      },
+      "selector": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "quoted_text",
+            "named": true
+          }
+        ]
+      }
+    }
   },
   {
     "type": "direction",
@@ -55,9 +80,45 @@
     }
   },
   {
+    "type": "group_definition",
+    "named": true,
+    "fields": {
+      "member": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "inside_clause",
     "named": true,
     "fields": {
+      "direction": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "direction",
+            "named": true
+          }
+        ]
+      },
       "distance": {
         "multiple": false,
         "required": true,
@@ -67,21 +128,11 @@
             "named": true
           }
         ]
-      },
-      "side": {
-        "multiple": true,
-        "required": true,
-        "types": [
-          {
-            "type": "inside_side",
-            "named": true
-          }
-        ]
       }
     }
   },
   {
-    "type": "inside_side",
+    "type": "match_mode",
     "named": true,
     "fields": {}
   },
@@ -260,7 +311,7 @@
         "required": false,
         "types": [
           {
-            "type": "css_match_mode",
+            "type": "match_mode",
             "named": true
           }
         ]
@@ -299,6 +350,10 @@
         "multiple": false,
         "required": false,
         "types": [
+          {
+            "type": "group_reference",
+            "named": true
+          },
           {
             "type": "identifier",
             "named": true
@@ -414,7 +469,7 @@
         "required": false,
         "types": [
           {
-            "type": "text_match_mode",
+            "type": "match_mode",
             "named": true
           }
         ]
@@ -481,6 +536,14 @@
       "required": false,
       "types": [
         {
+          "type": "definition",
+          "named": true
+        },
+        {
+          "type": "group_definition",
+          "named": true
+        },
+        {
           "type": "rule",
           "named": true
         }
@@ -489,11 +552,6 @@
   },
   {
     "type": "ternary_relation",
-    "named": true,
-    "fields": {}
-  },
-  {
-    "type": "text_match_mode",
     "named": true,
     "fields": {}
   },
@@ -584,6 +642,10 @@
     "named": false
   },
   {
+    "type": "as",
+    "named": false
+  },
+  {
     "type": "below",
     "named": false
   },
@@ -594,6 +656,11 @@
   {
     "type": "centered",
     "named": false
+  },
+  {
+    "type": "comment",
+    "named": true,
+    "extra": true
   },
   {
     "type": "contains",
@@ -612,6 +679,10 @@
     "named": true
   },
   {
+    "type": "define",
+    "named": false
+  },
+  {
     "type": "distance-from-top",
     "named": false
   },
@@ -626,6 +697,14 @@
   {
     "type": "equal-gap-y",
     "named": false
+  },
+  {
+    "type": "group",
+    "named": false
+  },
+  {
+    "type": "group_reference",
+    "named": true
   },
   {
     "type": "height",
@@ -758,5 +837,9 @@
   {
     "type": "width",
     "named": false
+  },
+  {
+    "type": "wildcard_name",
+    "named": true
   }
 ]

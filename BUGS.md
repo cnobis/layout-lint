@@ -161,4 +161,14 @@ Use this format for every new bug:
 - **Verification**: `rm -rf dist && npm run build:ts && npm test` — all 91 tests pass; cursor behaves natively (single Enter, double Enter, arrow keys); no border artifacts when scrolling or with error diagnostics.
 - **General principle**: Avoid fighting `contenteditable` with manual cursor management — the browser's DOM mutations are unpredictable across engines. Use a textarea for input and a transparent overlay for highlighting instead.
 
+## 13) Comment nodes treated as malformed rules — false "2 issues" diagnostic
+
+- **Symptom**: Gallery demo status bar showed "! 2 issues" despite all 21 constraints passing (20/21 or 21/21). The 2 issues appeared after adding `#` comments to the spec.
+- **Root cause**: Tree-sitter `extras` (like `comment`) appear as named children of `source_file`. The `extractRules` loop iterated over all named children but had no guard for `comment` nodes. Each comment fell through to the bottom of the loop, failed the `!element || !relation` check, and produced an `LL-RULE-MALFORMED` diagnostic.
+- **Fix applied**:
+  - Added `if (node.type === "comment") continue;` at the top of the `extractRules` iteration loop, before the `definition` and `rule` handlers.
+- **Where**: `src/core/dsl.ts` (`extractRules` function).
+- **Verification**: `npm run build:ts && npm test` — 108/108 pass; gallery demo reports 0 issues.
+- **General principle**: When tree-sitter `extras` are defined, their nodes appear as named children at every nesting level. Any loop that processes named children must explicitly skip extra node types it doesn't handle.
+
 

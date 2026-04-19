@@ -87,8 +87,16 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     isOpen = true;
     draft = args.monitor.getSpecText();
     error = null;
-    diagnostics = [];
     expandedRelatedDiagnosticKeys.clear();
+
+    // Seed with semantic diagnostics from the latest evaluation so the editor
+    // shows underlines for issues like "Element not found" on open.
+    const latest = args.monitor.getLatestResult();
+    const semanticDiags = (latest?.diagnostics ?? []).filter(
+      (d) => d.code.startsWith("LL-SEMANTIC")
+    );
+    diagnostics = semanticDiags;
+
     args.updateHeaderToggleStyles();
   };
 

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Single-line comments (`# ...`) in layout specs
 - Professional devtools layer (`layout-lint/devtools` entrypoint)
 - `createLayoutLintMonitor()` for live constraint evaluation with:
   - ResizeObserver + MutationObserver for real-time updates

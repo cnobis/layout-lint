@@ -124,6 +124,11 @@ const makeMonitor = (initialSpec, diagnostics = []) => {
           diagnostics: evaluateCall === 1 ? diagnostics : [],
         };
       },
+      getLatestResult: () => ({
+        rules: [],
+        results: [],
+        diagnostics,
+      }),
     },
     getSpecText: () => specText,
     setSpecTextCalls,
