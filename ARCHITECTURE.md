@@ -1,13 +1,14 @@
-# layout-lint Architecture (MVP Snapshot)
+# layout-lint Architecture
 
-This document describes the **current implemented architecture** of `layout-lint` as of the MVP stage.
+This document describes the **current implemented architecture** of `layout-lint`.
 
 ## 1. System Overview
 
 `layout-lint` combines two layers:
 
 1. **Tree-sitter grammar layer**
-   - Defines a small DSL for layout constraints.
+   - Defines a DSL for layout constraints (spatial, containment, count, visual, text/CSS, alignment).
+   - Supports element aliases (`define...as`), wildcard definitions, and groups.
    - Produces parser artifacts (`parser.c`, WASM grammar, node types).
 
 2. **JavaScript runtime layer (browser-first MVP)**
@@ -23,21 +24,61 @@ The demo page then renders those results.
 ## 2. DSL and Grammar Layer
 
 ### 2.1 Source Grammar
-- Primary grammar definition: `grammar.js`g
+- Primary grammar definition: `grammar.js`
 - Grammar name: `layout_lint`
-- Entry rule: `source_file` → repeated `rule`
+- Entry rule: `source_file` → repeated statements (definitions, group definitions, or rules) terminated by `;`
+- Comments: `# line comment`
 
-### 2.2 Rule Shape
-A rule is parsed as:
-- `element` (identifier)
-- `relation` (one of `below`, `above`, `left-of`, `right-of`)
-- `target` (identifier)
-- `distance` (`\d+px`)
+### 2.2 Definitions and Groups
 
-Example:
+Element aliasing binds a human-readable name to a CSS selector:
+
 ```
-login below header 20px
+define header as ".site-header";   # exact alias
+define card-* as ".card";          # wildcard (card-1, card-2, …)
 ```
+
+Groups expand a single rule into multiple rules:
+
+```
+group skeleton as header, nav, footer;
+@skeleton inside screen;              # expands to 3 rules
+```
+
+### 2.3 Rule Categories
+
+Rules are split into five hidden sub-rules in the grammar:
+
+| Category | Examples |
+|----------|----------|
+| **Spatial** | `el below target 20px`, `el inside target`, `el partially inside target`, `el near target 10px left`, `el equal-gap-x a b` |
+| **Count** | `count visible .card is 3`, `count any .item is >= 1`, `count absent .old is 1 to 3` |
+| **Visual** | `el visible`, `el absent`, `el width 200px`, `el height >= 50% of parent/height` |
+| **Text & CSS** | `el text contains "hello"`, `el css color is "red"` |
+| **Alignment** | `el aligned horizontally top target`, `el centered vertically inside container` |
+
+All non-count rules start with an element (identifier or `@group` reference) and an optional `not` negation.
+
+### 2.4 Distances and Ranges
+- Exact: `20px`
+- Range: `10 to 30px`
+- Signed (inside clauses): `-5px`
+- Percentage: `50%`, `80 to 100%`
+- Comparator prefix: `>= 20px`, `< 50%`
+
+### 2.5 Terminal Keywords
+- Relations: `below`, `above`, `left-of`, `right-of`, `aligned-top`, `aligned-bottom`, `aligned-left`, `aligned-right`, `wider-than`, `taller-than`, `same-width`, `same-height`, `distance-from-top`
+- Ternary: `equal-gap-x`, `equal-gap-y` (also supports chain syntax `[a b c]`)
+- Directions: `left`, `right`, `top`, `bottom`
+- Visibility: `visible`, `absent`
+- Match modes: `is`, `contains`, `starts`, `ends`, `matches`
+- Text transforms: `lowercase`, `uppercase`, `singleline`
+
+### 2.6 Generated/Compiled Grammar Artifacts
+- JSON grammar: `src/grammar.json`
+- Node types: `src/node-types.json`
+- C parser: `src/parser.c`
+- WASM parser binary used in demo/runtime: `layout_lint.wasm`
 
 ### 2.3 Generated/Compiled Grammar Artifacts
 - JSON grammar: `src/grammar.json`
@@ -56,38 +97,58 @@ login below header 20px
 Input contract:
 - `specText`: DSL text
 - `wasmUrl`: URL/path to grammar WASM (`layout_lint.wasm`)
-- optional `resolve(id)` function (defaults to DOM `getElementById`)
+- optional `resolve(id)` function (defaults to definition-aware resolver chain)
 - optional `locateFile(path)` for Tree-sitter runtime WASM location
 
 Output contract:
 - `rules`: extracted normalized rules
 - `results`: evaluated rule results (`pass`, `actual`, optional `reason`)
+- `diagnostics`: syntax/semantic issues from parsing
+- `definitions`: resolved definition map
 
 ### 3.2 Parser Initialization
-- `src/parser.ts`
+- `src/core/parser.ts`
 - Uses `demo/web-tree-sitter.js` (`Parser`, `Language`)
 - Initializes once via cached promise (`_parserPromise`)
 - Loads grammar language from `wasmUrl`
 
 ### 3.3 AST-to-Rule Extraction
-- `src/dsl.ts`
-- Traverses tree-sitter nodes using named fields:
-  - `element`, `relation`, `target`, `distance`
-- Converts `distance` token (`20px`) to numeric `distancePx`
-- Emits structured diagnostics for malformed parse segments and malformed rules
-  - syntax-level (for example parser `ERROR`/missing segments)
-  - extraction-level (for example missing element/relation in a rule)
+- `src/core/dsl.ts`
+- Traverses tree-sitter nodes by type: `definition`, `group_definition`, `rule`
+- Returns `ExtractRulesResult`:
+  - `rules`: normalized `Rule[]`
+  - `definitions`: `Map<string, string>` (name → CSS selector)
+  - `groups`: `Map<string, string[]>` (name → member list)
+  - `diagnostics`: syntax + semantic issues
+- Post-expansion pass: `@group` rules are cloned for each group member
+- Emits structured diagnostics for:
+  - syntax-level (parser `ERROR`/missing segments)
+  - extraction-level (missing element/relation in a rule)
+  - semantic-level (undefined references, unused definitions)
 
-### 3.4 Rule Evaluation
-- `src/evaluator.ts`
-- Resolves DOM elements (default by id)
-- Measures relation distance via `getBoundingClientRect()`
-- Relation math:
-  - `below`: `A.top - B.bottom`
-  - `above`: `B.top - A.bottom`
-  - `right-of`: `A.left - B.right`
-  - `left-of`: `B.left - A.right`
-- Pass condition: `actual >= distancePx`
+### 3.4 Element Resolution
+- `src/core/runtime.ts`
+- Three-step resolver chain:
+  1. Exact definition match → `querySelector(selector)`
+  2. Wildcard match (e.g. `card-2` matches `card-*`) → `querySelectorAll` + 1-based index
+  3. Fallback → `getElementById(name)`
+- Resolved elements are cached per evaluation pass
+
+### 3.5 Rule Evaluation
+- `src/core/evaluator.ts` + `evaluator-helpers.ts`
+- Handles all rule categories: spatial, containment, count, visibility, size, text, CSS, alignment
+- Relation math via `getBoundingClientRect()`:
+  - Positional: `below`, `above`, `left-of`, `right-of`, `distance-from-top`
+  - Containment: `inside`, `partially inside` (bidirectional bbox intersection)
+  - Proximity: `near` (multi-direction distance clauses)
+  - Comparison: `wider-than`, `taller-than`, `same-width`, `same-height`
+  - Alignment: edge/center alignment with optional tolerance
+  - Equal spacing: `equal-gap-x`/`equal-gap-y` between 2+ targets
+  - Count: DOM queries with `any`/`visible`/`absent` scoping
+  - Text/CSS: property matching with 5 match modes + text transforms
+  - Size: absolute px and relative % comparisons
+- Tolerance: ±1px for exact distances, ±0.5px for ranges
+- Negation (`not`): inverts pass condition
 - Missing elements produce `pass: false` with reason text
 
 ### 3.5 Diagnostics Model
@@ -233,9 +294,11 @@ For the MVP, the **active functional path** is browser runtime + demo. Packaging
 
 - Grammar and runtime are cleanly separated.
 - Rule extraction uses tree-sitter field names (stable and explicit).
-- Evaluation logic is simple and deterministic.
+- Evaluation logic handles the full rule taxonomy deterministically.
+- Alias system (definitions, wildcards, groups) keeps specs readable without coupling to DOM structure.
+- Diagnostic pipeline surfaces syntax, extraction, and semantic issues with source locations.
 - Demo proves end-to-end viability on real DOM elements.
-- TypeScript sources are modular (`parser`, `dsl`, `evaluator`, `index`).
+- TypeScript sources are modular (`core/parser`, `core/dsl`, `core/evaluator`, `core/runtime`, `devtools/*`).
 
 ---
 
