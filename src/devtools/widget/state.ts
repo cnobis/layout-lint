@@ -62,10 +62,11 @@ export function createWidgetState(options: CreateWidgetStateOptions): WidgetStat
   const pinnedRuleKeys = new Set<string>();
 
   const getRuleKey = (rule: RuleResult) => {
+    const suffix = rule.countPattern ? `::${rule.countPattern}` : "";
     if (rule.target2) {
-      return `${rule.element}::${rule.relation}::${rule.target ?? ""}::${rule.target2}`;
+      return `${rule.element}::${rule.relation}::${rule.target ?? ""}::${rule.target2}${suffix}`;
     }
-    return `${rule.element}::${rule.relation}::${rule.target ?? ""}`;
+    return `${rule.element}::${rule.relation}::${rule.target ?? ""}${suffix}`;
   };
 
   const syncActiveRule = () => {

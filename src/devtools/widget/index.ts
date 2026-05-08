@@ -216,6 +216,39 @@ export function createLayoutLintWidget(
     return null;
   };
 
+  const idPatternToRegex = (pattern: string): RegExp => {
+    const escaped = pattern
+      .replace(/[|\\{}()[\]^$+?.]/g, "\\$&")
+      .replace(/\*/g, ".*")
+      .replace(/#/g, "\\d+");
+    return new RegExp(`^${escaped}$`);
+  };
+
+  const resolvePatternElements = (pattern: string | undefined): HTMLElement[] => {
+    if (!pattern) return [];
+
+    // 1. Exact definition match
+    const exact = latestDefinitions.get(pattern);
+    if (exact) {
+      return Array.from(document.querySelectorAll<HTMLElement>(exact));
+    }
+
+    // 2. Wildcard definition match
+    for (const [name, wcSelector] of latestDefinitions) {
+      if (!name.endsWith("*")) continue;
+      const prefix = name.slice(0, -1);
+      if (pattern === name || pattern.startsWith(prefix)) {
+        return Array.from(document.querySelectorAll<HTMLElement>(wcSelector));
+      }
+    }
+
+    // 3. Fallback: id-based regex
+    const matcher = idPatternToRegex(pattern);
+    return Array.from(document.querySelectorAll<HTMLElement>("[id]")).filter((node) =>
+      matcher.test(node.id)
+    );
+  };
+
   const renderActiveHighlight = () => {
     clearHighlights();
     if (!state.isHighlightsEnabled() || root.style.display === "none") return;
@@ -243,6 +276,44 @@ export function createLayoutLintWidget(
       const color = rule.pass ? "#059669" : "#dc2626";
       const ruleNumber = getRuleNumber(rule);
       const rulePrefix = ruleNumber == null ? "?" : `${ruleNumber}`;
+
+      if (rule.relation.startsWith("count-") && rule.countPattern) {
+        const matched = resolvePatternElements(rule.countPattern);
+        const scope = rule.relation.slice("count-".length);
+        const visibleRects = matched
+          .map((el) => el.getBoundingClientRect())
+          .filter((r) => r.width > 0 || r.height > 0);
+
+        if (visibleRects.length === 0) {
+          continue;
+        }
+
+        const left = Math.min(...visibleRects.map((r) => r.left));
+        const top = Math.min(...visibleRects.map((r) => r.top));
+        const right = Math.max(...visibleRects.map((r) => r.right));
+        const bottom = Math.max(...visibleRects.map((r) => r.bottom));
+        const unionRect = new DOMRect(left, top, right - left, bottom - top);
+
+        const box = document.createElement("div");
+        box.style.position = "fixed";
+        box.style.left = `${unionRect.left}px`;
+        box.style.top = `${unionRect.top}px`;
+        box.style.width = `${unionRect.width}px`;
+        box.style.height = `${unionRect.height}px`;
+        box.style.border = `2px dashed ${color}`;
+        box.style.borderRadius = "6px";
+        box.style.background = `${color}11`;
+        box.style.boxSizing = "border-box";
+        highlightLayer.appendChild(box);
+
+        createElementRoleLabel(
+          `${rulePrefix} count ${scope} ${rule.countPattern} (${visibleRects.length})`,
+          color,
+          unionRect,
+          true
+        );
+        continue;
+      }
 
       const primary = resolveElement(rule.element);
       const primaryRect = primary?.getBoundingClientRect() ?? null;

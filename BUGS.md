@@ -172,3 +172,27 @@ Use this format for every new bug:
 - **General principle**: When tree-sitter `extras` are defined, their nodes appear as named children at every nesting level. Any loop that processes named children must explicitly skip extra node types it doesn't handle.
 
 
+
+## 14) Count rules silently match zero elements when patterns target classes
+
+- **Symptom**: Jazz-club demo count rules such as `count any menu-item is 9` and `count visible chip is 4` always reported `actual: 0`, marking the rules as failing even though the page contained the expected elements. The matching status was identical for any class-based pattern.
+- **Root cause**: `collectPatternMatches` in `src/core/evaluator-helpers.ts` only inspects elements with an `id` attribute and matches the wildcard pattern against `node.id`. Patterns referring to class names (or any other CSS selector form) silently produced an empty match set. The runtime never consulted `define` aliases when resolving count patterns, so even an explicit `define cards as ".card"` had no effect on `count` rules.
+- **Fix applied**:
+  - Extended `runLayoutLint` to pass a `resolvePattern` callback to `evaluateRules`.
+  - The callback first looks the pattern up in the definitions map (exact match), then matches it against any wildcard definition (e.g. `define card-* as ".artwork"`), and only falls back to the original id-based wildcard matching when neither applies.
+  - Wildcard query results are cached per CSS selector to keep evaluation cheap.
+  - Updated the jazz-club demo spec to showcase both id-wildcard count rules (`count any set-* is 5`) and selector-backed count rules via `define`.
+- **Where**: `src/core/runtime.ts` (`resolvePatternWithDefinitions`), `demo/jazz-club/index.html` (spec block).
+- **Verification**: `npm run build:ts && npm test` — 114/114 pass; live jazz-club page now reports the count rules as passing with `actual` matching the expected counts.
+- **General principle**: When a DSL exposes both raw element ids and a `define`/alias system, any rule type that resolves elements must consult the alias system. Resolving names through one path (`resolve(id)`) and patterns through a separate, alias-unaware path leads to surprising semantic gaps.
+
+
+## 15) Count rules collide on a single rule key — pin and hover affect all of them
+
+- **Symptom**: In the jazz-club demo, pinning any `count any …` row in the widget pinned every count rule simultaneously. Hovering over count rows caused the highlight overlay to flicker violently between the matched element groups of two different rules. Visually, several distinct count rules appeared to merge into one.
+- **Root cause**: `getRuleKey` in `src/devtools/widget/state.ts` derived the rule identity from `${element}::${relation}::${target}` only. For count rules the evaluator sets `element = "global"` and leaves `target` empty, so every `count any …` rule produced the same key (`global::count-any::`). The pinned-rule set, the active-rule resolver, and `syncActiveRule` all keyed off this collision, so a single click toggled the whole group, and `pointerenter` on a different count row reassigned `activeRule` to whichever entry was hovered last — repeatedly, since the renderer kept switching the overlay between the two element groups.
+- **Fix applied**:
+  - Appended the count pattern to the rule key when present: `…::${countPattern}` is added for any rule that has `countPattern` set.
+- **Where**: [src/devtools/widget/state.ts](src/devtools/widget/state.ts) (`getRuleKey`).
+- **Verification**: `npm run build:ts && npm test` — 114/114 pass. In the demo, each `count any` row now pins independently and the overlay no longer flickers between rules on hover.
+- **General principle**: Rule identity in UI state must include every field that distinguishes one rule from another. When a new rule shape (here: count rules with a pattern) introduces a discriminator that earlier rule shapes didn't have, key derivation has to be revisited or rule lists silently collapse onto a single representative.

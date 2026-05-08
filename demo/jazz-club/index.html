@@ -173,7 +173,7 @@ one more record before dawn.</p>
 
       <div id="css-sample">Shinjuku Basement Session Log</div>
 
-      <div id="chip-row">
+      <div id="chips">
         <span id="chip-a" class="chip">Text checks</span>
         <span id="chip-b" class="chip">CSS checks</span>
         <span id="chip-c" class="chip">Future if blocks</span>
@@ -193,8 +193,17 @@ menu-panel right-of now-playing-panel 28px;
 menu-panel aligned-top now-playing-panel;
 greeting-line below welcome-line 8px;
 quote-line below greeting-line 8px;
+
+# count rules: count DOM elements via id wildcard or via a defined selector
+define menu-items as ".menu-item";
+define personnel as ".personnel-line";
+count any set-* is 5;
+count visible set-* is >= 3;
+count any chip-* is 4;
+count any menu-items is 9;
+count any personnel is 3;
 css-sample below quote-line 20px;
-chip-row below css-sample 12px;
+chips below css-sample 12px;
 welcome-line text starts "Welcome";
 css-sample text is "Shinjuku Basement Session Log";
 css-sample css text-transform is "none";

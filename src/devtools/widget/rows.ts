@@ -55,6 +55,20 @@ const isSemanticRelation = (relation: string) => ["inside", "partially-inside"].
 const isAlignmentRelation = (relation: string) =>
   relation.startsWith("aligned-") || relation === "centered-x" || relation === "centered-y";
 const isEqualGapRelation = (relation: string) => relation === "equal-gap-x" || relation === "equal-gap-y";
+const isCountRelation = (relation: string) => relation.startsWith("count-");
+
+const formatCountExpected = (item: { countExpected?: number; countMin?: number; countMax?: number; comparator?: string }): string => {
+  if (item.comparator && item.countExpected != null) {
+    return `${item.comparator} ${item.countExpected}`;
+  }
+  if (item.countMin != null && item.countMax != null) {
+    return `${item.countMin} to ${item.countMax}`;
+  }
+  if (item.countExpected != null) {
+    return `${item.countExpected}`;
+  }
+  return "n/a";
+};
 
 const createPinIcon = (size = 14) => {
   const svgNS = "http://www.w3.org/2000/svg";
@@ -126,6 +140,11 @@ const buildHeadline = (item: RuleResult) => {
     return `${item.pass ? "✓" : "✗"} ${item.element} ${item.negated ? "not " : ""}${item.relation} ${comparatorPrefix}${sizeExpected}${sizeTarget}`;
   }
 
+  if (isCountRelation(item.relation)) {
+    const scope = item.relation.slice("count-".length);
+    return `${item.pass ? "✓" : "✗"} count ${scope} ${item.countPattern ?? ""}`.trimEnd();
+  }
+
   return `${item.pass ? "✓" : "✗"} ${item.element} ${item.negated ? "not " : ""}${item.relation}${item.target ? ` ${item.target}` : ""}${item.target2 ? ` ${item.target2}` : ""}`;
 };
 
@@ -135,6 +154,11 @@ const buildMeta = (item: RuleResult) => {
   if (isSemanticRelation(item.relation)) {
     const label = item.relation === "partially-inside" ? "partially inside" : "inside";
     return item.pass ? `${label}: constraint met` : `${label}: constraint not met`;
+  }
+
+  if (isCountRelation(item.relation)) {
+    const actual = typeof item.actual === "number" ? item.actual : "n/a";
+    return `actual: ${actual} | expected: ${formatCountExpected(item)}`;
   }
 
   if (isSizeRelation(item.relation)) {

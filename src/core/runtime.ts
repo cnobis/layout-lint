@@ -106,9 +106,48 @@ export async function runLayoutLint({
     return baseResolve(id);
   };
 
-  const results = evaluateRules(rules, resolveWithDefinitions);
+  // Resolve count patterns through definitions so they can target arbitrary
+  // CSS selectors, not just element ids. The pattern is matched against:
+  //   1. an exact definition  (e.g. `define cards as ".card"`)
+  //   2. a wildcard definition (e.g. `define card-* as ".artwork"`)
+  //   3. the original id-based wildcard fallback (querySelectorAll("[id]")).
+  const resolvePatternWithDefinitions = (pattern: string): HTMLElement[] => {
+    const exact = definitions.get(pattern);
+    if (exact) {
+      return Array.from(document.querySelectorAll<HTMLElement>(exact));
+    }
+
+    for (const { prefix, selector: wcSelector } of wildcardDefs) {
+      const wildcardName = `${prefix}*`;
+      if (pattern === wildcardName || pattern.startsWith(prefix)) {
+        if (!wildcardCache.has(wcSelector)) {
+          wildcardCache.set(
+            wcSelector,
+            Array.from(document.querySelectorAll<HTMLElement>(wcSelector))
+          );
+        }
+        return wildcardCache.get(wcSelector)!;
+      }
+    }
+
+    if (typeof document === "undefined") return [];
+    const matcher = idPatternToRegex(pattern);
+    return Array.from(document.querySelectorAll<HTMLElement>("[id]"))
+      .filter((node): node is HTMLElement => node instanceof HTMLElement)
+      .filter((node) => matcher.test(node.id));
+  };
+
+  const results = evaluateRules(rules, resolveWithDefinitions, resolvePatternWithDefinitions);
   const semanticDiagnostics = collectSemanticDiagnostics(results);
   const diagnostics = [...parseDiagnostics, ...semanticDiagnostics];
 
   return { rules, results, diagnostics, definitions };
+}
+
+function idPatternToRegex(pattern: string): RegExp {
+  const escaped = pattern
+    .replace(/[|\\{}()[\]^$+?.]/g, "\\$&")
+    .replace(/\*/g, ".*")
+    .replace(/#/g, "\\d+");
+  return new RegExp(`^${escaped}$`);
 }
