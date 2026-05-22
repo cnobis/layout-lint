@@ -210,7 +210,7 @@ git push origin v1.0.0
 - Performance mode (cache measurements)
 - Accessibility relation (e.g., `focusable`, `visible`)
 
-### Post-Thesis Features
+### Future Features
 - React/Vue component wrappers
 - Playwright/Puppeteer integration for CI
 - Visual regression testing mode (screenshot + constraints)
@@ -261,18 +261,6 @@ git push origin v1.0.0
 
 ---
 
-## 🎓 Thesis Context
-
-**Purpose:** Master's thesis on declarative layout testing DSLs  
-**Timeline:** Feature freeze complete, polish this weekend, ship v1.0.0  
-**Presentation:** Demo showcases interactive validation (drag, resize)  
-**Academic Value:**
-- Novel DSL design (Tree-sitter grammar)
-- Real-world application (browser testing)
-- Interactive visualization (draggable widget)
-- Production-ready package (npm publish)
-
----
 
 ## 🔑 Key Files to Know
 
