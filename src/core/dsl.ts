@@ -184,7 +184,12 @@ function collapseSyntaxDiagnostics(rawDiagnostics: LayoutLintDiagnostic[]): Layo
       const suggestion = diagnostic.code === "LL-PARSE-SYNTAX"
         ? findKeywordSuggestion(diagnostic.snippet)
         : undefined;
-      return suggestion ? { ...diagnostic, suggestion } : diagnostic;
+      if (!suggestion) return diagnostic;
+      return {
+        ...diagnostic,
+        suggestion,
+        hint: diagnostic.hint ?? `did you mean \`${suggestion}\`?`,
+      };
     });
   }
 
@@ -234,6 +239,7 @@ function collapseSyntaxDiagnostics(rawDiagnostics: LayoutLintDiagnostic[]): Layo
       ...diagnostic,
       message: diagnostic.message,
       suggestion,
+      hint: suggestion ? `did you mean \`${suggestion}\`?` : diagnostic.hint,
       relatedDiagnosticsCount: relatedCount > 0 ? relatedCount : undefined,
       relatedDiagnostics: relatedCount > 0 ? relatedDiagnostics : undefined,
     };
@@ -255,6 +261,7 @@ function collectSyntaxDiagnostics(node: NodeLike | null, source: string, diagnos
         : "Invalid spec syntax near this segment.",
       range: getSourceRange(source, node.startIndex, node.endIndex),
       snippet: snippet || undefined,
+      primaryLabel: isMissingNode ? "expected token here" : "unexpected token",
     });
   }
 
@@ -454,6 +461,8 @@ export function extractRules(tree: Tree | null, source: string): ExtractRulesRes
         message: "Malformed rule: missing element or relation.",
         range: getSourceRange(source, node.startIndex, node.endIndex),
         snippet: txt(node).trim() || undefined,
+        primaryLabel: !element ? "missing element" : "missing relation",
+        hint: "a rule names an element, then a relation keyword, then any operands, e.g. `nav above header`.",
       });
       continue;
     }
@@ -472,12 +481,18 @@ export function extractRules(tree: Tree | null, source: string): ExtractRulesRes
           expandedRules.push({ ...rule, element: member });
         }
       } else {
+        const knownGroups = Array.from(groups.keys());
+        const hintText = knownGroups.length > 0
+          ? `known groups: ${knownGroups.map((name) => `@${name}`).join(", ")}.`
+          : "declare the group first with `group <name> as <selectors>`.";
         diagnostics.push({
           code: "LL-SEMANTIC-UNKNOWN-GROUP",
           severity: "error",
           message: `Unknown group: @${groupName}`,
           range: rule.sourceRange ?? getSourceRange(source, 0, 0),
           snippet: rule.element,
+          primaryLabel: "undefined group",
+          hint: hintText,
         });
       }
     } else {

@@ -356,8 +356,9 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
       location.style.flexShrink = "0";
 
       const message = document.createElement("span");
+      const labelPrefix = diagnostic.primaryLabel ? `${diagnostic.primaryLabel}: ` : "";
       const suggestion = diagnostic.suggestion ? ` Did you mean \u201C${diagnostic.suggestion}\u201D?` : "";
-      message.textContent = `${diagnostic.message}${suggestion}`;
+      message.textContent = `${labelPrefix}${diagnostic.message}${suggestion}`;
       message.style.color = "#374151";
 
       const code = document.createElement("span");
@@ -373,6 +374,16 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
       summary.appendChild(message);
       summary.appendChild(code);
       item.appendChild(summary);
+
+      if (diagnostic.hint) {
+        const hintRow = document.createElement("div");
+        hintRow.textContent = `hint: ${diagnostic.hint}`;
+        hintRow.style.color = "#4b5563";
+        hintRow.style.fontSize = "11px";
+        hintRow.style.padding = "2px 0 0 22px";
+        hintRow.style.fontStyle = "italic";
+        item.appendChild(hintRow);
+      }
 
       const related = diagnostic.relatedDiagnostics ?? [];
       if (related.length > 0) {
@@ -439,10 +450,11 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
             relatedLoc.style.flexShrink = "0";
 
             const relatedMsg = document.createElement("span");
+            const relatedLabel = relatedDiagnostic.primaryLabel ? `${relatedDiagnostic.primaryLabel}: ` : "";
             const relatedSuggestion = relatedDiagnostic.suggestion
               ? ` Did you mean \u201C${relatedDiagnostic.suggestion}\u201D?`
               : "";
-            relatedMsg.textContent = `${relatedDiagnostic.message}${relatedSuggestion}`;
+            relatedMsg.textContent = `${relatedLabel}${relatedDiagnostic.message}${relatedSuggestion}`;
             relatedMsg.style.color = "#78716c";
 
             relatedRow.appendChild(relatedLoc);

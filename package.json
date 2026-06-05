@@ -19,7 +19,17 @@
       "types": "./dist/devtools/index.d.ts",
       "import": "./dist/devtools/index.js"
     },
-    "./layout_lint.wasm": "./layout_lint.wasm"
+    "./diagnostics": {
+      "types": "./dist/core/diagnostic-format.d.ts",
+      "import": "./dist/core/diagnostic-format.js"
+    },
+    "./diagnostic-codes": {
+      "types": "./dist/core/diagnostic-codes.d.ts",
+      "import": "./dist/core/diagnostic-codes.js"
+    },
+    "./wasm/layout-lint": "./layout_lint.wasm",
+    "./layout_lint.wasm": "./layout_lint.wasm",
+    "./package.json": "./package.json"
   },
   "keywords": [
     "layout",
@@ -32,7 +42,9 @@
   ],
   "files": [
     "dist/**",
-    "layout_lint.wasm"
+    "layout_lint.wasm",
+    "README.md",
+    "THIRD_PARTY_LICENSES.md"
   ],
   "dependencies": {
     "web-tree-sitter": "^0.25.8"
@@ -56,6 +68,7 @@
     "prestart": "tree-sitter build --wasm",
     "start": "tree-sitter playground",
     "test": "node --test test/*.test.js",
+    "test:browser": "node --test test/browser/*.browser.test.js",
     "build:wasm": "tree-sitter build --wasm -o layout_lint.wasm",
     "build:ts": "tsc",
     "serve": "npx http-server -c-1 . || npx serve -n ."

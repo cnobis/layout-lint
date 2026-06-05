@@ -35,18 +35,51 @@ const semanticCodeFromReason = (reason: string) => {
   return "LL-SEMANTIC-EVALUATION";
 };
 
+const semanticPrimaryLabel = (code: string): string | undefined => {
+  switch (code) {
+    case "LL-SEMANTIC-ELEMENT-NOT-FOUND":
+      return "element not in DOM";
+    case "LL-SEMANTIC-INVALID-PATTERN":
+      return "invalid regular expression";
+    case "LL-SEMANTIC-RULE-INCOMPLETE":
+      return "missing required field";
+    case "LL-SEMANTIC-INVALID-TARGET":
+      return "invalid size target";
+    default:
+      return undefined;
+  }
+};
+
+const semanticHint = (code: string): string | undefined => {
+  switch (code) {
+    case "LL-SEMANTIC-ELEMENT-NOT-FOUND":
+      return "check the element id or the matching `define` declaration. the element may also be rendered conditionally.";
+    case "LL-SEMANTIC-INVALID-PATTERN":
+      return "the value supplied to a matches rule must be a valid javascript regular expression body.";
+    case "LL-SEMANTIC-RULE-INCOMPLETE":
+      return "count rules need a pattern. css rules need a property name.";
+    case "LL-SEMANTIC-INVALID-TARGET":
+      return "the referenced element resolves to a zero-width or zero-height box at evaluation time.";
+    default:
+      return undefined;
+  }
+};
+
 export function collectSemanticDiagnostics(results: RuleResult[]): LayoutLintDiagnostic[] {
   const diagnostics: LayoutLintDiagnostic[] = [];
 
   results.forEach((result, index) => {
     if (!result.reason || result.pass) return;
 
+    const code = semanticCodeFromReason(result.reason);
     diagnostics.push({
-      code: semanticCodeFromReason(result.reason),
+      code,
       severity: "error",
       message: result.reason,
       range: syntheticRangeForResult(result, index),
       snippet: `${result.element} ${result.relation}`,
+      primaryLabel: semanticPrimaryLabel(code),
+      hint: semanticHint(code),
     });
   });
 

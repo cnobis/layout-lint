@@ -13,42 +13,134 @@ npm install layout-lint
 ## Usage
 
 ```typescript
-import { runLayoutLint } from 'layout-lint';
+import { createLayoutLint } from 'layout-lint';
 
-const spec = `
-  // position constraints
-  nav below header 20px
-  sidebar left-of content
-`;
-
-const { results } = await runLayoutLint({
-  specText: spec,
-  wasmUrl: './layout_lint.wasm'
+const lint = createLayoutLint({
+  specText: `
+    nav below header 20px
+    sidebar left-of content
+  `,
+  wasmUrl: './layout_lint.wasm',
 });
-```
 
-The runtime result also includes optional parser diagnostics:
-
-```typescript
-const { rules, results, diagnostics } = await runLayoutLint({
-  specText,
-  wasmUrl: './layout_lint.wasm'
-});
+const { results, diagnostics } = await lint.run();
 
 if (diagnostics?.length) {
-  diagnostics.forEach((item) => {
-    console.warn(`${item.code} L${item.range.start.line}:${item.range.start.column + 1} ${item.message}`);
-  });
+  console.error(lint.formatDiagnostics(diagnostics));
+  console.error(lint.explain(diagnostics[0].code));
 }
 ```
 
-Diagnostics include:
+The factory wraps three building blocks:
+
+- `run()` parses the spec, evaluates rules against the live DOM, and returns parse plus semantic diagnostics.
+- `formatDiagnostics(list, { color, includeExplain })` renders each entry as a Rust-style frame with source caret, primary label, and hint.
+- `explain(code)` returns the long-form explanation for a diagnostic code from the static catalogue.
+
+For lower-level access the original one-shot is still exported:
+
+```typescript
+import { runLayoutLint } from 'layout-lint';
+
+const { rules, results, diagnostics } = await runLayoutLint({
+  specText,
+  wasmUrl: './layout_lint.wasm',
+});
+```
+
+Each diagnostic carries:
 
 - `code`: stable identifier (for example `LL-PARSE-SYNTAX`, `LL-RULE-MALFORMED`)
 - `severity`: `error` or `warning`
-- `message`: human-readable issue summary
-- `range`: source indices + line/column positions
+- `message`: short factual summary
+- `range`: source indices plus line/column positions
 - `snippet` (optional): source fragment near the issue
+- `primaryLabel` (optional): one-word role for the highlighted span
+- `secondarySpans` (optional): related ranges painted alongside the primary span
+- `hint` (optional): single-line didactic nudge
+
+## Integration Recipes
+
+### 1. Vanilla script tag
+
+Drop layout-lint into a static page via a CDN. Useful for prototypes and small demos.
+
+```html
+<!doctype html>
+<script type="module">
+  import { createLayoutLint } from 'https://esm.sh/layout-lint';
+
+  const lint = createLayoutLint({
+    specText: 'nav above main 16px',
+    wasmUrl: 'https://esm.sh/layout-lint/layout_lint.wasm',
+  });
+
+  const { diagnostics, results } = await lint.run();
+  document.getElementById('out').textContent =
+    diagnostics.length
+      ? lint.formatDiagnostics(diagnostics)
+      : `${results.filter((r) => r.pass).length} of ${results.length} rules pass`;
+</script>
+<pre id="out"></pre>
+```
+
+### 2. Vite app
+
+The `exports` map ships the wasm binary as a first-class entry. Vite resolves it with the `?url` suffix so no manual copy step is needed.
+
+```typescript
+import { createLayoutLint } from 'layout-lint';
+import wasmUrl from 'layout-lint/wasm/layout-lint?url';
+
+const lint = createLayoutLint({
+  specText: import.meta.env.VITE_LAYOUT_SPEC,
+  wasmUrl,
+});
+
+const { diagnostics } = await lint.run();
+if (diagnostics.length) {
+  console.error(lint.formatDiagnostics(diagnostics, { color: true }));
+}
+```
+
+For the diagnostic catalogue or the formatter in isolation:
+
+```typescript
+import { explainCode } from 'layout-lint/diagnostic-codes';
+import { formatDiagnostic } from 'layout-lint/diagnostics';
+```
+
+### 3. Node smoke test with jsdom
+
+Run layout-lint headlessly in CI to assert that a static page satisfies its spec.
+
+```typescript
+import { readFileSync } from 'node:fs';
+import { JSDOM } from 'jsdom';
+import { createLayoutLint } from 'layout-lint';
+
+const dom = new JSDOM(readFileSync('./fixture.html', 'utf8'));
+globalThis.document = dom.window.document;
+globalThis.HTMLElement = dom.window.HTMLElement;
+
+const lint = createLayoutLint({
+  specText: readFileSync('./layout.spec', 'utf8'),
+  wasmUrl: new URL(
+    './node_modules/layout-lint/layout_lint.wasm',
+    import.meta.url,
+  ).href,
+});
+
+const { diagnostics, results } = await lint.run();
+if (diagnostics.length) {
+  console.error(lint.formatDiagnostics(diagnostics));
+  process.exit(1);
+}
+const failing = results.filter((r) => !r.pass);
+if (failing.length) process.exit(1);
+```
+
+Note: jsdom does not run a real layout engine. It returns zeros for `getBoundingClientRect`, which is fine for parse and semantic checks but limits spatial assertions. For true layout verification pair the spec with a Playwright or browser-based harness.
 
 ## Devtools Widget
 

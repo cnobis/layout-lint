@@ -60,6 +60,18 @@ export interface LayoutLintRelatedDiagnostic {
   range: LayoutLintSourceRange;
   snippet?: string;
   suggestion?: string;
+  primaryLabel?: string;
+}
+
+export interface LayoutLintSecondarySpan {
+  range: LayoutLintSourceRange;
+  label?: string;
+}
+
+export interface LayoutLintFix {
+  range: LayoutLintSourceRange;
+  replacement: string;
+  description?: string;
 }
 
 export interface LayoutLintDiagnostic {
@@ -71,4 +83,8 @@ export interface LayoutLintDiagnostic {
   suggestion?: string;
   relatedDiagnosticsCount?: number;
   relatedDiagnostics?: LayoutLintRelatedDiagnostic[];
+  primaryLabel?: string;
+  secondarySpans?: LayoutLintSecondarySpan[];
+  hint?: string;
+  fix?: LayoutLintFix;
 }

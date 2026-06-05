@@ -55,6 +55,7 @@ describe('parse diagnostics extraction', () => {
     assert.strictEqual(diagnostics[0].range.start.line, 2);
     assert.strictEqual(diagnostics[0].range.start.column, 3);
     assert.ok((diagnostics[0].snippet ?? '').startsWith('??'));
+    assert.strictEqual(diagnostics[0].primaryLabel, 'unexpected token');
   });
 
   it('reports malformed rule diagnostics when required fields are missing', () => {
@@ -80,6 +81,8 @@ describe('parse diagnostics extraction', () => {
     assert.strictEqual(diagnostics.length, 1);
     assert.strictEqual(diagnostics[0].code, 'LL-RULE-MALFORMED');
     assert.ok(diagnostics[0].message.includes('Malformed rule'));
+    assert.ok(diagnostics[0].primaryLabel);
+    assert.ok((diagnostics[0].hint ?? '').includes('relation'));
   });
 
   it('collapses adjacent parser recovery diagnostics into a single primary issue', () => {
@@ -138,6 +141,7 @@ describe('parse diagnostics extraction', () => {
     assert.strictEqual(diagnostics.length, 1);
     assert.strictEqual(diagnostics[0].code, 'LL-PARSE-SYNTAX');
     assert.strictEqual(diagnostics[0].suggestion, 'above');
+    assert.strictEqual(diagnostics[0].hint, 'did you mean `above`?');
   });
 
   it('returns no diagnostics for well-formed default relation rules', () => {
