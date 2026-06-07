@@ -212,6 +212,9 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
 
   const existingScroll = body.querySelector("[data-widget-constraints-scroll='true']") as HTMLDivElement | null;
   const previousScrollTop = existingScroll?.scrollTop ?? 0;
+  const previousCount = Number(body.dataset.widgetConstraintCount ?? "0");
+  const newRuleAppended = results.length > previousCount;
+  body.dataset.widgetConstraintCount = String(results.length);
 
   body.innerHTML = "";
   body.style.display = "flex";
@@ -221,7 +224,28 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
   body.style.padding = "8px 10px";
   body.style.paddingBottom = "0";
   if (results.length === 0) {
-    body.textContent = "No rules";
+    body.innerHTML = "";
+    const placeholder = document.createElement("div");
+    placeholder.style.display = "flex";
+    placeholder.style.flexDirection = "column";
+    placeholder.style.alignItems = "center";
+    placeholder.style.justifyContent = "center";
+    placeholder.style.gap = "4px";
+    placeholder.style.padding = "18px 12px";
+    placeholder.style.color = "#9ca3af";
+    placeholder.style.textAlign = "center";
+    const title = document.createElement("div");
+    title.textContent = "Spec is empty";
+    title.style.fontSize = "12px";
+    title.style.fontWeight = "600";
+    title.style.color = "#6b7280";
+    const hint = document.createElement("div");
+    hint.textContent = "Open the spec tab and add a rule to begin.";
+    hint.style.fontSize = "11px";
+    hint.style.color = "#9ca3af";
+    placeholder.appendChild(title);
+    placeholder.appendChild(hint);
+    body.appendChild(placeholder);
     styleFooterStatusBar(status);
     renderFooterStatusBar(status, footerStatusMode, 0, 0, footerStatusActionLabel, footerDiagnosticsSummary);
     scheduleClampWidgetIntoViewport();
@@ -610,6 +634,8 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
   buttonContainer.appendChild(status);
   body.appendChild(buttonContainer);
 
-  constraintsScroll.scrollTop = previousScrollTop;
+  constraintsScroll.scrollTop = newRuleAppended
+    ? constraintsScroll.scrollHeight
+    : previousScrollTop;
   scheduleClampWidgetIntoViewport();
 }

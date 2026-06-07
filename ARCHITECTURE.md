@@ -96,9 +96,10 @@ All non-count rules start with an element (identifier or `@group` reference) and
 
 Input contract:
 - `specText`: DSL text
-- `wasmUrl`: URL/path to grammar WASM (`layout_lint.wasm`)
+- optional `wasmUrl`: URL/path to grammar WASM (`layout_lint.wasm`). Omit to use the base64-inlined grammar.
 - optional `resolve(id)` function (defaults to definition-aware resolver chain)
-- optional `locateFile(path)` for Tree-sitter runtime WASM location
+- optional `locateFile(path)` for Tree-sitter runtime WASM location. Omit to use the base64-inlined runtime.
+- optional `dom`: Document used for element resolution. Defaults to `globalThis.document`. Pass an explicit value to lint against synthetic DOMs (JSDOM, happy-dom) or omit in non-browser contexts to receive parse/semantic diagnostics only.
 
 Output contract:
 - `rules`: extracted normalized rules
@@ -108,9 +109,10 @@ Output contract:
 
 ### 3.2 Parser Initialization
 - `src/core/parser.ts`
-- Uses `demo/web-tree-sitter.js` (`Parser`, `Language`)
-- Initializes once via cached promise (`_parserPromise`)
-- Loads grammar language from `wasmUrl`
+- Imports `Parser` and `Language` from the `web-tree-sitter` npm package
+- Initializes once via cached promise (`_initPromise`)
+- Loads grammar language from `wasmUrl` when provided, otherwise from base64 bytes via `src/core/wasm-inline.ts`
+- Passes `{ wasmBinary }` to `Parser.init` when no `locateFile` is supplied, so the Tree-sitter runtime is loaded from the inlined payload without a network fetch
 
 ### 3.3 AST-to-Rule Extraction
 - `src/core/dsl.ts`
@@ -201,7 +203,6 @@ An optional professional developer experience layer is available via a separate 
   ```typescript
   const monitor = createLayoutLintMonitor({
     specText: spec,
-    wasmUrl: './layout_lint.wasm',
     reporters: [createConsoleReporter()],
     observeResize: true,
     observeMutations: true,
@@ -260,16 +261,15 @@ An optional professional developer experience layer is available via a separate 
 
 ### 5.2 Runtime Sequence (in browser)
 1. Read DSL from hidden `<pre id="spec">` block.
-2. Call `runLayoutLint({ specText, wasmUrl, locateFile })`.
+2. Call `runLayoutLint({ specText })` (or `createLayoutLint`).
 3. Parse and evaluate rules.
 4. Push results to reporters and the devtools widget.
 5. Render interactive overlays from widget hover/pin state.
 
 ### 5.3 Runtime Dependencies for Demo
 - Built JS runtime from `dist/`
-- `layout_lint.wasm` (grammar)
-- `demo/web-tree-sitter.js`
-- `tree-sitter.wasm` (located via `locateFile`)
+- Grammar and Tree-sitter runtime WebAssembly are base64-inlined into `dist/core/wasm-data.js` by `scripts/build-wasm-inline.mjs`, so no separate `.wasm` files need to be served alongside the demo
+- The demo HTML still references `layout_lint.wasm` and the `web-tree-sitter` runtime via an import map for the rare case in which a consumer wants to opt out of the inlined payload
 
 Local serving command:
 - `npm run serve`

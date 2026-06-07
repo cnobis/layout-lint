@@ -5,9 +5,15 @@ import type { LayoutLintDiagnostic, Rule, RuleResult } from "./types.js";
 
 export interface RunLayoutLintOptions {
   specText: string;
-  wasmUrl: string;
+  wasmUrl?: string;
   resolve?: (id: string) => HTMLElement | null;
   locateFile?: (path: string) => string;
+  /**
+   * Document used for element resolution. Defaults to `globalThis.document`.
+   * Pass an explicit value to lint against a synthetic DOM (e.g. JSDOM, happy-dom)
+   * or omit in non-browser contexts to skip DOM evaluation entirely.
+   */
+  dom?: Document;
 }
 
 export interface RunLayoutLintResult {
@@ -91,15 +97,23 @@ export async function runLayoutLint({
   wasmUrl,
   resolve,
   locateFile,
+  dom,
 }: RunLayoutLintOptions): Promise<RunLayoutLintResult> {
   if (!specText) throw new Error("specText is required");
-  if (!wasmUrl) throw new Error("wasmUrl is required");
 
   const parser = await getParser(wasmUrl, locateFile);
   const tree = parser.parse(specText);
   const { rules, definitions, diagnostics: parseDiagnostics } = extractRules(tree, specText);
 
-  const baseResolve = resolve ?? ((id: string) => document.getElementById(id));
+  const doc: Document | undefined = dom ?? (typeof document !== "undefined" ? document : undefined);
+
+  // Headless mode: no DOM available. Return parse/extract diagnostics so the
+  // caller can still surface syntax problems without an evaluation phase.
+  if (!doc) {
+    return { rules, results: [], diagnostics: parseDiagnostics, definitions };
+  }
+
+  const baseResolve = resolve ?? ((id: string) => doc.getElementById(id));
 
   // Pre-compute wildcard definitions (keys ending with *) for numbered lookups
   const wildcardDefs: { prefix: string; selector: string }[] = [];
@@ -115,7 +129,7 @@ export async function runLayoutLint({
   const resolveWithDefinitions = (id: string): HTMLElement | null => {
     // 1. Exact match in definitions
     const selector = definitions.get(id);
-    if (selector) return document.querySelector<HTMLElement>(selector);
+    if (selector) return doc.querySelector<HTMLElement>(selector);
 
     // 2. Wildcard match: card-1 → prefix "card-", index 1
     for (const { prefix, selector: wcSelector } of wildcardDefs) {
@@ -126,7 +140,7 @@ export async function runLayoutLint({
           if (!wildcardCache.has(wcSelector)) {
             wildcardCache.set(
               wcSelector,
-              Array.from(document.querySelectorAll<HTMLElement>(wcSelector))
+              Array.from(doc.querySelectorAll<HTMLElement>(wcSelector))
             );
           }
           const elements = wildcardCache.get(wcSelector)!;
@@ -147,7 +161,7 @@ export async function runLayoutLint({
   const resolvePatternWithDefinitions = (pattern: string): HTMLElement[] => {
     const exact = definitions.get(pattern);
     if (exact) {
-      return Array.from(document.querySelectorAll<HTMLElement>(exact));
+      return Array.from(doc.querySelectorAll<HTMLElement>(exact));
     }
 
     for (const { prefix, selector: wcSelector } of wildcardDefs) {
@@ -156,7 +170,7 @@ export async function runLayoutLint({
         if (!wildcardCache.has(wcSelector)) {
           wildcardCache.set(
             wcSelector,
-            Array.from(document.querySelectorAll<HTMLElement>(wcSelector))
+            Array.from(doc.querySelectorAll<HTMLElement>(wcSelector))
           );
         }
         return wildcardCache.get(wcSelector)!;
@@ -165,7 +179,7 @@ export async function runLayoutLint({
 
     if (typeof document === "undefined") return [];
     const matcher = idPatternToRegex(pattern);
-    return Array.from(document.querySelectorAll<HTMLElement>("[id]"))
+    return Array.from(doc.querySelectorAll<HTMLElement>("[id]"))
       .filter((node): node is HTMLElement => node instanceof HTMLElement)
       .filter((node) => matcher.test(node.id));
   };

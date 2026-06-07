@@ -1,79 +1,48 @@
-# layout-lint demo
+# layout-lint demos
 
-This folder contains the demo set for validating layout-lint and the devtools overlay workflow.
+Four fixtures: one guided tutorial, two drop-in showcases, and one power-user lab.
 
-## Playground
+| Folder | Mode | Focus |
+| --- | --- | --- |
+| [tutorial](./tutorial/) | programmatic | Learn the DSL in 8 guided rules; the broken layout snaps into place as you apply each one |
+| [gallery](./gallery/) | drop-in | Spatial composition: `inside`, `partially inside`, percent-of widths, wildcards, groups |
+| [jazz-club](./jazz-club/) | drop-in | Text and CSS assertions: `text starts/ends/matches`, `css ... contains`, `count visible` |
+| [control-room](./control-room/) | programmatic | Builds the monitor by hand and swaps the spec live on every preset change |
 
-- playground page: `demo/index.html`
-- root landing page: `demo/index.html`
-- active gallery demo: `demo/gallery/index.html`
-- scaffolded pages for expansion:
-	- `demo/dashboard/index.html`
-	- `demo/control-room/index.html`
-	- `demo/forms/index.html`
-	- `demo/jazz-club/index.html`
-	- `demo/editor/index.html`
+## How the drop-in demos are wired
 
-## active demo pages
+Both drop-in demos use the same two tags you'd ship in production:
 
-- `demo/gallery/index.html`
-- `demo/dashboard/index.html`
-- `demo/control-room/index.html`
-- `demo/forms/index.html`
-- `demo/jazz-club/index.html`
-- `demo/editor/index.html`
+```html
+<script type="layout-lint">
+  card-a left-of card-b 14px;
+</script>
+<script type="module" src=".../layout-lint/auto"></script>
+```
 
-## Current demo behavior
+That's it. No imports, no `createLayoutLintMonitor`, no reporter wiring. The auto entry finds every `<script type="layout-lint">` block, mounts the widget bottom-right, and starts evaluating. Default observers (resize + mutation) pick up any DOM change the fixture makes, so the demo's fixture JS only contains interaction logic, never library setup.
 
-- parses DSL constraints with tree-sitter wasm
-- evaluates constraints against live DOM geometry
-- renders a draggable devtools widget with live pass/fail rows
-- supports hover highlight preview and multi-pin overlays
-- shows source/target labels and directional connector measurements
+The demos point at `../../dist/auto.bundle.js` so they work offline; in production swap that path for `https://esm.sh/layout-lint/auto` or your bundled npm import.
 
-## Runtime notes
+## How the programmatic demos are wired
 
-- demo entry: `demo/index.html` (Playground landing)
-- gallery entry: `demo/gallery/index.html`
-- jazz club entry: `demo/jazz-club/index.html`
-- devtools runtime import: `../dist/devtools/index.js`
-- grammar wasm: `layout_lint.wasm` from project root
-- monitor in demo currently uses `observeMutations: false` to avoid self-trigger loops; manual re-evaluation is triggered during badge dragging
+The Tutorial and Control Room demos drive the monitor by hand because they need to rewrite the spec live (the tutorial grows it rule-by-rule; control-room swaps it on every preset). Both use `createLayoutLintMonitor` + `createLayoutLintWidget` directly from `../../dist/devtools/index.js`. This is also a useful reference if you ever need to drive the monitor yourself from a framework.
 
 ## Run
-
-From project root:
 
 ```bash
 npm run build:ts
 npm run serve
+# open http://localhost:8080/demo/
 ```
 
-Open:
+Each demo has an **EXIT DEMO** button in the top-right that returns to the playground.
 
-```text
-http://localhost:8080/demo/index.html
-```
+## Smoke checklist
 
-## stabilization smoke checklist
-
-After opening the demo:
-
-1. drag the featured badge and confirm rows update live
-2. hover a row and confirm overlay preview appears
-3. click multiple rows and verify multi-pin overlays stack correctly
-4. press `esc` and verify all pins clear
-5. scroll and resize to verify labels stay visible and non-overlapping
-6. toggle `highlight` and verify overlays hide/show cleanly
-
-## extension-driven workflow
-
-Yes, language work should be driven by concrete demo needs. use this cycle:
-
-1. pick one demo page and define the layout intent you cannot currently express
-2. write the desired DSL examples first (even if unsupported yet)
-3. extend grammar + parser + evaluator minimally to satisfy those examples
-4. validate on at least two demos before considering the extension stable
-5. add tests and capture demo screenshots as evidence
-
-This keeps extensions justified, avoids feature sprawl, and produces stronger thesis artifacts.
+1. Open a demo and confirm the widget appears (bottom-right by default).
+2. Hover a row: the target overlay should pulse over the element.
+3. Click multiple rows: pins stack and persist.
+4. Press `Esc`: all pins clear.
+5. Resize the window: rows re-evaluate within ~100ms.
+6. Open the **Spec** tab, edit a rule, and watch the row flip.

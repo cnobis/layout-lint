@@ -8,18 +8,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Single-line comments (`# ...`) in layout specs
-- Professional devtools layer (`layout-lint/devtools` entrypoint)
-- `createLayoutLintMonitor()` for live constraint evaluation with:
-  - ResizeObserver + MutationObserver for real-time updates
-  - Configurable debounce (default 80ms)
-  - Subscriber pattern for custom handling
-- `createLayoutLintWidget()` for interactive floating panel:
-  - Pointer-based dragging with no external dependencies
-  - Real-time pass/fail visualization
-  - Color-coded results (#ecfdf5 pass, #fef2f2 fail)
-- `createConsoleReporter()` for grouped console logging
-- Full TypeScript definitions for devtools APIs
+- **`demo/tutorial`**: 8-step guided tour of the DSL. Starts with a deliberately broken layout; each step applies one rule and the relevant element snaps into place via CSS transitions. Covers direction, alignment, containment, defines, percentages, counting, text/CSS assertions, and negation. Replaces the earlier `demo/tour` minimal hero.
+
+### Changed
+- **Demos rewritten to match the drop-in story.** The `gallery` and `jazz-club` demos now use the documented two-tag pattern (`<script type="layout-lint">` + `auto.bundle.js`) with no `createLayoutLintMonitor` / `createLayoutLintWidget` imports. Fixture JavaScript only handles user interaction; the default observers re-evaluate automatically. Control Room and Tutorial remain programmatic by design and are labeled as such.
+- Auto entry default widget position changed from top-left (`{x:16,y:16}`) to bottom-right (`max(margin, innerWidth-376), max(margin, innerHeight-416)`) so it doesn't collide with page headers on first mount.
+- Console reporter now de-duplicates identical pass/fail summaries by default (`createConsoleReporter({ dedupe: false })` to opt out). Eliminates console spam on every resize/mutation when nothing actually changed.
+- Spec editor migrated from the deprecated `Language.query()` method to the `new Query(language, source)` constructor (`web-tree-sitter` 0.25+). Removes the deprecation warning that fired every time the Spec tab opened.
+- Importmaps removed from all drop-in demos (the bundled `auto.bundle.js` is self-contained).
+- Demo set consolidated to four polished fixtures. Removed the older `auto`, `web-component`, `dashboard`, `forms`, and `diagnostics` demo folders.
+- Playground landing page (`demo/index.html`) and demo README rewritten to match.
+
+## [1.1.0] - 2026-06-05
+
+### Added
+- `layout-lint/auto` side-effect entry. A single `<script type="module" src="…/layout-lint/auto">` finds every `<script type="layout-lint">` block on the page, creates a monitor against the live DOM, and mounts the widget. Controller exposed on `window.layoutLintAuto`.
+- `layout-lint/web-component` entry. Registers a `<layout-lint>` custom element. Spec text comes from the element's `textContent` or a `spec` attribute; attribute changes swap the spec live.
+- JSX / `HTMLElementTagNameMap` type augmentation for `<layout-lint>` so React, Preact, Solid, and Vue 3 consumers get IntelliSense and no TS errors.
+- `dom` option on `createLayoutLint` / `runLayoutLint` for synthetic documents (jsdom, happy-dom, custom).
+- Self-contained ESM bundles at `dist/auto.bundle.js` and `dist/web-component.bundle.js` (~478 KiB each, includes inlined grammar WASM + tree-sitter runtime WASM + web-tree-sitter loader). The `./auto` and `./web-component` subpath exports point at the bundles.
+- Authoritative DSL reference at [docs/LANGUAGE.md](docs/LANGUAGE.md), linked from the README.
+
+### Changed
+- `wasmUrl` and `locateFile` are now optional on every public entry. The grammar WASM and the tree-sitter runtime WASM are base64-inlined into the bundle by default. The previous `wasmUrl is required` throw is removed.
+- The devtools widget mounts inside a Shadow DOM root (open mode) instead of `document.body`. Host page selectors (`button { ... }`, `header { ... }`, Tailwind preflight, CSS resets) can no longer deform the widget chrome. The highlight overlay layer is also inside the shadow root.
+- `createLayoutLint` returns parse and semantic diagnostics with empty `results` when no DOM is available, instead of throwing.
+- README rewritten in drop-in-first order, with explicit production-guard recipes for Vite, Next.js, and Astro.
+
+### Removed
+- Vendored `demo/web-tree-sitter.js` shim. Demos now use the npm package directly via an importmap, in line with the published consumer path.
+- `example.layout` stub at the repo root.
 
 ## [1.0.8] - 2026-03-08
 

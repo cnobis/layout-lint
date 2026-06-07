@@ -7,8 +7,9 @@ describe('createLayoutLint factory', () => {
     assert.throws(() => createLayoutLint(undefined), /options object/);
   });
 
-  it('throws when wasmUrl is missing', () => {
-    assert.throws(() => createLayoutLint({ specText: '' }), /wasmUrl/);
+  it('accepts options without wasmUrl (zero-config uses inlined WASM)', () => {
+    const lint = createLayoutLint({ specText: 'nav above header' });
+    assert.strictEqual(lint.getSpecText(), 'nav above header');
   });
 
   it('exposes spec accessors that round-trip', () => {

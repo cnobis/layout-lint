@@ -7,39 +7,20 @@
   <meta name="color-scheme" content="light" />
   <link rel="stylesheet" href="../shared.css" />
   <link rel="stylesheet" href="./styles.css" />
+  <script type="importmap">
+    { "imports": { "web-tree-sitter": "/node_modules/web-tree-sitter/tree-sitter.js" } }
+  </script>
 
 </head>
 <body>
   <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT DEMO</a>
   <main>
     <h1>Control Room</h1>
+    <p id="control-room-note">Power-user demo: builds the monitor programmatically and swaps the spec live on every preset change.</p>
 
     <section id="test-bench" class="panel">
-      <section id="static-checks">
-        <div id="static-header">
-          <div>
-            <h3 id="static-checks-title">Recursive chain</h3>
-          </div>
-          <label id="chain-toggle" class="switch-card" for="chain-break">
-            <span class="switch-label">Break chain</span>
-            <span class="switch-toggle">
-              <input id="chain-break" type="checkbox" />
-              <span class="switch-slider"></span>
-            </span>
-          </label>
-        </div>
-        <section id="static-strip-chain">
-          <span id="chain-1" class="plate plate-static">Chain 1</span>
-          <span id="chain-2" class="plate plate-static">Chain 2</span>
-          <span id="chain-3" class="plate plate-static">Chain 3</span>
-          <span id="chain-4" class="plate plate-static">Chain 4</span>
-          <span id="chain-5" class="plate plate-static">Chain 5</span>
-          <span id="chain-6" class="plate plate-static">Chain 6</span>
-        </section>
-      </section>
-
       <section id="trust-strip">
-        <h2 id="bench-title">Moving plates</h2>
+        <h2 id="bench-title">Equal gap</h2>
         <div id="trust-plates">
           <span id="logo-1" class="plate">Logo 1</span>
           <span id="logo-2" class="plate">Logo 2</span>
@@ -77,10 +58,51 @@
         </div>
       </section>
 
-      <section id="centering-lab" class="panel">
-        <div id="centering-header">
-          <h3 id="centering-title">Centering lab</h3>
+      <section id="alignment-lab" class="panel">
+        <div id="alignment-header">
+          <h3 id="alignment-title">Alignment &amp; centering</h3>
+          <div id="alignment-controls">
+            <label class="cr-field">
+              <span class="cr-field-label">Aligned</span>
+              <select id="alignment-case-select" class="cr-select" aria-label="Alignment preset">
+                <option value="h-all">Horizontally all</option>
+                <option value="h-top">Horizontally top</option>
+                <option value="h-bottom">Horizontally bottom</option>
+                <option value="h-centered">Horizontally centered</option>
+                <option value="v-all">Vertically all</option>
+                <option value="v-left">Vertically left</option>
+                <option value="v-right">Vertically right</option>
+                <option value="v-centered">Vertically centered</option>
+                <option value="h-all-1px">Horizontally all · 1px tol</option>
+              </select>
+            </label>
+            <label class="switch-card">
+              <span class="switch-label">Break rule</span>
+              <span class="switch-toggle">
+                <input id="alignment-break" type="checkbox" />
+                <span class="switch-slider"></span>
+              </span>
+            </label>
+          </div>
         </div>
+
+        <section id="alignment-stage">
+          <svg id="alignment-grid" aria-hidden="true" viewBox="0 0 360 220" preserveAspectRatio="none">
+            <defs>
+              <pattern id="alignment-grid-pattern" width="18" height="18" patternUnits="userSpaceOnUse">
+                <path d="M 18 0 L 0 0 0 18" fill="none" stroke="rgba(92,255,170,0.24)" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="0" y="0" width="100%" height="100%" fill="url(#alignment-grid-pattern)" />
+          </svg>
+          <span id="align-item-1" class="plate alignment-item">Item 1</span>
+          <span id="align-item-2" class="plate alignment-item">Item 2</span>
+          <span id="align-item-3" class="plate alignment-item">Item 3</span>
+        </section>
+
+        <div id="alignment-spec-card"><span id="alignment-spec-line">align-item-1 aligned horizontally all align-item-2</span></div>
+
+        <div id="centering-subhead" class="cr-subhead">Centered inside</div>
 
         <section id="centering-stage">
             <svg id="centering-grid" aria-hidden="true" viewBox="0 0 360 180" preserveAspectRatio="none">
@@ -114,65 +136,20 @@
         </div>
       </section>
 
-      <section id="alignment-lab" class="panel">
-        <div id="alignment-header">
-          <h3 id="alignment-title">Alignment Galen Syntax</h3>
-          <div id="alignment-controls">
-            <div id="alignment-case-wrap">
-              <button id="alignment-case-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">HORIZONTALLY ALL</button>
-              <div id="alignment-case-menu" role="listbox" aria-label="Alignment preset" hidden>
-                <button class="alignment-case-item" role="option" data-value="h-all" aria-selected="true">HORIZONTALLY ALL</button>
-                <button class="alignment-case-item" role="option" data-value="h-top" aria-selected="false">HORIZONTALLY TOP</button>
-                <button class="alignment-case-item" role="option" data-value="h-bottom" aria-selected="false">HORIZONTALLY BOTTOM</button>
-                <button class="alignment-case-item" role="option" data-value="h-centered" aria-selected="false">HORIZONTALLY CENTERED</button>
-                <button class="alignment-case-item" role="option" data-value="v-all" aria-selected="false">VERTICALLY ALL</button>
-                <button class="alignment-case-item" role="option" data-value="v-left" aria-selected="false">VERTICALLY LEFT</button>
-                <button class="alignment-case-item" role="option" data-value="v-right" aria-selected="false">VERTICALLY RIGHT</button>
-                <button class="alignment-case-item" role="option" data-value="v-centered" aria-selected="false">VERTICALLY CENTERED</button>
-                <button class="alignment-case-item" role="option" data-value="h-all-1px" aria-selected="false">H ALL 1PX TOLERANCE</button>
-              </div>
-            </div>
-            <label class="switch-card">
-              <span class="switch-label">Break rule</span>
-              <span class="switch-toggle">
-                <input id="alignment-break" type="checkbox" />
-                <span class="switch-slider"></span>
-              </span>
-            </label>
-          </div>
-        </div>
-
-        <section id="alignment-stage">
-          <svg id="alignment-grid" aria-hidden="true" viewBox="0 0 360 220" preserveAspectRatio="none">
-            <defs>
-              <pattern id="alignment-grid-pattern" width="18" height="18" patternUnits="userSpaceOnUse">
-                <path d="M 18 0 L 0 0 0 18" fill="none" stroke="rgba(92,255,170,0.24)" stroke-width="1" />
-              </pattern>
-            </defs>
-            <rect x="0" y="0" width="100%" height="100%" fill="url(#alignment-grid-pattern)" />
-          </svg>
-          <span id="align-item-1" class="plate alignment-item">Item 1</span>
-          <span id="align-item-2" class="plate alignment-item">Item 2</span>
-          <span id="align-item-3" class="plate alignment-item">Item 3</span>
-        </section>
-
-        <div id="alignment-spec-card"><span id="alignment-spec-line">align-item-1 aligned horizontally all align-item-2</span></div>
-      </section>
-
       <section id="near-lab" class="panel">
         <div id="near-header">
           <h3 id="near-title">Near relations</h3>
           <div id="near-controls">
-            <div id="near-case-wrap">
-              <button id="near-case-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">10PX LEFT</button>
-              <div id="near-case-menu" role="listbox" aria-label="Near preset" hidden>
-                <button class="near-case-item" role="option" data-value="left10" aria-selected="true">10PX LEFT</button>
-                <button class="near-case-item" role="option" data-value="left-range" aria-selected="false">5 TO 15PX LEFT</button>
-                <button class="near-case-item" role="option" data-value="top5" aria-selected="false">5PX TOP</button>
-                <button class="near-case-item" role="option" data-value="bottom-left5" aria-selected="false">5PX BOTTOM LEFT</button>
-                <button class="near-case-item" role="option" data-value="top5-left10" aria-selected="false">5PX TOP, 10PX LEFT</button>
-              </div>
-            </div>
+            <label class="cr-field">
+              <span class="cr-field-label">Offset</span>
+              <select id="near-case-select" class="cr-select" aria-label="Near preset">
+                <option value="left10">10px left</option>
+                <option value="left-range">5 to 15px left</option>
+                <option value="top5">5px top</option>
+                <option value="bottom-left5">5px bottom left</option>
+                <option value="top5-left10">5px top, 10px left</option>
+              </select>
+            </label>
           </div>
         </div>
 
@@ -194,7 +171,6 @@
     </section>
 
     <pre id="spec" hidden>
-  chain-1 equal-gap-x [chain-2 chain-3 chain-4 chain-5 chain-6] 2px;
   logo-1 equal-gap-x [logo-2 logo-3 logo-4] 0px;
   center-test centered horizontally inside center-ref;
   center-test centered vertically inside center-ref;
@@ -210,13 +186,10 @@
       createConsoleReporter
     } from "../../dist/devtools/index.js";
 
-    const locateFile = () => "../tree-sitter.wasm";
     const specText = document.getElementById("spec").textContent.trim();
 
     const monitor = createLayoutLintMonitor({
       specText,
-      wasmUrl: "../../layout_lint.wasm",
-      locateFile,
       reporters: [createConsoleReporter({ prefix: "[layout-lint control-room]" })],
       observeResize: true,
       observeMutations: true,
@@ -225,8 +198,6 @@
 
     createLayoutLintWidget(monitor, {
       initialPosition: { x: window.innerWidth - 360, y: window.innerHeight - 410 },
-      wasmUrl: "../../layout_lint.wasm",
-      locateFile
     });
 
     const trustStrip = document.getElementById("trust-strip");
@@ -240,30 +211,23 @@
     const centerBreakX = document.getElementById("center-break-x");
     const centerBreakY = document.getElementById("center-break-y");
     const centeringStage = document.getElementById("centering-stage");
-    const alignmentCaseTrigger = document.getElementById("alignment-case-trigger");
-    const alignmentCaseMenu = document.getElementById("alignment-case-menu");
-    const alignmentCaseItems = Array.from(document.querySelectorAll(".alignment-case-item"));
+    const alignmentCaseSelect = document.getElementById("alignment-case-select");
     const alignmentBreak = document.getElementById("alignment-break");
     const alignmentSpecLine = document.getElementById("alignment-spec-line");
     const alignItem1 = document.getElementById("align-item-1");
     const alignItem2 = document.getElementById("align-item-2");
     const alignItem3 = document.getElementById("align-item-3");
     const nearStage = document.getElementById("near-stage");
-    const nearCaseTrigger = document.getElementById("near-case-trigger");
-    const nearCaseMenu = document.getElementById("near-case-menu");
-    const nearCaseItems = Array.from(document.querySelectorAll(".near-case-item"));
+    const nearCaseSelect = document.getElementById("near-case-select");
     const nearSpecLine = document.getElementById("near-spec-line");
     const textfield = document.getElementById("textfield");
     const nearButton = document.getElementById("button");
-    const chainBreak = document.getElementById("chain-break");
-    const chain4 = document.getElementById("chain-4");
 
     const baseSpec = [
-      "chain-1 equal-gap-x [chain-2 chain-3 chain-4 chain-5 chain-6] 2px",
       "logo-1 equal-gap-x [logo-2 logo-3 logo-4] 0px",
       "center-test centered horizontally inside center-ref",
       "center-test centered vertically inside center-ref"
-    ].join("\n");
+    ];
 
     const nearPresets = {
       "left10": {
@@ -438,7 +402,12 @@
     };
 
     const applyControlRoomSpec = () => {
-      monitor.setSpecText(`${baseSpec}\n${getActiveAlignmentRule()}\n${getActiveNearRule()}`);
+      const statements = [
+        ...baseSpec,
+        getActiveAlignmentRule(),
+        getActiveNearRule()
+      ];
+      monitor.setSpecText(statements.map((statement) => `${statement};`).join("\n"));
     };
 
     const applyGapState = () => {
@@ -490,33 +459,16 @@
 
     const applyAlignmentPreset = (presetKey) => {
       activeAlignmentPreset = presetKey in alignmentPresets ? presetKey : "h-all";
-      const selectedItem = alignmentCaseItems.find((item) => item.dataset.value === activeAlignmentPreset);
-      alignmentCaseTrigger.textContent = selectedItem ? selectedItem.textContent : "HORIZONTALLY ALL";
-      alignmentCaseItems.forEach((item) => {
-        item.setAttribute("aria-selected", item.dataset.value === activeAlignmentPreset ? "true" : "false");
-      });
+      if (alignmentCaseSelect.value !== activeAlignmentPreset) {
+        alignmentCaseSelect.value = activeAlignmentPreset;
+      }
       applyAlignmentState();
     };
 
     centerBreakX.addEventListener("change", applyCenterState);
     centerBreakY.addEventListener("change", applyCenterState);
-    alignmentCaseTrigger.addEventListener("click", () => {
-      const isOpen = !alignmentCaseMenu.hasAttribute("hidden");
-      if (isOpen) {
-        alignmentCaseMenu.setAttribute("hidden", "");
-        alignmentCaseTrigger.setAttribute("aria-expanded", "false");
-      } else {
-        alignmentCaseMenu.removeAttribute("hidden");
-        alignmentCaseTrigger.setAttribute("aria-expanded", "true");
-      }
-    });
-
-    alignmentCaseItems.forEach((item) => {
-      item.addEventListener("click", () => {
-        applyAlignmentPreset(item.dataset.value || "h-all");
-        alignmentCaseMenu.setAttribute("hidden", "");
-        alignmentCaseTrigger.setAttribute("aria-expanded", "false");
-      });
+    alignmentCaseSelect.addEventListener("change", () => {
+      applyAlignmentPreset(alignmentCaseSelect.value || "h-all");
     });
 
     alignmentBreak.addEventListener("change", applyAlignmentState);
@@ -622,10 +574,9 @@
     const applyNearPreset = (presetKey, resetPosition = true) => {
       const preset = nearPresets[presetKey] || nearPresets.left10;
       activeNearPreset = presetKey in nearPresets ? presetKey : "left10";
-      nearCaseTrigger.textContent = preset.label;
-      nearCaseItems.forEach((item) => {
-        item.setAttribute("aria-selected", item.dataset.value === activeNearPreset ? "true" : "false");
-      });
+      if (nearCaseSelect.value !== activeNearPreset) {
+        nearCaseSelect.value = activeNearPreset;
+      }
       nearSpecLine.textContent = preset.rule;
       applyControlRoomSpec();
       if (resetPosition) {
@@ -677,51 +628,8 @@
     textfield.addEventListener("pointerup", endNearDrag);
     textfield.addEventListener("pointercancel", endNearDrag);
 
-    nearCaseTrigger.addEventListener("click", () => {
-      const isOpen = !nearCaseMenu.hasAttribute("hidden");
-      if (isOpen) {
-        nearCaseMenu.setAttribute("hidden", "");
-        nearCaseTrigger.setAttribute("aria-expanded", "false");
-      } else {
-        nearCaseMenu.removeAttribute("hidden");
-        nearCaseTrigger.setAttribute("aria-expanded", "true");
-      }
-    });
-
-    nearCaseItems.forEach((item) => {
-      item.addEventListener("click", () => {
-        applyNearPreset(item.dataset.value || "left10", true);
-        nearCaseMenu.setAttribute("hidden", "");
-        nearCaseTrigger.setAttribute("aria-expanded", "false");
-      });
-    });
-
-    document.addEventListener("pointerdown", (event) => {
-      if (!nearCaseMenu.contains(event.target) && event.target !== nearCaseTrigger) {
-        nearCaseMenu.setAttribute("hidden", "");
-        nearCaseTrigger.setAttribute("aria-expanded", "false");
-      }
-
-      if (!alignmentCaseMenu.contains(event.target) && event.target !== alignmentCaseTrigger) {
-        alignmentCaseMenu.setAttribute("hidden", "");
-        alignmentCaseTrigger.setAttribute("aria-expanded", "false");
-      }
-    });
-
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        nearCaseMenu.setAttribute("hidden", "");
-        nearCaseTrigger.setAttribute("aria-expanded", "false");
-        alignmentCaseMenu.setAttribute("hidden", "");
-        alignmentCaseTrigger.setAttribute("aria-expanded", "false");
-      }
-    });
-
-    chainBreak.addEventListener("change", () => {
-      chain4.classList.toggle("broken", chainBreak.checked);
-      requestAnimationFrame(() => {
-        void monitor.evaluateNow();
-      });
+    nearCaseSelect.addEventListener("change", () => {
+      applyNearPreset(nearCaseSelect.value || "left10", true);
     });
 
     applyGapState();

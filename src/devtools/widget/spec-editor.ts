@@ -242,13 +242,18 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     }
 
     // Async tree-sitter highlighter init — non-blocking, falls back to naive on failure
-    if (args.wasmUrl && editorView.setHighlighter) {
+    if (editorView.setHighlighter) {
       const ev = editorView;
-      void initHighlighter(args.wasmUrl, args.locateFile).then((highlighter) => {
-        if (highlighter && ev.setHighlighter) {
-          ev.setHighlighter(highlighter);
-        }
-      });
+      void initHighlighter(args.wasmUrl, args.locateFile)
+        .then((highlighter) => {
+          // Skip if the host document has gone away (e.g. test teardown ran first).
+          if (highlighter && ev.setHighlighter && typeof document !== "undefined") {
+            ev.setHighlighter(highlighter);
+          }
+        })
+        .catch(() => {
+          // Highlighter failures degrade silently to the naive highlighter.
+        });
     }
     const editorEl = editorView.getElement();
     editorEl.addEventListener("pointerdown", (event: PointerEvent) => event.stopPropagation());

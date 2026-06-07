@@ -21,9 +21,10 @@ import type { LayoutLintDiagnostic } from "./core/types.js";
 
 export interface CreateLayoutLintOptions {
   specText: string;
-  wasmUrl: string;
+  wasmUrl?: string;
   resolve?: RunLayoutLintOptions["resolve"];
   locateFile?: RunLayoutLintOptions["locateFile"];
+  dom?: RunLayoutLintOptions["dom"];
 }
 
 export interface LayoutLint {
@@ -38,7 +39,6 @@ export function createLayoutLint(options: CreateLayoutLintOptions): LayoutLint {
   if (!options || typeof options !== "object") {
     throw new TypeError("createLayoutLint requires an options object");
   }
-  if (!options.wasmUrl) throw new Error("wasmUrl is required");
 
   let specText = options.specText ?? "";
 
@@ -55,6 +55,7 @@ export function createLayoutLint(options: CreateLayoutLintOptions): LayoutLint {
         wasmUrl: options.wasmUrl,
         resolve: options.resolve,
         locateFile: options.locateFile,
+        dom: options.dom,
       });
     },
     formatDiagnostics(diagnostics, formatOptions) {

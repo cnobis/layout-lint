@@ -2,183 +2,185 @@
 
 <img width="1966" height="252" alt="logo" src="https://github.com/user-attachments/assets/cc27bec9-9574-49da-8880-8761a77bdce7" />
 
-A DSL for testing layout constraints in the browser. Write rules like `nav below header 20px` to verify spatial relationships between elements.
+A DSL for testing layout constraints in the browser. Write rules like `nav below header 20px` to verify spatial relationships between elements. A floating widget shows pass/fail in real time.
 
-## Installation
+Full language reference: [docs/LANGUAGE.md](docs/LANGUAGE.md).
+
+<!-- TODO: drop a screenshot/GIF of the widget against the jazz-club demo here.
+     Recommended size: ~1200x700, PNG or animated GIF. -->
+
+## Which entry should I use?
+
+| Goal | Entry | Setup |
+| --- | --- | --- |
+| Drop into static HTML | `layout-lint/auto` or `layout-lint/web-component` | One `<script type="module">` |
+| Add to a Vite / Next.js / Astro app | `layout-lint/devtools` | `import` + dev-mode guard |
+| Run in CI / Node | `layout-lint` | `import { createLayoutLint }` |
+| Custom UI on top of the runtime | `layout-lint/devtools` | `createLayoutLintMonitor` + your own UI |
+
+## Install
 
 ```bash
 npm install layout-lint
 ```
 
-## Usage
-
-```typescript
-import { createLayoutLint } from 'layout-lint';
-
-const lint = createLayoutLint({
-  specText: `
-    nav below header 20px
-    sidebar left-of content
-  `,
-  wasmUrl: './layout_lint.wasm',
-});
-
-const { results, diagnostics } = await lint.run();
-
-if (diagnostics?.length) {
-  console.error(lint.formatDiagnostics(diagnostics));
-  console.error(lint.explain(diagnostics[0].code));
-}
-```
-
-The factory wraps three building blocks:
-
-- `run()` parses the spec, evaluates rules against the live DOM, and returns parse plus semantic diagnostics.
-- `formatDiagnostics(list, { color, includeExplain })` renders each entry as a Rust-style frame with source caret, primary label, and hint.
-- `explain(code)` returns the long-form explanation for a diagnostic code from the static catalogue.
-
-For lower-level access the original one-shot is still exported:
-
-```typescript
-import { runLayoutLint } from 'layout-lint';
-
-const { rules, results, diagnostics } = await runLayoutLint({
-  specText,
-  wasmUrl: './layout_lint.wasm',
-});
-```
-
-Each diagnostic carries:
-
-- `code`: stable identifier (for example `LL-PARSE-SYNTAX`, `LL-RULE-MALFORMED`)
-- `severity`: `error` or `warning`
-- `message`: short factual summary
-- `range`: source indices plus line/column positions
-- `snippet` (optional): source fragment near the issue
-- `primaryLabel` (optional): one-word role for the highlighted span
-- `secondarySpans` (optional): related ranges painted alongside the primary span
-- `hint` (optional): single-line didactic nudge
-
-## Integration Recipes
-
-### 1. Vanilla script tag
-
-Drop layout-lint into a static page via a CDN. Useful for prototypes and small demos.
+Or load directly from a CDN — no install:
 
 ```html
-<!doctype html>
-<script type="module">
-  import { createLayoutLint } from 'https://esm.sh/layout-lint';
-
-  const lint = createLayoutLint({
-    specText: 'nav above main 16px',
-    wasmUrl: 'https://esm.sh/layout-lint/layout_lint.wasm',
-  });
-
-  const { diagnostics, results } = await lint.run();
-  document.getElementById('out').textContent =
-    diagnostics.length
-      ? lint.formatDiagnostics(diagnostics)
-      : `${results.filter((r) => r.pass).length} of ${results.length} rules pass`;
-</script>
-<pre id="out"></pre>
+<script type="module" src="https://esm.sh/layout-lint/auto"></script>
 ```
 
-### 2. Vite app
+## Drop into static HTML
 
-The `exports` map ships the wasm binary as a first-class entry. Vite resolves it with the `?url` suffix so no manual copy step is needed.
+### `layout-lint/auto` — one script tag
+
+```html
+<script type="layout-lint">
+  header above nav 0px
+  nav above main 24px
+</script>
+<script type="module" src="https://esm.sh/layout-lint/auto"></script>
+```
+
+On `DOMContentLoaded` the module finds every `<script type="layout-lint">` block, parses the concatenated text as the spec, evaluates it against the live DOM, and mounts the floating widget. The controller is at `window.layoutLintAuto = { monitor, widget, destroy() }`. Add `data-no-widget` to the spec script for reporter-only use.
+
+### `layout-lint/web-component` — `<layout-lint>` element
+
+```html
+<layout-lint>
+  header above nav 0px
+  nav above main 24px
+</layout-lint>
+<script type="module" src="https://esm.sh/layout-lint/web-component"></script>
+```
+
+The element creates a monitor on `connectedCallback` and tears it down on `disconnectedCallback`. The spec can also come from a `spec` attribute, and changing the attribute swaps the spec live. Add `no-widget` to suppress the widget, `visible` to keep the element in flow.
+
+JSX / Vue templates: the package augments `JSX.IntrinsicElements` and `HTMLElementTagNameMap` so `<layout-lint spec="...">` type-checks in React, Preact, Solid, and Vue 3.
+
+## Add to a bundler-based app
+
+The widget mounts on `document.body` inside a Shadow DOM root, so host page styles can't deform it. Guard the import so it doesn't ship to production.
+
+**Vite:**
 
 ```typescript
-import { createLayoutLint } from 'layout-lint';
-import wasmUrl from 'layout-lint/wasm/layout-lint?url';
-
-const lint = createLayoutLint({
-  specText: import.meta.env.VITE_LAYOUT_SPEC,
-  wasmUrl,
-});
-
-const { diagnostics } = await lint.run();
-if (diagnostics.length) {
-  console.error(lint.formatDiagnostics(diagnostics, { color: true }));
+if (import.meta.env.DEV) {
+  const { createLayoutLintMonitor, createLayoutLintWidget } = await import('layout-lint/devtools');
+  const monitor = createLayoutLintMonitor({ specText });
+  createLayoutLintWidget(monitor);
 }
 ```
 
-For the diagnostic catalogue or the formatter in isolation:
+**Next.js:**
+
+```typescript
+if (process.env.NODE_ENV !== 'production') {
+  const { createLayoutLintMonitor, createLayoutLintWidget } = await import('layout-lint/devtools');
+  const monitor = createLayoutLintMonitor({ specText });
+  createLayoutLintWidget(monitor);
+}
+```
+
+**Astro:** same as Vite; wrap in `if (import.meta.env.DEV)`.
+
+Widget options:
+
+| Option | Default | Effect |
+| --- | --- | --- |
+| `tabsEnabled` | `true` | Category tabs (`All`, `Failing`, `Passing`) plus pagination |
+| `constraintsPerPage` | `10` | Max constraints per page |
+| `widthPx` / `heightPx` | `340` / `360` | Initial expanded size |
+| `initialPosition` | `{ x: 16, y: 16 }` | Top-left offset of the widget |
+| `persistSettings` | `true` | Stores widget state in `localStorage` |
+| `settingsStorageKey` | `layout-lint:widget-settings` | Custom localStorage key |
+| `statusTransitionDelayEnabled` | `true` | Short re-evaluate animation |
+
+The `spec` button in the widget opens an inline editor with syntax highlighting and live diagnostics. Apply with `Cmd/Ctrl+Enter`.
+
+## Run in CI / Node
+
+```typescript
+import { createLayoutLint } from 'layout-lint';
+
+const lint = createLayoutLint({ specText });
+const { results, diagnostics } = await lint.run();
+
+if (diagnostics.length) console.error(lint.formatDiagnostics(diagnostics));
+if (results.some((r) => !r.pass)) process.exit(1);
+```
+
+No `wasmUrl`, no `locateFile`. The grammar and the tree-sitter runtime are base64-inlined into the bundle.
+
+Spec syntax is documented in [docs/LANGUAGE.md](docs/LANGUAGE.md).
+
+`createLayoutLint` returns:
+
+- `run()` — parses, evaluates against `document`, returns rules, results, diagnostics.
+- `formatDiagnostics(list, { color, includeExplain })` — Rust-style frames with source caret.
+- `explain(code)` — long-form explanation for a diagnostic code.
+- `getSpecText()` / `setSpecText(text)` — manage the spec on the controller.
+
+For synthetic DOM (jsdom, happy-dom), pass `dom`:
+
+```typescript
+import { JSDOM } from 'jsdom'; // npm install jsdom
+import { createLayoutLint } from 'layout-lint';
+
+const { window } = new JSDOM(fixtureHtml);
+const lint = createLayoutLint({ specText, dom: window.document });
+const { results, diagnostics } = await lint.run();
+```
+
+jsdom does not run a layout engine — `getBoundingClientRect()` returns zeros, so spatial assertions are limited. Use a real-browser harness (Playwright, Cypress) for full spatial verification.
+
+## Diagnostics
+
+Every diagnostic carries `code`, `severity` (`error` | `warning`), `message`, `range` (indices + line/column), and optional `snippet`, `primaryLabel`, `secondarySpans`, `hint`.
+
+The catalogue and formatter are exported standalone:
 
 ```typescript
 import { explainCode } from 'layout-lint/diagnostic-codes';
 import { formatDiagnostic } from 'layout-lint/diagnostics';
 ```
 
-### 3. Node smoke test with jsdom
+## Demos
 
-Run layout-lint headlessly in CI to assert that a static page satisfies its spec.
+| Demo | Mode | What it shows |
+| --- | --- | --- |
+| [demo/tutorial](demo/tutorial/) | programmatic | 8-step guided tour of the DSL. The broken layout snaps into place as you apply each rule. **Start here.** |
+| [demo/gallery](demo/gallery/) | drop-in | Spatial composition: `inside`, `partially inside`, percent-of widths, wildcards, groups. Drag the badge to break rules live. |
+| [demo/jazz-club](demo/jazz-club/) | drop-in | Text and CSS assertions: `text starts/ends/matches`, `css ... contains`, `count visible`. Toggle case, font, and mode to perturb the rules. |
+| [demo/control-room](demo/control-room/) | programmatic | Lab for `equal-gap`, `centered`, `aligned`, and `near`. Built on the programmatic monitor, swaps the spec live on every preset change. |
+
+Run them locally:
+
+```bash
+npm run serve
+# open http://127.0.0.1:8080/demo/
+```
+
+## Advanced: external WASM
+
+The inlined WASM adds about 230 KiB to the bundle. To load it over the network instead, pass `wasmUrl` and `locateFile`:
 
 ```typescript
-import { readFileSync } from 'node:fs';
-import { JSDOM } from 'jsdom';
-import { createLayoutLint } from 'layout-lint';
-
-const dom = new JSDOM(readFileSync('./fixture.html', 'utf8'));
-globalThis.document = dom.window.document;
-globalThis.HTMLElement = dom.window.HTMLElement;
-
 const lint = createLayoutLint({
-  specText: readFileSync('./layout.spec', 'utf8'),
-  wasmUrl: new URL(
-    './node_modules/layout-lint/layout_lint.wasm',
-    import.meta.url,
-  ).href,
+  specText,
+  wasmUrl: '/assets/layout_lint.wasm',
+  locateFile: () => '/assets/tree-sitter.wasm',
 });
-
-const { diagnostics, results } = await lint.run();
-if (diagnostics.length) {
-  console.error(lint.formatDiagnostics(diagnostics));
-  process.exit(1);
-}
-const failing = results.filter((r) => !r.pass);
-if (failing.length) process.exit(1);
 ```
 
-Note: jsdom does not run a real layout engine. It returns zeros for `getBoundingClientRect`, which is fine for parse and semantic checks but limits spatial assertions. For true layout verification pair the spec with a Playwright or browser-based harness.
-
-## Devtools Widget
+The grammar ships as a first-class asset export:
 
 ```typescript
-import {
-  createLayoutLintMonitor,
-  createLayoutLintWidget,
-  createConsoleReporter,
-} from 'layout-lint/devtools';
-
-const monitor = createLayoutLintMonitor({
-  specText,
-  wasmUrl: './layout_lint.wasm',
-  reporters: [createConsoleReporter()],
-});
-
-createLayoutLintWidget(monitor, {
-  initialPosition: { x: 16, y: 16 },
-  tabsEnabled: true,
-  constraintsPerPage: 10,
-  persistSettings: true,
-});
+import wasmUrl from 'layout-lint/wasm/layout-lint?url';
+const lint = createLayoutLint({ specText, wasmUrl });
 ```
 
-Widget options:
-
-- `tabsEnabled` (default `true`): enables category tabs (`All`, `Failing`, `Passing`) plus page tabs.
-- `constraintsPerPage` (default `10`): max visible constraints per page when tabs are enabled.
-- `statusTransitionDelayEnabled` (default `true`): enables/disables the short status transition delay for reevaluate/spec-apply actions.
-- `widthPx` (default `340`): initial expanded widget width in pixels.
-- `heightPx` (default `360`): initial expanded widget height in pixels.
-- `persistSettings` (default `true`): stores widget settings in localStorage.
-- `settingsStorageKey` (default `layout-lint:widget-settings`): custom localStorage key.
-
-In the widget, use the `settings` button to open the settings panel and configure tabs behavior live.
-Use `Reset Size` in settings to restore default expanded width/height without resetting the rest of your widget preferences.
-Use the `spec` button to edit the layout DSL directly in the widget, then apply changes with the `Apply` button or `Cmd/Ctrl+Enter`.
-When applying an invalid spec, the editor stays open and displays parse diagnostics with line/column references.
+The tree-sitter runtime WASM lives in `node_modules/web-tree-sitter/tree-sitter.wasm`.
 
 ## License
 

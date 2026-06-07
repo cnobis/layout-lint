@@ -13,27 +13,119 @@
       <img src="./images/logo.png" alt="layout-lint" />
     </div>
     <h1>Playground</h1>
-    <p>Welcome to the layout-lint playground! Select a demo below:</p>
+    <p>Five fixtures. Start with the tutorial — it samples every rule family in eight steps — then each drop-in owns one family in depth, and the composite stitches them into one real screen.</p>
     <div class="grid">
+      <a class="card" href="./tutorial/index.html">
+        <div class="name">Tutorial</div>
+        <div>Guided sampler. The broken layout snaps into place as you apply each of 8 rules. Start here.</div>
+        <div class="covers">
+          <span class="cat">Spatial</span><span class="cat">Alignment</span><span class="cat">Size</span><span class="cat">Text &amp; CSS</span><span class="cat">Count</span><span class="cat">Meta</span>
+        </div>
+      </a>
       <a class="card" href="./gallery/index.html">
         <div class="name">Gallery</div>
-        <div>Spatial composition and inside/partially-inside checks in an art-direction layout.</div>
-      </a>
-      <a class="card" href="./control-room/index.html">
-        <div class="name">Control Room</div>
-        <div>Interactive relation lab for equal-gap, near, centering, and Galen-style alignment syntax.</div>
+        <div>Space &amp; size. <code>inside</code>, <code>partially inside</code>, directional gaps and ranges, percent-of widths, wildcards and groups. Drag the badge to break rules live.</div>
+        <div class="covers">
+          <span class="cat">Spatial</span><span class="cat">Size</span><span class="cat">Meta</span>
+        </div>
       </a>
       <a class="card" href="./jazz-club/index.html">
         <div class="name">Jazz Club</div>
-        <div>Text/CSS-focused fixture stage with dynamic copy and style toggles for future advanced specs.</div>
+        <div>Content &amp; count. <code>text starts/ends/matches</code>, <code>css … contains</code>, <code>visible</code> / <code>not visible</code> / <code>absent</code>, <code>count visible</code>. Toggle case, font, and the room's state to perturb rules.</div>
+        <div class="covers">
+          <span class="cat">Text &amp; CSS</span><span class="cat">Count</span><span class="cat">Visibility</span><span class="cat">Meta</span>
+        </div>
       </a>
-      <a class="card" href="./dashboard/index.html">
-        <div class="name">???</div>
-        <div>Coming soon...</div>
+      <a class="card" href="./control-room/index.html">
+        <div class="name">Control Room</div>
+        <div>Alignment &amp; proximity. <code>aligned</code>, <code>centered</code>, <code>equal-gap</code>, <code>near</code>, driven by a programmatic monitor with live <code>setSpecText</code>.</div>
+        <div class="covers">
+          <span class="cat">Alignment</span><span class="cat">Spatial</span>
+        </div>
+      </a>
+      <a class="card" href="./composite/index.html">
+        <div class="name">Composite <span class="badge-new">app</span></div>
+        <div>A realistic screen — top bar, nav, content grid, detail panel, modal — validated by one spec that spans every component.</div>
+        <div class="covers">
+          <span class="cat">Spatial</span><span class="cat">Alignment</span><span class="cat">Visibility</span><span class="cat">Count</span><span class="cat">Meta</span>
+        </div>
       </a>
     </div>
-    <h1>Tutorial</h1>
-    <p>How to use layout-lint: ...</p>
+
+    <section class="matrix" aria-label="Rule coverage matrix">
+      <h2>Coverage</h2>
+      <p class="matrix-sub">Which fixture exercises which rule family. <span class="dot dot-primary"></span> owns it · <span class="dot dot-partial"></span> touches it.</p>
+      <div class="matrix-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col" class="row-head">Fixture</th>
+              <th scope="col">Spatial</th>
+              <th scope="col">Alignment</th>
+              <th scope="col">Size</th>
+              <th scope="col">Visibility</th>
+              <th scope="col">Text &amp; CSS</th>
+              <th scope="col">Count</th>
+              <th scope="col">Meta</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row" class="row-head">Tutorial</th>
+              <td><span class="dot dot-primary" title="owns"></span></td>
+              <td><span class="dot dot-primary"></span></td>
+              <td><span class="dot dot-primary"></span></td>
+              <td><span class="dot dot-partial"></span></td>
+              <td><span class="dot dot-primary"></span></td>
+              <td><span class="dot dot-primary"></span></td>
+              <td><span class="dot dot-primary"></span></td>
+            </tr>
+            <tr>
+              <th scope="row" class="row-head">Gallery</th>
+              <td><span class="dot dot-primary"></span></td>
+              <td><span class="dot dot-partial"></span></td>
+              <td><span class="dot dot-primary"></span></td>
+              <td><span class="dot dot-partial"></span></td>
+              <td></td>
+              <td></td>
+              <td><span class="dot dot-primary"></span></td>
+            </tr>
+            <tr>
+              <th scope="row" class="row-head">Jazz Club</th>
+              <td><span class="dot dot-partial"></span></td>
+              <td><span class="dot dot-partial"></span></td>
+              <td></td>
+              <td><span class="dot dot-primary"></span></td>
+              <td><span class="dot dot-primary"></span></td>
+              <td><span class="dot dot-primary"></span></td>
+              <td><span class="dot dot-primary"></span></td>
+            </tr>
+            <tr>
+              <th scope="row" class="row-head">Control Room</th>
+              <td><span class="dot dot-primary"></span></td>
+              <td><span class="dot dot-primary"></span></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <th scope="row" class="row-head">Composite</th>
+              <td><span class="dot dot-primary"></span></td>
+              <td><span class="dot dot-primary"></span></td>
+              <td><span class="dot dot-partial"></span></td>
+              <td><span class="dot dot-primary"></span></td>
+              <td><span class="dot dot-partial"></span></td>
+              <td><span class="dot dot-primary"></span></td>
+              <td><span class="dot dot-primary"></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="footnote">New to the DSL? Open the widget's <strong>Spec</strong> tab. Every fixture ships its spec inline and you can edit it live.</p>
   </main>
 </body>
 </html>

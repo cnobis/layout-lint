@@ -70,76 +70,59 @@
     © 2025 Galerie Nocturne — Proudly displaying exceptional contemporary art
   </footer>
 
-  <pre id="spec" hidden>
-# element definitions — map names to CSS selectors
-define card-* as ".artwork";
-define badge as "#featured-badge";
-define searchbox as "#search-box";
+  <!--
+    Drop-in usage: the auto entry finds every <script type="layout-lint">
+    block, creates a monitor against the live DOM, and mounts the widget.
+    The fixture script below only handles the draggable badge; layout-lint
+    re-evaluates automatically because the badge's style mutation is
+    picked up by the default MutationObserver.
+  -->
+  <script type="layout-lint">
+    # element definitions: map names to CSS selectors
+    define card-* as ".artwork";
+    define badge as "#featured-badge";
+    define searchbox as "#search-box";
 
-# group: apply the same rule to multiple elements at once
-group layout as header, nav, gallery, footer;
+    # group: apply the same rule to multiple elements at once
+    group layout as header, nav, gallery, footer;
 
-header above nav 0px;
-gallery below nav 5px;
-footer below gallery 50px;
+    header above nav 0px;
+    gallery below nav 5px;
+    footer below gallery 50px;
 
-# use defined names in rules
-badge inside gallery;
-badge not inside header;
-badge partially inside gallery;
-badge width 180px;
-badge width < 181px;
-badge height > 60px;
-badge height < 220px;
+    # use defined names in rules
+    badge inside gallery;
+    badge not inside header;
+    badge partially inside gallery;
+    badge width 180px;
+    badge width < 181px;
+    badge height > 60px;
+    badge height < 220px;
 
-# wildcard definitions: card-1, card-2, card-3 resolved via querySelectorAll
-card-1 inside gallery;
-card-2 inside gallery;
-card-3 inside gallery;
+    # wildcard definitions: card-1, card-2, card-3 resolved via querySelectorAll
+    card-1 inside gallery;
+    card-2 inside gallery;
+    card-3 inside gallery;
 
-# group reference: expands to one rule per member
-@layout visible;
+    # group reference: expands to one rule per member
+    @layout visible;
 
-artwork-1-image width 100% of artwork-1/width;
-artwork-2-image width 100% of artwork-2/width;
-artwork-1-info width 95 to 100% of artwork-1/width;
-artwork-1-image height < 100% of artwork-1/height;
-artwork-2 right-of artwork-1 0px;
-artwork-2 below artwork-1 0px;
-artwork-3 below artwork-2 0px;
+    artwork-1-image width 100% of artwork-1/width;
+    artwork-2-image width 100% of artwork-2/width;
+    artwork-1-info width 95 to 100% of artwork-1/width;
+    artwork-1-image height < 100% of artwork-1/height;
 
-searchbox inside nav;
-  </pre>
+    # directional distance: a bare value is a minimum, a range bounds both sides
+    artwork-2 right-of artwork-1 40 to 60px;
+    artwork-3 below artwork-1 0px;
+    artwork-3 below artwork-2 0px;
+
+    searchbox inside nav;
+  </script>
+  <script type="module" src="../../dist/auto.bundle.js"></script>
 
   <script type="module">
-    import {
-      createLayoutLintMonitor,
-      createLayoutLintWidget,
-      createConsoleReporter
-    } from "../../dist/devtools/index.js";
-
-    const locateFile = () => "../tree-sitter.wasm";
-    const specText = document.getElementById("spec").textContent.trim();
-
-    const monitor = createLayoutLintMonitor({
-      specText,
-      wasmUrl: "../../layout_lint.wasm",
-      locateFile,
-      reporters: [createConsoleReporter()],
-      observeResize: true,
-      observeMutations: false,
-      debounceMs: 100
-    });
-
-    createLayoutLintWidget(monitor, {
-      initialPosition: { x: window.innerWidth - 360, y: window.innerHeight - 400 },
-      tabsEnabled: true,
-      constraintsPerPage: 10,
-      persistSettings: true,
-      wasmUrl: "../../layout_lint.wasm",
-      locateFile
-    });
-
+    // Fixture-only: lets you drag the Editor's Pick badge to break rules live.
     const badge = document.getElementById("featured-badge");
     let isDragging = false;
     let offsetX = 0;
@@ -158,15 +141,12 @@ searchbox inside nav;
       event.preventDefault();
       badge.style.left = `${event.clientX - offsetX}px`;
       badge.style.top = `${event.clientY - offsetY}px`;
-      monitor.evaluateNow();
     });
 
     document.addEventListener("pointerup", () => {
       isDragging = false;
       badge.classList.remove("dragging");
     });
-
-    console.log("layout-lint devtools initialized with live monitoring");
   </script>
 
 </body>

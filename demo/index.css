@@ -9,3 +9,28 @@ a.card { display: block; text-decoration: none; color: inherit; border: 1px soli
 a.card:hover { border-color: #7a81ff; background: #1f2937; }
 .name { font-weight: 700; margin-bottom: 5px; }
 .tag { display: inline-block; margin-top: 6px; padding: 2px 6px; font-size: 11px; border-radius: 999px; background: #2b2f66; color: #dbe0ff; border: 1px solid #7a81ff; }
+a.card code { font: 11.5px/1 "SF Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace; padding: 1px 5px; border-radius: 4px; background: #1f2547; color: #b9c0ff; }
+
+.name .badge-new { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 1px 6px; margin-left: 4px; border-radius: 999px; background: #2b2f66; color: #b9c0ff; border: 1px solid #7a81ff; vertical-align: middle; }
+
+.covers { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 9px; }
+.covers .cat { font-size: 10px; font-weight: 600; letter-spacing: 0.02em; padding: 2px 7px; border-radius: 999px; background: #161c3b; color: #aab2dc; border: 1px solid #2a3158; }
+
+/* ---- Coverage matrix ---- */
+.matrix { margin-top: 28px; border: 1px solid #2a3158; border-radius: 12px; background: #0e1430; padding: 14px 16px 16px; }
+.matrix h2 { margin: 0 0 2px; font-size: 14px; color: #e5e7eb; }
+.matrix-sub { font-size: 12px; color: #8b93c4; }
+.matrix-sub .dot { margin: 0 2px 0 6px; }
+.matrix-scroll { overflow-x: auto; margin-top: 10px; }
+.matrix table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.matrix th, .matrix td { padding: 7px 6px; text-align: center; border-bottom: 1px solid #1e2444; }
+.matrix thead th { color: #aab2dc; font-weight: 600; font-size: 11px; letter-spacing: 0.02em; white-space: nowrap; }
+.matrix .row-head { text-align: left; color: #e5e7eb; font-weight: 600; white-space: nowrap; }
+.matrix tbody tr:last-child td, .matrix tbody tr:last-child th { border-bottom: none; }
+.matrix tbody tr:hover td, .matrix tbody tr:hover th { background: #131a38; }
+
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 999px; }
+.dot-primary { background: #45d18c; box-shadow: 0 0 0 2px rgba(69, 209, 140, 0.18); }
+.dot-partial { background: transparent; border: 1.5px solid #5b6492; }
+
+.footnote { margin-top: 18px; font-size: 12px; color: #7a86b4; }

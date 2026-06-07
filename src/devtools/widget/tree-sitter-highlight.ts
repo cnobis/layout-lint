@@ -1,5 +1,5 @@
-// @ts-expect-error no types for this local js
-import type { Parser, Language, Tree, Query } from "../../../demo/web-tree-sitter.js";
+import type { Parser, Language, Tree, Query } from "web-tree-sitter";
+import { Query as QueryCtor } from "web-tree-sitter";
 import { getParser, getLanguage } from "../../core/parser.js";
 import { HIGHLIGHTS_SCM } from "./highlight-query.js";
 
@@ -33,7 +33,7 @@ export interface Highlighter {
  * Returns null if WASM loading fails so the caller can fall back to the naive highlighter.
  */
 export async function initHighlighter(
-  wasmUrl: string,
+  wasmUrl?: string,
   locateFile?: (path: string) => string,
 ): Promise<Highlighter | null> {
   try {
@@ -42,12 +42,12 @@ export async function initHighlighter(
       getLanguage(wasmUrl, locateFile),
     ]);
 
-    const query: Query = language.query(HIGHLIGHTS_SCM);
+    const query: Query = new QueryCtor(language, HIGHLIGHTS_SCM);
     let previousTree: Tree | null = null;
     let previousText = "";
 
     const tokenize = (text: string): HighlightToken[] => {
-      let tree: Tree;
+      let tree: Tree | null;
 
       if (previousTree && previousText !== text) {
         // Compute the minimal edit region for incremental parsing.
@@ -67,6 +67,8 @@ export async function initHighlighter(
       } else {
         tree = parser.parse(text);
       }
+
+      if (!tree) return [{ text }];
 
       previousTree = tree;
       previousText = text;

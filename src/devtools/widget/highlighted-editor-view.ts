@@ -1,8 +1,8 @@
 import type { EditorView, DiagnosticRange } from "./editor-view.js";
 import type { Highlighter } from "./tree-sitter-highlight.js";
 
-const EDITOR_STYLE_ID = "ll-highlighted-editor-style";
-const EDITOR_CSS = `
+export const EDITOR_STYLE_ID = "ll-highlighted-editor-style";
+export const EDITOR_CSS = `
 .ll-editor-wrapper {
   position: relative;
   border-radius: 8px;

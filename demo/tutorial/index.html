@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutorial — layout-lint</title>
+  <link rel="stylesheet" href="../shared.css" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="importmap">
+    { "imports": { "web-tree-sitter": "/node_modules/web-tree-sitter/tree-sitter.js" } }
+  </script>
+</head>
+<body>
+  <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT DEMO</a>
+
+  <main>
+    <section class="stage-topbar" aria-label="Lesson">
+      <div class="lesson-progress"><div id="progress-bar"></div></div>
+      <div class="topbar-progress">
+        <div class="lesson-step" id="lesson-step-label">Step 1 of 8</div>
+        <div class="lesson-rail" id="lesson-rail" role="tablist" aria-label="Lessons">
+          <button class="step active" data-step="1" type="button">1</button>
+          <button class="step" data-step="2" type="button">2</button>
+          <button class="step" data-step="3" type="button">3</button>
+          <button class="step" data-step="4" type="button">4</button>
+          <button class="step" data-step="5" type="button">5</button>
+          <button class="step" data-step="6" type="button">6</button>
+          <button class="step" data-step="7" type="button">7</button>
+          <button class="step" data-step="8" type="button">8</button>
+        </div>
+      </div>
+      <div class="lesson-body" id="lesson-body">
+        <h2 id="lesson-title">Direction and distance</h2>
+        <p id="lesson-prose">Every rule starts with one or two element names, a relation, and an optional distance.</p>
+        <pre id="lesson-rule">card-a left-of card-b 14px;</pre>
+        <div id="lesson-actions">
+          <button id="lesson-apply" type="button">Apply step 1</button>
+          <button id="lesson-reset" type="button">Reset</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="tutorial-stage" id="stage" aria-label="Tutorial layout stage">
+      <div id="page">
+        <div id="page-header">
+          <h2 id="headline">Hi</h2>
+          <span id="badge">NEW</span>
+        </div>
+        <p id="subhead">Declarative layout checks for DOM UIs.</p>
+
+        <nav id="nav">
+          <a href="#docs">Docs</a>
+          <a href="#github">GitHub</a>
+          <a href="#about">About</a>
+        </nav>
+
+        <div id="card-row">
+          <article id="card-a" class="card">
+            <div class="card-img" id="card-a-image"></div>
+            <h3>Visual rules</h3>
+            <p>Express layout intent in plain English.</p>
+          </article>
+          <article id="card-b" class="card">
+            <div class="card-img" id="card-b-image"></div>
+            <h3>Live feedback</h3>
+            <p>The widget tracks every change.</p>
+          </article>
+          <article id="card-c" class="card">
+            <div class="card-img" id="card-c-image"></div>
+            <h3>Test-friendly</h3>
+            <p>Use it in CI with jsdom too.</p>
+          </article>
+        </div>
+
+        <footer id="footer">
+          <span>© 2026 layout-lint</span>
+          <span id="popover">Tip: this popover shouldn't be here.</span>
+        </footer>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    // The tutorial is itself a programmatic integration: we grow the spec
+    // rule-by-rule and let the widget render the live results.
+    import {
+      createLayoutLintMonitor,
+      createLayoutLintWidget
+    } from "../../dist/devtools/index.js";
+
+    const lessons = [
+      {
+        title: "Direction and distance",
+        prose: "Every rule starts with element names, a relation, and an optional distance. Read it left-to-right: subject, relation, target.",
+        rule: "card-a left-of card-b 14px;",
+      },
+      {
+        title: "Alignment",
+        prose: "Align tops, bottoms, lefts, rights, or centers. No distance, just shared edges.",
+        rule: "card-a aligned-top card-b;",
+      },
+      {
+        title: "Containment",
+        prose: "Geometry isn't only about distance. `inside` checks that one element's box sits fully within another.",
+        rule: "badge inside page;",
+      },
+      {
+        title: "Defines: name your selectors",
+        prose: "Give a CSS selector a friendly name. The wildcard pattern .card binds every match, so one rule covers them all.",
+        rule: 'define cards as ".card";\ncards inside page;',
+        highlight: ".card",
+      },
+      {
+        title: "Percentages",
+        prose: "Sizes can be absolute (`180px`) or relative to another element's dimension.",
+        rule: "card-a-image width 100% of card-a/width;",
+      },
+      {
+        title: "Counting visible elements",
+        prose: "Count matching elements, optionally filtered to visible ones only. The wildcard expands the same way `define` does.",
+        rule: "count visible card-* is >= 3;",
+      },
+      {
+        title: "Text and CSS",
+        prose: "Assert against text content and computed CSS too, not just geometry.",
+        rule: 'headline text starts "Welcome";\nheadline css font-weight is "700";',
+        apply: () => {
+          document.getElementById("headline").textContent = "Welcome to layout-lint";
+        },
+      },
+      {
+        title: "Negation",
+        prose: "Prefix any rule with `not` to invert it. That's every major rule family. Open the widget's Spec tab to keep playing.",
+        rule: "popover not inside footer;",
+      },
+    ];
+
+    const stage = document.getElementById("stage");
+    const lessonStepLabel = document.getElementById("lesson-step-label");
+    const lessonTitle = document.getElementById("lesson-title");
+    const lessonProse = document.getElementById("lesson-prose");
+    const lessonRule = document.getElementById("lesson-rule");
+    const lessonApply = document.getElementById("lesson-apply");
+    const lessonReset = document.getElementById("lesson-reset");
+    const lessonBody = document.getElementById("lesson-body");
+    const progressBar = document.getElementById("progress-bar");
+    const stepButtons = Array.from(document.querySelectorAll(".step"));
+    const headline = document.getElementById("headline");
+    const ORIGINAL_HEADLINE = headline.textContent;
+
+    let completed = 0;
+    let viewingStep = 0;
+    let started = false;
+    let specLines = [];
+    const SPEC_HEADER = "# layout-lint tutorial -- spec grows as you apply each lesson.\n";
+
+    const monitor = createLayoutLintMonitor({
+      specText: SPEC_HEADER,
+      observeMutations: true,
+      observeResize: true,
+    });
+
+    createLayoutLintWidget(monitor, {
+      title: "layout-lint",
+      initialPosition: {
+        x: Math.max(16, window.innerWidth - 360 - 24),
+        y: 90,
+      },
+    });
+
+    function pulse(selector) {
+      const targets = Array.from(document.querySelectorAll(selector));
+      targets.forEach((el) => {
+        el.classList.remove("pulsing");
+        // Force reflow so the animation restarts when re-applied.
+        void el.offsetWidth;
+        el.classList.add("pulsing");
+        setTimeout(() => el.classList.remove("pulsing"), 1200);
+      });
+    }
+
+    function renderIntro() {
+      lessonBody.classList.remove("finale");
+      lessonBody.classList.add("intro");
+      delete lessonApply.dataset.mode;
+      lessonStepLabel.textContent = "";
+      lessonTitle.textContent = "Welcome to the layout-lint tutorial!";
+      lessonProse.innerHTML = "The page below has a few layout bugs. Learn the DSL by fixing them, one rule at a time. Each step adds a rule to the spec; the widget on the right shows it failing against the broken layout, then passing once the page snaps into place.";
+      lessonRule.textContent = "";
+      lessonApply.disabled = false;
+      lessonApply.textContent = "Start tutorial";
+      stepButtons.forEach((btn) => {
+        btn.classList.remove("active");
+        btn.classList.remove("done");
+      });
+    }
+
+    function renderPanel(showStepIdx) {
+      const idx = Math.min(Math.max(showStepIdx, 0), lessons.length - 1);
+      const lesson = lessons[idx];
+
+      lessonBody.classList.remove("finale");
+      lessonBody.classList.remove("intro");
+      delete lessonApply.dataset.mode;
+
+      lessonStepLabel.textContent = `Step ${idx + 1} of ${lessons.length}`;
+      lessonTitle.textContent = lesson.title;
+      lessonProse.textContent = lesson.prose;
+      lessonRule.textContent = lesson.rule;
+      lessonRule.classList.remove("empty");
+
+      const isCurrent = idx === completed;
+      const alreadyDone = idx < completed;
+      lessonApply.disabled = !isCurrent;
+      lessonApply.textContent = alreadyDone
+        ? `✓ Applied`
+        : isCurrent
+          ? `Apply step ${idx + 1}`
+          : `Locked`;
+
+      stepButtons.forEach((btn, i) => {
+        btn.classList.toggle("done", i < completed);
+        btn.classList.toggle("active", i === idx);
+      });
+    }
+
+    function renderFinale() {
+      lessonBody.classList.add("finale");
+      lessonTitle.textContent = "Congratulations, you completed the tutorial!";
+      lessonProse.innerHTML = `Things to try in the widget on your own:
+        <ul class="finale-recap">
+          <li><strong>Hover</strong><span>Hover a constraint row to outline the elements it links on the page.</span></li>
+          <li><strong>Pin</strong><span>Pin a rule to keep it docked at the top while you scroll.</span></li>
+          <li><strong>Spec tab</strong><span>Write and edit rules live with syntax highlighting and diagnostics.</span></li>
+          <li><strong>Settings tab</strong><span>Toggle overlays and split constraints across pages.</span></li>
+        </ul>`;
+      lessonRule.textContent = "";
+      lessonApply.disabled = false;
+      lessonApply.textContent = "\u2190 Back to all demos";
+      lessonApply.dataset.mode = "exit";
+      stepButtons.forEach((btn) => {
+        btn.classList.remove("active");
+        btn.classList.add("done");
+      });
+    }
+
+    function applyCurrent() {
+      if (!started) {
+        started = true;
+        renderPanel(0);
+        return;
+      }
+      if (completed >= lessons.length) return;
+      const lesson = lessons[completed];
+
+      // 1. Add the rule first. The engine evaluates against the still-broken
+      //    layout and the widget shows the new rule in red — proof that the
+      //    spec catches the bug.
+      specLines.push(lesson.rule);
+      monitor.setSpecText(SPEC_HEADER + specLines.join("\n"));
+
+      completed += 1;
+      progressBar.style.width = `${(completed / lessons.length) * 100}%`;
+      const justCompleted = completed;
+
+      if (completed < lessons.length) {
+        viewingStep = completed;
+        renderPanel(viewingStep);
+      } else {
+        renderFinale();
+      }
+
+      // 2. Let the user read the failing rule, then trigger the CSS fix.
+      setTimeout(() => {
+        stage.dataset[`lesson${justCompleted}Done`] = "";
+        lesson.apply?.();
+        if (lesson.highlight) pulse(lesson.highlight);
+        // 3. Re-evaluate once the transform animation settles so the widget
+        //    naturally turns green.
+        setTimeout(() => { void monitor.evaluateNow(); }, 720);
+      }, 900);
+    }
+
+    function reset() {
+      completed = 0;
+      viewingStep = 0;
+      started = false;
+      specLines = [];
+      monitor.setSpecText(SPEC_HEADER);
+      progressBar.style.width = "0%";
+      headline.textContent = ORIGINAL_HEADLINE;
+      lessonBody.classList.remove("finale");
+      lessonProse.innerHTML = "";
+      delete lessonApply.dataset.mode;
+
+      // Remove every lesson*-done flag from the stage.
+      for (let i = 1; i <= lessons.length; i++) {
+        delete stage.dataset[`lesson${i}Done`];
+      }
+      renderIntro();
+    }
+
+    stepButtons.forEach((btn, idx) => {
+      btn.addEventListener("click", () => {
+        if (!started) return;
+        // You can navigate back to any step you've reached, plus the next one.
+        if (idx <= completed) {
+          viewingStep = idx;
+          renderPanel(viewingStep);
+        }
+      });
+    });
+
+    lessonApply.addEventListener("click", () => {
+      if (lessonApply.dataset.mode === "exit") {
+        window.location.href = "../index.html";
+        return;
+      }
+      applyCurrent();
+    });
+    lessonReset.addEventListener("click", reset);
+
+    renderIntro();
+  </script>
+</body>
+</html>

@@ -5,6 +5,7 @@ notes/
 *.tex
 *.bib
 THESIS_LOG.md
+library-improvements.md
 .github/instructions/
 *.bak
 # Logs

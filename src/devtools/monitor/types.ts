@@ -3,7 +3,7 @@ import type { LayoutLintReporter } from "../reporter/types.js";
 
 export interface LayoutLintMonitorOptions {
   specText: string;
-  wasmUrl: string;
+  wasmUrl?: string;
   resolve?: (id: string) => HTMLElement | null;
   locateFile?: (path: string) => string;
   reporters?: LayoutLintReporter[];

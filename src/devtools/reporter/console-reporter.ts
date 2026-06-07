@@ -3,10 +3,18 @@ import type { ConsoleReporterOptions, LayoutLintReporter } from "./types.js";
 
 export function createConsoleReporter(options: ConsoleReporterOptions = {}): LayoutLintReporter {
   const prefix = options.prefix ?? "[layout-lint]";
+  const dedupe = options.dedupe !== false;
+  let lastSignature: string | null = null;
   return (result: RunLayoutLintResult) => {
     const total = result.results.length;
     const passed = result.results.filter((r) => r.pass).length;
     const failed = total - passed;
+
+    if (dedupe) {
+      const signature = `${total}|${passed}|` + result.results.map((r) => (r.pass ? "1" : "0")).join("");
+      if (signature === lastSignature) return;
+      lastSignature = signature;
+    }
 
     console.groupCollapsed(`${prefix} ${passed}/${total} passed (${failed} failed)`);
     for (const item of result.results) {

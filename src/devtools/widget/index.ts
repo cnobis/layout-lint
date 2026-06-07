@@ -10,6 +10,7 @@ import { renderWidgetSettingsPanel } from "./settings-panel.js";
 import { createWidgetDragController } from "./drag-controller.js";
 import { createWidgetStatusController } from "./status-controller.js";
 import { createWidgetResizeController } from "./resize-controller.js";
+import { EDITOR_CSS } from "./highlighted-editor-view.js";
 import type { FooterDiagnosticsSummary } from "./footer-status.js";
 import {
   DEFAULT_WIDGET_SETTINGS,
@@ -90,7 +91,32 @@ export function createLayoutLintWidget(
 
   root.appendChild(header);
   root.appendChild(body);
-  document.body.appendChild(root);
+
+  // Shadow-DOM isolation: every consumer page has different global CSS
+  // (button { ... }, header { ... }, Tailwind preflight, etc.). To make the
+  // widget look identical regardless of host page, we mount it inside a
+  // closed-style shadow root. The host element itself carries no styles
+  // beyond positioning, so page selectors can't reach in.
+  const host = document.createElement("div");
+  host.dataset.layoutLintWidgetHost = "true";
+  host.style.all = "initial";
+  host.style.position = "fixed";
+  host.style.top = "0";
+  host.style.left = "0";
+  host.style.width = "0";
+  host.style.height = "0";
+  host.style.zIndex = "2147483647";
+  const shadow = host.attachShadow({ mode: "open" });
+  const shadowStyle = document.createElement("style");
+  shadowStyle.textContent = `
+    :host { all: initial; }
+    * { box-sizing: border-box; }
+    button { font: inherit; color: inherit; background: none; border: none; padding: 0; margin: 0; cursor: pointer; }
+    ${EDITOR_CSS}
+  `;
+  shadow.appendChild(shadowStyle);
+  document.body.appendChild(host);
+  shadow.appendChild(root);
 
   const highlightLayer = document.createElement("div");
   highlightLayer.dataset.layoutLintWidgetOverlay = "true";
@@ -98,7 +124,7 @@ export function createLayoutLintWidget(
   highlightLayer.style.inset = "0";
   highlightLayer.style.pointerEvents = "none";
   highlightLayer.style.zIndex = "2147483646";
-  document.body.appendChild(highlightLayer);
+  shadow.appendChild(highlightLayer);
 
   const overlays = createOverlayRenderer(highlightLayer);
   const state = createWidgetState({ initialSettings, defaults: DEFAULT_WIDGET_SETTINGS });
@@ -660,6 +686,7 @@ export function createLayoutLintWidget(
       clearHighlights();
       highlightLayer.remove();
       root.remove();
+      host.remove();
     },
     setVisible: (visible: boolean) => {
       root.style.display = visible ? "block" : "none";

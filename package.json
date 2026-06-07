@@ -1,6 +1,6 @@
 {
   "name": "layout-lint",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "A declarative DSL for testing CSS layout constraints in the browser",
   "repository": "https://github.com/cnobis/layout-lint",
   "license": "MIT",
@@ -29,7 +29,15 @@
     },
     "./wasm/layout-lint": "./layout_lint.wasm",
     "./layout_lint.wasm": "./layout_lint.wasm",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./auto": {
+      "types": "./dist/auto.d.ts",
+      "import": "./dist/auto.bundle.js"
+    },
+    "./web-component": {
+      "types": "./dist/web-component.d.ts",
+      "import": "./dist/web-component.bundle.js"
+    }
   },
   "keywords": [
     "layout",
@@ -50,6 +58,7 @@
     "web-tree-sitter": "^0.25.8"
   },
   "devDependencies": {
+    "esbuild": "^0.28.0",
     "http-server": "^14.1.1",
     "prebuildify": "^6.0.1",
     "tree-sitter-cli": "^0.25.8",
@@ -68,9 +77,8 @@
     "prestart": "tree-sitter build --wasm",
     "start": "tree-sitter playground",
     "test": "node --test test/*.test.js",
-    "test:browser": "node --test test/browser/*.browser.test.js",
     "build:wasm": "tree-sitter build --wasm -o layout_lint.wasm",
-    "build:ts": "tsc",
+    "build:ts": "tsc && node scripts/build-wasm-inline.mjs && node scripts/build-bundles.mjs",
     "serve": "npx http-server -c-1 . || npx serve -n ."
   },
   "type": "module"

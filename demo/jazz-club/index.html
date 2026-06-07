@@ -16,6 +16,7 @@
       <div>
         <h1 id="shop-name">Jazz Club</h1>
         <p id="shop-tagline">After-hours listening room · measured like an instrument</p>
+        <p id="house-note">Members-only afters: ask at the bar for the back room.</p>
       </div>
       <div id="status-pill">Open · Listening Session</div>
     </section>
@@ -184,67 +185,57 @@ one more record before dawn.</p>
         <button id="mode-btn" class="control-btn" type="button">Toggle mode</button>
         <button id="case-btn" class="control-btn" type="button">Toggle case</button>
         <button id="font-btn" class="control-btn" type="button">Toggle font</button>
+        <button id="room-btn" class="control-btn" type="button">Close the room</button>
       </div>
     </section>
-
-    <pre id="spec" hidden>
-lounge-main below lounge-header 0px;
-menu-panel right-of now-playing-panel 28px;
-menu-panel aligned-top now-playing-panel;
-greeting-line below welcome-line 8px;
-quote-line below greeting-line 8px;
-
-# count rules: count DOM elements via id wildcard or via a defined selector
-define menu-items as ".menu-item";
-define personnel as ".personnel-line";
-count any set-* is 5;
-count visible set-* is >= 3;
-count any chip-* is 4;
-count any menu-items is 9;
-count any personnel is 3;
-css-sample below quote-line 20px;
-chips below css-sample 12px;
-welcome-line text starts "Welcome";
-css-sample text is "Shinjuku Basement Session Log";
-css-sample css text-transform is "none";
-css-sample css text-transform starts "no";
-css-sample css text-transform ends "one";
-css-sample css text-transform contains "on";
-css-sample css text-transform matches "n.ne";
-css-sample css font-family contains "Mincho";
-welcome-line text lowercase starts "welcome";
-greeting-line text uppercase contains "VINYL SHELF";
-quote-line text singleline lowercase contains "steady bass";
-quote-line text singleline lowercase matches "quiet cups, steady bass, one more record before dawn\.";
-    </pre>
   </main>
 
+  <!--
+    Drop-in usage: the auto entry below picks up the <script type="layout-lint">
+    spec block and mounts the widget. The fixture script handles the toggle
+    buttons; layout-lint re-evaluates automatically because every toggle
+    mutates DOM text or inline styles, which the default observers catch.
+  -->
+  <script type="layout-lint">
+    lounge-main below lounge-header 0px;
+    menu-panel right-of now-playing-panel 12px;
+    menu-panel aligned-top now-playing-panel;
+    greeting-line below welcome-line 8px;
+    quote-line below greeting-line 8px;
+
+    # count rules: count DOM elements via id wildcard or via a defined selector
+    define menu-items as ".menu-item";
+    define personnel as ".personnel-line";
+    count any set-* is 5;
+    count visible set-* is >= 3;
+    count any chip-* is 4;
+    count any menu-items is 9;
+    count any personnel is 3;
+
+    # visibility: presence and absence are first-class predicates
+    set-1 visible;
+    house-note not visible;
+    closed-sign absent;
+
+    css-sample below quote-line 20px;
+    chips below css-sample 12px;
+    welcome-line text starts "Welcome";
+    css-sample text is "Shinjuku Basement Session Log";
+    css-sample css text-transform is "none";
+    css-sample css text-transform starts "no";
+    css-sample css text-transform ends "one";
+    css-sample css text-transform contains "on";
+    css-sample css text-transform matches "n.ne";
+    css-sample css font-family contains "Mincho";
+    welcome-line text lowercase starts "welcome";
+    greeting-line text uppercase contains "VINYL SHELF";
+    quote-line text singleline lowercase contains "steady bass";
+    quote-line text singleline lowercase matches "quiet cups, steady bass, one more record before dawn\.";
+  </script>
+  <script type="module" src="../../dist/auto.bundle.js"></script>
+
   <script type="module">
-    import {
-      createLayoutLintMonitor,
-      createLayoutLintWidget,
-      createConsoleReporter
-    } from "../../dist/devtools/index.js";
-
-    const locateFile = () => "../tree-sitter.wasm";
-    const specText = document.getElementById("spec").textContent.trim();
-
-    const monitor = createLayoutLintMonitor({
-      specText,
-      wasmUrl: "../../layout_lint.wasm",
-      locateFile,
-      reporters: [createConsoleReporter({ prefix: "[layout-lint jazz-club]" })],
-      observeResize: true,
-      observeMutations: true,
-      debounceMs: 100
-    });
-
-    createLayoutLintWidget(monitor, {
-      initialPosition: { x: window.innerWidth - 360, y: window.innerHeight - 400 },
-      wasmUrl: "../../layout_lint.wasm",
-      locateFile
-    });
-
+    // Fixture-only: toggles that mutate text + style so the spec rows flip.
     const body = document.body;
     const nowPlaying = document.getElementById("now-playing");
     const welcomeLine = document.getElementById("welcome-line");
@@ -255,16 +246,19 @@ quote-line text singleline lowercase matches "quiet cups, steady bass, one more 
     const modeBtn = document.getElementById("mode-btn");
     const caseBtn = document.getElementById("case-btn");
     const fontBtn = document.getElementById("font-btn");
+    const roomBtn = document.getElementById("room-btn");
+    const statusPill = document.getElementById("status-pill");
+    const setlist = document.getElementById("setlist");
 
     let modeNight = false;
     let upperCase = false;
     let altFont = false;
+    let roomClosed = false;
 
     modeBtn.addEventListener("click", () => {
       modeNight = !modeNight;
       body.classList.toggle("mode-night", modeNight);
       nowPlaying.textContent = modeNight ? "Tsuyoshi Yamamoto — Midnight Sugar" : "Ryo Fukui — Scenery";
-      void monitor.evaluateNow();
     });
 
     caseBtn.addEventListener("click", () => {
@@ -278,7 +272,6 @@ quote-line text singleline lowercase matches "quiet cups, steady bass, one more 
         greetingLine.textContent = "Please enjoy the room as if it were your own vinyl shelf.";
         quoteLine.textContent = "Quiet cups,\nsteady bass,\none more record before dawn.";
       }
-      void monitor.evaluateNow();
     });
 
     fontBtn.addEventListener("click", () => {
@@ -290,7 +283,32 @@ quote-line text singleline lowercase matches "quiet cups, steady bass, one more 
       cssSample.style.textTransform = altFont ? "uppercase" : "none";
       cssSample.style.background = altFont ? "rgba(84, 62, 39, 0.45)" : "rgba(23, 16, 9, 0.42)";
       cssSample.textContent = altFont ? "SHINJUKU BASEMENT SESSION LOG" : "Shinjuku Basement Session Log";
-      void monitor.evaluateNow();
+    });
+
+    // Closing the room demonstrates the visibility predicates:
+    //   - dimming the late sets drops `count visible set-* is >= 3`
+    //   - injecting #closed-sign breaks `closed-sign absent`
+    // layout-lint re-evaluates because both are DOM mutations the observer catches.
+    const lateSets = ["set-3", "set-4", "set-5"];
+    roomBtn.addEventListener("click", () => {
+      roomClosed = !roomClosed;
+      body.classList.toggle("room-closed", roomClosed);
+      roomBtn.textContent = roomClosed ? "Open the room" : "Close the room";
+      statusPill.textContent = roomClosed ? "Closed · Last Call" : "Open · Listening Session";
+
+      for (const id of lateSets) {
+        document.getElementById(id).style.display = roomClosed ? "none" : "";
+      }
+
+      const existingSign = document.getElementById("closed-sign");
+      if (roomClosed && !existingSign) {
+        const sign = document.createElement("div");
+        sign.id = "closed-sign";
+        sign.textContent = "Closed · After-hours cleaning in progress";
+        setlist.insertAdjacentElement("afterend", sign);
+      } else if (!roomClosed && existingSign) {
+        existingSign.remove();
+      }
     });
   </script>
 </body>

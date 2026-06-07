@@ -1,0 +1,557 @@
+:root {
+  --bg-page: #0a0f22;
+  --bg-stage: #0e1430;
+  --bg-card: #161c3b;
+  --bg-card-strong: #1c2454;
+  --bg-panel: #10162f;
+  --edge: #2a3158;
+  --edge-soft: #1e2444;
+  --ink: #e7eaf6;
+  --ink-soft: #aab2dc;
+  --ink-muted: #717ba8;
+  --accent: #7a81ff;
+  --accent-soft: rgba(122, 129, 255, 0.18);
+  --warn: #f59e0b;
+  --good: #45d18c;
+  --bad: #ef4f6b;
+  --shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.6);
+  --radius: 14px;
+}
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg-page);
+  color: var(--ink);
+  font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px 24px 80px;
+}
+
+/* ============================================================ */
+/* Topbar above the stage: lesson controls only.                 */
+/* ============================================================ */
+
+.stage-topbar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 14px 12px 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.topbar-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.lesson-step {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+  white-space: nowrap;
+  min-width: 78px;
+}
+
+/* ============================================================ */
+/* Stage: styled like a charming 90s webpage in a browser.       */
+/* ============================================================ */
+
+.tutorial-stage {
+  position: relative;
+  height: 520px;
+  background: #c0c0c0;
+  border: 3px solid;
+  border-color: #fafafa #5b5b5b #5b5b5b #fafafa; /* faux Win95 outset */
+  border-radius: 0;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 6px 6px 0 #2a2410, var(--shadow);
+}
+
+/* Faux browser title/URL bar across the top of the stage. */
+.tutorial-stage::before {
+  content: "▣  http://www.layout-lint.net/welcome.htm";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  background: linear-gradient(180deg, #2c43b8 0%, #1a226e 100%);
+  color: #dfe8ff;
+  font: 700 11.5px "Tahoma", "Geneva", "MS Sans Serif", sans-serif;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #fafafa;
+  z-index: 2;
+}
+
+/* Every descendant gets a smooth tween. */
+.tutorial-stage * {
+  transition:
+    transform 620ms cubic-bezier(.65, 0, .25, 1),
+    opacity 380ms ease,
+    width 480ms cubic-bezier(.65, 0, .25, 1),
+    color 280ms ease,
+    background 280ms ease,
+    font-weight 200ms ease;
+}
+
+#page {
+  position: absolute;
+  top: 38px;
+  left: 6px;
+  right: 6px;
+  bottom: 38px;
+  padding: 0 18px 12px;
+  background:
+    radial-gradient(circle at 18% 30%, #eef4ff 0%, transparent 46%),
+    #f3f6ff;
+  border: 2px solid #1a226e;
+  border-radius: 0;
+  display: grid;
+  grid-template-rows: auto auto auto minmax(150px, 170px) auto;
+  gap: 8px;
+}
+
+#page-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 -18px 4px;
+  padding: 6px 14px;
+  background: linear-gradient(180deg, #1a226e 0%, #2c43b8 100%);
+  border-bottom: 3px solid #9fb4ff;
+}
+
+#headline {
+  flex: 1;
+  margin: 0;
+  font-family: "Comic Sans MS", "Comic Neue", "Chalkboard SE", cursive;
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: #dfe8ff;
+  text-shadow: 2px 2px 0 #163a8c;
+}
+
+#subhead {
+  margin: 0;
+  font-family: "Georgia", "Times New Roman", serif;
+  font-style: italic;
+  color: #1b2f73;
+  font-size: 12px;
+}
+
+#badge {
+  position: absolute;
+  top: 6px;
+  right: 14px;
+  padding: 6px 14px;
+  background: #ff3399;
+  color: #fff;
+  font-family: "Tahoma", "Geneva", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  border: 2px solid #fff;
+  border-radius: 0;
+  box-shadow: 3px 3px 0 #870056;
+  text-transform: uppercase;
+  z-index: 5;
+}
+
+#nav {
+  display: flex;
+  gap: 4px;
+  padding: 4px 8px;
+  background: #1a226e;
+  border: 2px solid #9fb4ff;
+  border-radius: 0;
+  align-self: start;
+}
+
+#nav a {
+  color: #dfe8ff;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: underline;
+  padding: 0 8px;
+}
+
+#card-row {
+  display: flex;
+  gap: 14px;
+  align-self: stretch;
+}
+
+.card {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 0;
+  padding: 12px;
+  border: 3px solid #00aaff;
+  box-shadow: 4px 4px 0 #005c8a;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: 6px;
+  min-width: 0;
+}
+
+#card-b { border-color: #ff3399; box-shadow: 4px 4px 0 #870056; }
+#card-c { border-color: #33cc99; box-shadow: 4px 4px 0 #1f7a59; }
+
+.card-img {
+  height: 44px;
+  width: 30%;
+  background: repeating-linear-gradient(45deg, #00aaff 0 8px, #dce8ff 8px 16px);
+  border: 1px solid #1a226e;
+  border-radius: 0;
+}
+
+#card-b .card-img {
+  background: repeating-linear-gradient(45deg, #ff3399 0 8px, #dce8ff 8px 16px);
+}
+
+#card-c .card-img {
+  background: repeating-linear-gradient(45deg, #33cc99 0 8px, #dce8ff 8px 16px);
+}
+
+.card h3 {
+  margin: 0;
+  font-family: "Verdana", "Geneva", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #00658f;
+}
+
+#card-b h3 { color: #870056; }
+#card-c h3 { color: #1f7a59; }
+
+.card p {
+  margin: 0;
+  font-family: "Georgia", "Times New Roman", serif;
+  font-size: 11.5px;
+  color: #1a226e;
+  line-height: 1.4;
+}
+
+/* card-c reserves space from the start but is invisible until lesson 6. */
+#card-c {
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+}
+
+#footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #1a226e;
+  border: 2px solid #ffe680;
+  border-radius: 0;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 11.5px;
+  color: #ffe680;
+}
+
+#popover {
+  background: #ffe680;
+  color: #1a226e;
+  padding: 4px 10px;
+  border: 2px dashed #d6005c;
+  border-radius: 0;
+  font-family: "Comic Sans MS", "Comic Neue", cursive;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ============================================================ */
+/* Broken initial state. Each lesson fixes exactly one thing.   */
+/* ============================================================ */
+
+/* Lesson 1 (swap): cards a and b are visually swapped via translate, so
+   the transition can animate them. card-a also sits lower (lesson 2). */
+.tutorial-stage #card-a { transform: translateX(calc(100% + 14px)) translateY(26px); }
+.tutorial-stage #card-b { transform: translateX(calc(-100% - 14px)); }
+
+/* Lesson 3 (containment): badge drifts down-left into the status-bar strip below the page, tilted. */
+.tutorial-stage #badge { transform: translate(-540px, 430px) rotate(-9deg); }
+
+/* Lesson 5 (percentages): card-a's image is a stub width. */
+.tutorial-stage #card-a-image { width: 30%; }
+
+/* Lesson 6 (count): card-c is invisible (declared above). */
+
+/* Lesson 7 (text + css): headline reads "Hi" with default weight (HTML). */
+
+/* Lesson 8 (negation): popover sits inside the footer (default position). */
+
+/* === Per-lesson fixes (cumulative; each adds a data attribute). === */
+
+.tutorial-stage[data-lesson1-done] #card-a { transform: translateX(0) translateY(26px); }
+.tutorial-stage[data-lesson1-done] #card-b { transform: translateX(0); }
+.tutorial-stage[data-lesson2-done] #card-a { transform: translateX(0) translateY(0); }
+.tutorial-stage[data-lesson3-done] #badge { transform: translate(0, 0) rotate(0); }
+.tutorial-stage[data-lesson5-done] #card-a-image {
+  /* Span the full card box (account for 12px padding + 3px border each side). */
+  width: calc(100% + 30px);
+  margin-left: -15px;
+  margin-right: -15px;
+}
+.tutorial-stage[data-lesson6-done] #card-c {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+.tutorial-stage[data-lesson7-done] #headline { font-weight: 700; }
+.tutorial-stage[data-lesson8-done] #popover {
+  position: absolute;
+  top: 14px;
+  right: 110px;
+  background: #33cc99;
+  color: #fff;
+  border: 2px solid #fff;
+  box-shadow: 3px 3px 0 #1f7a59;
+}
+
+/* Lesson 4 pulse highlight (triggered in JS). */
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(122, 129, 255, 0.55), 0 0 0 1px var(--edge); }
+  60%  { box-shadow: 0 0 0 10px rgba(122, 129, 255, 0), 0 0 0 1px var(--edge); }
+  100% { box-shadow: 0 0 0 0 rgba(122, 129, 255, 0), 0 0 0 1px var(--edge); }
+}
+.tutorial-stage .pulsing {
+  animation: pulse-ring 1100ms ease-out;
+}
+
+/* ============================================================ */
+/* Lesson body (nested inside the topbar above the stage).       */
+/* ============================================================ */
+
+.lesson-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--edge-soft);
+  border-radius: 10px;
+  min-height: 204px;
+}
+
+#lesson-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+#lesson-prose {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+#lesson-rule {
+  margin: 4px 0 0;
+  padding: 12px 14px;
+  background: #050a1d;
+  border: 1px solid rgba(122, 129, 255, 0.28);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  font: 12.5px/1.5 "SF Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+  color: #cdd6ff;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+#lesson-rule.empty {
+  color: var(--ink-muted);
+  font-style: italic;
+}
+
+#lesson-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+#lesson-apply,
+#lesson-reset {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+#lesson-apply:hover:not(:disabled) {
+  background: #9097ff;
+  border-color: #9097ff;
+}
+
+#lesson-apply:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+#lesson-reset {
+  background: transparent;
+  color: var(--ink-muted);
+  border-color: var(--edge-soft);
+}
+
+#lesson-reset:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ink-soft);
+  border-color: var(--edge);
+}
+
+.lesson-rail {
+  display: flex;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.step {
+  flex: 1;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 0;
+  border-radius: 4px;
+  border: 1px solid var(--edge-soft);
+  background: transparent;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.step:hover { background: rgba(255, 255, 255, 0.04); color: var(--ink-soft); }
+.step.done { background: rgba(69, 209, 140, 0.16); color: var(--good); border-color: rgba(69, 209, 140, 0.35); }
+.step.active { background: var(--accent-soft); color: var(--ink); border-color: var(--accent); }
+.step.done.active {
+  background: rgba(69, 209, 140, 0.28);
+  color: var(--good);
+  border-color: var(--good);
+}
+
+.lesson-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--edge-soft);
+  overflow: hidden;
+}
+
+#progress-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--good));
+  transition: width 400ms cubic-bezier(.65, 0, .25, 1);
+}
+
+/* ============================================================ */
+/* Finale message slides in over the lesson body when complete. */
+/* ============================================================ */
+
+.lesson-body.finale #lesson-rule,
+.lesson-body.intro #lesson-rule {
+  display: none;
+}
+
+.lesson-body.finale #lesson-title {
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.lesson-body.finale #lesson-prose {
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.finale-recap {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px 12px;
+  margin: 3px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.finale-recap li {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.finale-recap strong {
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+.finale-recap span {
+  color: var(--ink-muted);
+  font-size: 10.5px;
+  line-height: 1.32;
+}
+
+/* Exit button stays consistent with the other demos. */
+#demo-exit {
+  position: fixed;
+  top: 12px;
+  right: 14px;
+  z-index: 20;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(122, 129, 255, 0.58);
+  background: rgba(122, 129, 255, 0.24);
+  color: #eceeff;
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-weight: 700;
+  text-decoration: none;
+}
+#demo-exit:hover { background: rgba(122, 129, 255, 0.36); }
+
+.playground-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+.playground-link:hover { text-decoration: underline; }

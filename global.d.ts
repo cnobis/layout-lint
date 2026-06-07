@@ -1,11 +1,2 @@
-declare module "../demo/web-tree-sitter.js" {
-  export class Parser {
-    static init(opts?: { locateFile?: (path: string) => string }): Promise<void>;
-    setLanguage(lang: Language): void;
-    parse(input: string): any;
-  }
-
-  export class Language {
-    static load(path: string): Promise<Language>;
-  }
-}
+// Type augmentation file. The web-tree-sitter types are imported directly
+// from the npm package; no local module declaration is needed.

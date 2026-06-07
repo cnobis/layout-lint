@@ -156,8 +156,8 @@ body {
 
 #featured-badge {
   position: fixed;
-  top: 320px;
-  right: 64px;
+  top: 280px;
+  left: 50%;
   width: 180px;
   background: #1a1a1a;
   border: 1px solid #666;
