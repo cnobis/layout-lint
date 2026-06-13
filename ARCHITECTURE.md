@@ -197,7 +197,8 @@ An optional professional developer experience layer is available via a separate 
 - **Features**:
   - `ResizeObserver` for viewport/element size changes
   - `MutationObserver` for DOM structure changes
-  - Debounce queue to prevent excessive evaluations (80ms default)
+  - Parsed spec is cached and only re-parsed when the spec text changes; DOM-change evaluations re-measure without re-parsing
+  - rAF-coalesced throttle that bounds evaluation frequency under animations/high-frequency mutations (`debounceMs` sets the minimum interval, 80ms default)
   - Subscriber pattern for real-time result updates
 - **Usage**:
   ```typescript

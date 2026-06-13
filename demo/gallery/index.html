@@ -1,8 +1,9 @@
 <!doctype html>
-<html>
+<html lang="fr" translate="no">
 <head>
   <meta charset="utf-8" />
-  <title>Galerie Nocturne — Contemporary Art</title>
+  <meta name="google" content="notranslate" />
+  <title>Galerie Blanche — Éditions Contemporaines</title>
   <link rel="stylesheet" href="../shared.css" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
@@ -11,71 +12,72 @@
   <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT DEMO</a>
 
   <header id="header">
-    <h1>Galerie Nocturne</h1>
-    <p>Contemporary Art Encounters</p>
+    <p id="gallery-kicker">Rive Gauche · Paris</p>
+    <h1 id="gallery-name">Galerie Blanche</h1>
+    <p id="gallery-tagline">Éditions Contemporaines</p>
   </header>
 
   <nav id="nav">
-    <a href="#curated">Curated</a>
-    <a href="#artists">Artists</a>
-    <a href="#about">About</a>
-    <input id="search-box" type="text" placeholder="Search artworks...">
+    <a href="./index.html">Room I</a>
+    <a href="./room.html">Room II</a>
+    <a href="./work.html">On View</a>
+    <input id="search-box" type="text" placeholder="Search the collection">
   </nav>
 
   <section id="gallery">
-    <article id="artwork-1" class="artwork">
+    <a id="artwork-1" class="artwork" href="./work.html?work=coupe-severe">
       <div id="artwork-1-image" class="artwork-image">
-        <img src="../images/gallery/barbershop.jpeg" alt="Abstract Geometry">
+        <img src="../images/gallery/barbershop.jpeg" alt="Coupe Sévère">
       </div>
       <div id="artwork-1-info" class="artwork-info">
-        <div class="artwork-title">Untitled Series #42</div>
+        <div class="artwork-title">Coupe Sévère</div>
         <div class="artwork-artist">Marie Côté</div>
         <div id="artwork-1-price" class="artwork-price">€8,500</div>
       </div>
-    </article>
+    </a>
 
-    <article id="artwork-2" class="artwork">
+    <a id="artwork-2" class="artwork" href="./work.html?work=luminescence">
       <div id="artwork-2-image" class="artwork-image">
-        <img src="../images/gallery/bluewithred.jpeg" alt="Ethereal Light">
+        <img src="../images/gallery/bluewithred.jpeg" alt="Luminescence">
       </div>
       <div id="artwork-2-info" class="artwork-info">
         <div class="artwork-title">Luminescence</div>
         <div class="artwork-artist">James Whitfield</div>
         <div id="artwork-2-price" class="artwork-price">€12,000</div>
       </div>
-    </article>
+    </a>
 
-    <article id="artwork-3" class="artwork">
+    <a id="artwork-3" class="artwork" href="./work.html?work=apnee">
       <div id="artwork-3-image" class="artwork-image">
-        <img src="../images/gallery/swimmer.jpeg" alt="Chromatic Layers">
+        <img src="../images/gallery/swimmer.jpeg" alt="Apnée">
       </div>
       <div id="artwork-3-info" class="artwork-info">
-        <div class="artwork-title">Depth of Field</div>
+        <div class="artwork-title">Apnée</div>
         <div class="artwork-artist">Sophie Laurent</div>
         <div id="artwork-3-price" class="artwork-price">€6,800</div>
       </div>
-    </article>
+    </a>
   </section>
 
   <div id="featured-badge">
     <div class="badge-title">Editor's Pick</div>
     <div class="badge-content">
       <strong>Luminescence</strong><br>
-      by James Whitfield<br>
+      James Whitfield<br>
       €12,000
     </div>
   </div>
 
   <footer id="footer">
-    © 2025 Galerie Nocturne — Proudly displaying exceptional contemporary art
+    Galerie Blanche · Rue de Sèvres · By appointment
   </footer>
 
   <!--
-    Drop-in usage: the auto entry finds every <script type="layout-lint">
+    Drop-in usage: the auto entry finds the <script type="layout-lint">
     block, creates a monitor against the live DOM, and mounts the widget.
-    The fixture script below only handles the draggable badge; layout-lint
-    re-evaluates automatically because the badge's style mutation is
-    picked up by the default MutationObserver.
+    The only fixture script is the draggable Editor's Pick card; drag it
+    out of the wall and the containment rules fail, because the default
+    MutationObserver picks up its inline-style changes.
   -->
   <script type="layout-lint">
     # element definitions: map names to CSS selectors
@@ -83,46 +85,47 @@
     define badge as "#featured-badge";
     define searchbox as "#search-box";
 
-    # group: apply the same rule to multiple elements at once
-    group layout as header, nav, gallery, footer;
+    # group: apply one rule to several elements at once
+    group room as header, nav, gallery, footer;
 
+    # vertical order of the page
     header above nav 0px;
-    gallery below nav 5px;
-    footer below gallery 50px;
+    gallery below nav 0px;
+    footer below gallery 0px;
 
-    # use defined names in rules
-    badge inside gallery;
-    badge not inside header;
-    badge partially inside gallery;
-    badge width 180px;
-    badge width < 181px;
-    badge height > 60px;
-    badge height < 220px;
-
-    # wildcard definitions: card-1, card-2, card-3 resolved via querySelectorAll
+    # the wall is a three-up grid of equal columns
     card-1 inside gallery;
     card-2 inside gallery;
     card-3 inside gallery;
+    card-1 same-width card-2;
+    card-2 same-width card-3;
+    card-1 left-of card-2;
+    card-2 right-of card-1 40 to 80px;
+    card-3 right-of card-2 40 to 80px;
 
-    # group reference: expands to one rule per member
-    @layout visible;
-
+    # each plate fills its column; the label sits just under it
+    artwork-1-image taller-than artwork-1-info;
     artwork-1-image width 100% of artwork-1/width;
-    artwork-2-image width 100% of artwork-2/width;
     artwork-1-info width 95 to 100% of artwork-1/width;
-    artwork-1-image height < 100% of artwork-1/height;
 
-    # directional distance: a bare value is a minimum, a range bounds both sides
-    artwork-2 right-of artwork-1 40 to 60px;
-    artwork-3 below artwork-1 0px;
-    artwork-3 below artwork-2 0px;
+    # the draggable Editor's Pick card must stay within the wall
+    badge inside gallery;
+    badge not inside header;
+    badge partially inside gallery;
+    badge width 184px;
+    badge width < 185px;
+    badge height > 60px;
+    badge height < 240px;
 
     searchbox inside nav;
+
+    # group reference: expands to one rule per member
+    @room visible;
   </script>
   <script type="module" src="../../dist/auto.bundle.js"></script>
 
   <script type="module">
-    // Fixture-only: lets you drag the Editor's Pick badge to break rules live.
+    // Fixture-only: lets you drag the Editor's Pick card to break rules live.
     const badge = document.getElementById("featured-badge");
     let isDragging = false;
     let offsetX = 0;
@@ -146,6 +149,19 @@
     document.addEventListener("pointerup", () => {
       isDragging = false;
       badge.classList.remove("dragging");
+    });
+  </script>
+
+  <script type="module">
+    // The search box is a real filter: typing hides plates whose label
+    // does not match, and the containment rules re-check the thinned wall.
+    const box = document.getElementById("search-box");
+    const cards = Array.from(document.querySelectorAll(".artwork"));
+    box.addEventListener("input", () => {
+      const q = box.value.trim().toLowerCase();
+      cards.forEach((card) => {
+        card.style.display = !q || card.textContent.toLowerCase().includes(q) ? "" : "none";
+      });
     });
   </script>
 

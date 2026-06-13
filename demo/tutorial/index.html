@@ -91,12 +91,12 @@
     const lessons = [
       {
         title: "Direction and distance",
-        prose: "Every rule starts with element names, a relation, and an optional distance. Read it left-to-right: subject, relation, target.",
+        prose: "Every rule starts with element names, a relation like `left-of`, and an optional distance like `14px`. Read it left-to-right: subject, relation, target.",
         rule: "card-a left-of card-b 14px;",
       },
       {
         title: "Alignment",
-        prose: "Align tops, bottoms, lefts, rights, or centers. No distance, just shared edges.",
+        prose: "Use relations like `aligned-top` to compare shared edges. No distance, just matching geometry.",
         rule: "card-a aligned-top card-b;",
       },
       {
@@ -106,23 +106,23 @@
       },
       {
         title: "Defines: name your selectors",
-        prose: "Give a CSS selector a friendly name. The wildcard pattern .card binds every match, so one rule covers them all.",
+        prose: "Give a CSS selector a friendly name with `define`. The wildcard pattern `.card` binds every match, so one rule covers them all.",
         rule: 'define cards as ".card";\ncards inside page;',
         highlight: ".card",
       },
       {
         title: "Percentages",
-        prose: "Sizes can be absolute (`180px`) or relative to another element's dimension.",
+        prose: "Sizes can be absolute (`180px`) or relative to another element's dimension with `of`.",
         rule: "card-a-image width 100% of card-a/width;",
       },
       {
         title: "Counting visible elements",
-        prose: "Count matching elements, optionally filtered to visible ones only. The wildcard expands the same way `define` does.",
+        prose: "Use `count` for matching elements, optionally filtered to `visible` ones only. The wildcard expands the same way `define` does.",
         rule: "count visible card-* is >= 3;",
       },
       {
         title: "Text and CSS",
-        prose: "Assert against text content and computed CSS too, not just geometry.",
+        prose: "Assert against `text` content and computed `css` too, not just geometry.",
         rule: 'headline text starts "Welcome";\nheadline css font-weight is "700";',
         apply: () => {
           document.getElementById("headline").textContent = "Welcome to layout-lint";
@@ -130,7 +130,7 @@
       },
       {
         title: "Negation",
-        prose: "Prefix any rule with `not` to invert it. That's every major rule family. Open the widget's Spec tab to keep playing.",
+        prose: "Prefix any rule with `not` to invert it.",
         rule: "popover not inside footer;",
       },
     ];
@@ -160,6 +160,19 @@
       observeResize: true,
     });
 
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function renderInlineCode(text) {
+      return escapeHtml(text).replace(/`([^`]+)`/g, "<code>$1</code>");
+    }
+
     createLayoutLintWidget(monitor, {
       title: "layout-lint",
       initialPosition: {
@@ -185,7 +198,7 @@
       delete lessonApply.dataset.mode;
       lessonStepLabel.textContent = "";
       lessonTitle.textContent = "Welcome to the layout-lint tutorial!";
-      lessonProse.innerHTML = "The page below has a few layout bugs. Learn the DSL by fixing them, one rule at a time. Each step adds a rule to the spec; the widget on the right shows it failing against the broken layout, then passing once the page snaps into place.";
+      lessonProse.innerHTML = "The page below has a few layout bugs. Learn the DSL by fixing them, one rule at a time. Each step adds a rule to the spec, and the widget shows it failing against the broken layout before it passes once the page snaps into place.";
       lessonRule.textContent = "";
       lessonApply.disabled = false;
       lessonApply.textContent = "Start tutorial";
@@ -205,7 +218,7 @@
 
       lessonStepLabel.textContent = `Step ${idx + 1} of ${lessons.length}`;
       lessonTitle.textContent = lesson.title;
-      lessonProse.textContent = lesson.prose;
+      lessonProse.innerHTML = renderInlineCode(lesson.prose);
       lessonRule.textContent = lesson.rule;
       lessonRule.classList.remove("empty");
 

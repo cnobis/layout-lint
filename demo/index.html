@@ -10,122 +10,45 @@
 <body>
   <main>
     <div class="brand-banner">
-      <img src="./images/logo.png" alt="layout-lint" />
+      <picture>
+        <source media="(max-width: 640px)" srcset="./images/logo-compact.svg" />
+        <source media="(max-width: 960px)" srcset="./images/logo-wide.svg" />
+        <img src="./images/logo-very-wide.svg" alt="layout-lint" />
+      </picture>
     </div>
-    <h1>Playground</h1>
-    <p>Five fixtures. Start with the tutorial — it samples every rule family in eight steps — then each drop-in owns one family in depth, and the composite stitches them into one real screen.</p>
+    <p>Welcome to the <strong>layout-lint playground</strong>! Pick one of the demos below to get a feel for the DSL and learn how to write your own layout contraints.</p>
     <div class="grid">
-      <a class="card" href="./tutorial/index.html">
-        <div class="name">Tutorial</div>
-        <div>Guided sampler. The broken layout snaps into place as you apply each of 8 rules. Start here.</div>
-        <div class="covers">
-          <span class="cat">Spatial</span><span class="cat">Alignment</span><span class="cat">Size</span><span class="cat">Text &amp; CSS</span><span class="cat">Count</span><span class="cat">Meta</span>
-        </div>
+      <a class="card card-lead" href="./tutorial/index.html">
+        <div class="name"><span class="step">0</span> Tutorial <span class="step-hint">Start here</span></div>
+        <div>A guided walkthrough of eight rules that shows each change directly on the page.</div>
       </a>
       <a class="card" href="./gallery/index.html">
-        <div class="name">Gallery</div>
-        <div>Space &amp; size. <code>inside</code>, <code>partially inside</code>, directional gaps and ranges, percent-of widths, wildcards and groups. Drag the badge to break rules live.</div>
-        <div class="covers">
-          <span class="cat">Spatial</span><span class="cat">Size</span><span class="cat">Meta</span>
-        </div>
+        <div class="name"><span class="step">1</span> Gallery</div>
+        <div>Use <code>inside</code> offsets, <code>partially inside</code>, percent-of sizing, wildcards, and groups. Drag the badge to break and restore constraints.</div>
       </a>
-      <a class="card" href="./jazz-club/index.html">
-        <div class="name">Jazz Club</div>
-        <div>Content &amp; count. <code>text starts/ends/matches</code>, <code>css … contains</code>, <code>visible</code> / <code>not visible</code> / <code>absent</code>, <code>count visible</code>. Toggle case, font, and the room's state to perturb rules.</div>
-        <div class="covers">
-          <span class="cat">Text &amp; CSS</span><span class="cat">Count</span><span class="cat">Visibility</span><span class="cat">Meta</span>
-        </div>
+      <a class="card" href="./bar/index.html">
+        <div class="name"><span class="step">2</span> Bar</div>
+        <div>Validate text and CSS rules, <code>visible</code>/<code>absent</code>, and wildcard counts. Switch language or filter categories to test behavior.</div>
       </a>
-      <a class="card" href="./control-room/index.html">
-        <div class="name">Control Room</div>
-        <div>Alignment &amp; proximity. <code>aligned</code>, <code>centered</code>, <code>equal-gap</code>, <code>near</code>, driven by a programmatic monitor with live <code>setSpecText</code>.</div>
-        <div class="covers">
-          <span class="cat">Alignment</span><span class="cat">Spatial</span>
-        </div>
-      </a>
-      <a class="card" href="./composite/index.html">
-        <div class="name">Composite <span class="badge-new">app</span></div>
-        <div>A realistic screen — top bar, nav, content grid, detail panel, modal — validated by one spec that spans every component.</div>
-        <div class="covers">
-          <span class="cat">Spatial</span><span class="cat">Alignment</span><span class="cat">Visibility</span><span class="cat">Count</span><span class="cat">Meta</span>
-        </div>
+      <a class="card" href="./studio/index.html">
+        <div class="name"><span class="step">3</span> Studio</div>
+        <div>Combine <code>aligned</code>, <code>centered</code>, <code>equal-gap</code>, <code>near</code>, and percent-of rules. Move faders, channels, and the playhead.</div>
       </a>
     </div>
-
-    <section class="matrix" aria-label="Rule coverage matrix">
-      <h2>Coverage</h2>
-      <p class="matrix-sub">Which fixture exercises which rule family. <span class="dot dot-primary"></span> owns it · <span class="dot dot-partial"></span> touches it.</p>
-      <div class="matrix-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col" class="row-head">Fixture</th>
-              <th scope="col">Spatial</th>
-              <th scope="col">Alignment</th>
-              <th scope="col">Size</th>
-              <th scope="col">Visibility</th>
-              <th scope="col">Text &amp; CSS</th>
-              <th scope="col">Count</th>
-              <th scope="col">Meta</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row" class="row-head">Tutorial</th>
-              <td><span class="dot dot-primary" title="owns"></span></td>
-              <td><span class="dot dot-primary"></span></td>
-              <td><span class="dot dot-primary"></span></td>
-              <td><span class="dot dot-partial"></span></td>
-              <td><span class="dot dot-primary"></span></td>
-              <td><span class="dot dot-primary"></span></td>
-              <td><span class="dot dot-primary"></span></td>
-            </tr>
-            <tr>
-              <th scope="row" class="row-head">Gallery</th>
-              <td><span class="dot dot-primary"></span></td>
-              <td><span class="dot dot-partial"></span></td>
-              <td><span class="dot dot-primary"></span></td>
-              <td><span class="dot dot-partial"></span></td>
-              <td></td>
-              <td></td>
-              <td><span class="dot dot-primary"></span></td>
-            </tr>
-            <tr>
-              <th scope="row" class="row-head">Jazz Club</th>
-              <td><span class="dot dot-partial"></span></td>
-              <td><span class="dot dot-partial"></span></td>
-              <td></td>
-              <td><span class="dot dot-primary"></span></td>
-              <td><span class="dot dot-primary"></span></td>
-              <td><span class="dot dot-primary"></span></td>
-              <td><span class="dot dot-primary"></span></td>
-            </tr>
-            <tr>
-              <th scope="row" class="row-head">Control Room</th>
-              <td><span class="dot dot-primary"></span></td>
-              <td><span class="dot dot-primary"></span></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <th scope="row" class="row-head">Composite</th>
-              <td><span class="dot dot-primary"></span></td>
-              <td><span class="dot dot-primary"></span></td>
-              <td><span class="dot dot-partial"></span></td>
-              <td><span class="dot dot-primary"></span></td>
-              <td><span class="dot dot-partial"></span></td>
-              <td><span class="dot dot-primary"></span></td>
-              <td><span class="dot dot-primary"></span></td>
-            </tr>
-          </tbody>
-        </table>
+    <footer class="impressum">
+      <div class="impressum-row">
+        <span class="impressum-mark">layout-lint</span>
+        <span class="impressum-ver">v1.1.0</span>
+        <span class="impressum-sep">·</span>
+        <span>MIT License</span>
       </div>
-    </section>
-
-    <p class="footnote">New to the DSL? Open the widget's <strong>Spec</strong> tab. Every fixture ships its spec inline and you can edit it live.</p>
+      <p class="impressum-line">
+        A tool for testing layout constraints in the browser.
+      </p>
+      <p class="impressum-line">
+        <a href="https://github.com/cnobis/layout-lint">github.com/cnobis/layout-lint</a>
+      </p>
+    </footer>
   </main>
 </body>
 </html>

@@ -68,15 +68,15 @@ Then **hard refresh the demo** (`Cmd+Shift+R`) to test.
 
 ## 5. Add Test Cases to a Demo Page
 
-Edit a dedicated demo page (for Stage 2 use [demo/control-room/index.html](demo/control-room/index.html)) → `<pre id="spec">` section:
+Edit a dedicated demo page (for Stage 2 use [demo/studio/index.html](demo/studio/index.html)) → its `<script type="layout-lint">` block:
 
 ```html
-<pre id="spec" hidden>
-hero-copy centered-x hero
-hero-cta centered-x hero
-hero-cta below hero-copy 32px
-trust-strip below hero 24px
-</pre>
+<script type="layout-lint">
+  strip-1 aligned-top strip-2;
+  strip-1 equal-gap-x [strip-2 strip-3 strip-4] 2px;
+  meter-label centered all inside meter;
+  playhead near cue 8px right;
+</script>
 ```
 
 ---
@@ -90,7 +90,7 @@ tree-sitter generate
 
 # Restore "type": "module" to package.json
 # Edit src/evaluator.ts (if needed)
-# Edit a target demo page (e.g. demo/control-room/index.html)
+# Edit a target demo page (e.g. demo/studio/index.html)
 npm run build:ts && npm run build:wasm && npm run serve
 
 # Hard refresh browser → test
@@ -116,7 +116,7 @@ const monitor = createLayoutLintMonitor({
   reporters: [createConsoleReporter()],  // optional console logging
   observeResize: true,           // re-evaluate on resize
   observeMutations: true,        // re-evaluate on DOM changes
-  debounceMs: 80                 // debounce time
+  debounceMs: 80                 // min interval between throttled evaluations
 });
 
 // create the interactive widget (auto-mounts to document.body)
@@ -215,7 +215,7 @@ Run this checklist before starting new language extensions:
   ```
 3. Demo smoke test (`npm run serve`, open `http://localhost:8080/demo/index.html`):
   - drag gallery badge and confirm live re-evaluation
-  - open control-room demo and adjust spacing sliders to confirm `centered-x`/`equal-gap-x` pass/fail flips live
+  - open studio demo, ride a fader, drag a channel strip and scrub the playhead to confirm `percent-of`/`equal-gap-x`/`near`/`absent` pass/fail flips live
   - hover a row and confirm source/target/connector overlays
   - pin multiple rows and verify all pinned overlays render together
   - press `esc` and confirm all pins clear

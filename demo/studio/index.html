@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Studio</title>
+  <link rel="stylesheet" href="../shared.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT DEMO</a>
+
+  <header id="topbar">
+    <button id="sidebar-toggle" type="button" aria-label="Toggle rack" aria-expanded="true">
+      <span aria-hidden="true">◧</span>
+    </button>
+    <div id="brand">
+      <span id="logo">◐</span>
+      <span class="brand-word">Studio</span>
+    </div>
+    <input id="patch-name" value="homework · 01" aria-label="Patch name" />
+    <div class="topbar-right">
+      <span id="transport-badge">123 BPM</span>
+      <button id="transport" type="button" aria-label="Play / pause">
+        <span id="transport-mark">▶</span>
+      </button>
+    </div>
+  </header>
+
+  <div id="app">
+    <aside id="sidebar">
+      <nav id="preset-rack" aria-label="Presets">
+        <p class="rack-label">Presets</p>
+        <button class="preset active" id="preset-1" type="button"
+                data-patch="Init" data-bpm="123" data-levels="60,60,72" data-trims="-58,22" data-pads="101000101">Init</button>
+        <button class="preset" id="preset-2" type="button"
+                data-patch="909 Kit" data-bpm="124" data-levels="88,46,70" data-trims="40,-30" data-pads="010101010">909 Kit</button>
+        <button class="preset" id="preset-3" type="button"
+                data-patch="Filter Keys" data-bpm="120" data-levels="54,62,68" data-trims="-110,60" data-pads="110100100">Filter Keys</button>
+        <button class="preset" id="preset-4" type="button"
+                data-patch="Vocoder Bells" data-bpm="116" data-levels="48,58,66" data-trims="80,-70" data-pads="001010011">Vocoder Bells</button>
+        <button class="preset" id="preset-5" type="button"
+                data-patch="Riser" data-bpm="128" data-levels="40,50,74" data-trims="-20,110" data-pads="100011010">Riser</button>
+      </nav>
+    </aside>
+
+    <main id="content">
+      <div id="page-head">
+        <div>
+          <h1 id="page-title">Studio Session</h1>
+          <p id="page-sub">8 voices · 123 BPM · 4/4</p>
+        </div>
+        <div id="transport-zone">
+          <div id="timeline" aria-label="Transport timeline">
+            <span id="cue"></span>
+            <span id="cue-target" aria-hidden="true"></span>
+            <span id="playhead"></span>
+          </div>
+          <div id="meter" aria-label="Master output">
+            <span id="meter-label">−14</span>
+            <span class="meter-cap">out</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="mixer-row">
+        <section id="desk">
+          <div class="channel strip" id="strip-1">
+            <div class="strip-handle" data-handle><span class="ch-led" aria-hidden="true"></span>KICK</div>
+            <div class="knob" data-knob data-angle="-58"><div class="knob-dial" style="--angle:-58deg"><span class="knob-pointer"></span></div></div>
+            <div class="fader">
+              <div class="fader-rail" id="fader-rail-1" data-fader>
+                <div class="fader-fill" id="fader-fill-1" style="height:60%"></div>
+                <div class="fader-cap" id="fader-cap-1" style="bottom:60%"></div>
+              </div>
+            </div>
+            <div class="ch-label">−6.0</div>
+          </div>
+
+          <div class="channel strip" id="strip-2">
+            <div class="strip-handle" data-handle><span class="ch-led" aria-hidden="true"></span>SNARE</div>
+            <div class="knob" data-knob data-angle="22"><div class="knob-dial" style="--angle:22deg"><span class="knob-pointer"></span></div></div>
+            <div class="fader">
+              <div class="fader-rail" id="fader-rail-2" data-fader>
+                <div class="fader-fill" id="fader-fill-2" style="height:60%"></div>
+                <div class="fader-cap" id="fader-cap-2" style="bottom:60%"></div>
+              </div>
+            </div>
+            <div class="ch-label">−6.0</div>
+          </div>
+        </section>
+
+        <section id="pads" aria-label="Drum pads">
+          <div class="pad lit" id="pad-1"></div>
+          <div class="pad" id="pad-2"></div>
+          <div class="pad lit" id="pad-3"></div>
+          <div class="pad" id="pad-4"></div>
+          <div class="pad" id="pad-5"></div>
+          <div class="pad" id="pad-6"></div>
+          <div class="pad lit" id="pad-7"></div>
+          <div class="pad" id="pad-8"></div>
+          <div class="pad lit" id="pad-9"></div>
+        </section>
+      </div>
+
+      <section class="channel master" id="master" aria-label="Master bus">
+        <div class="strip-handle">MAIN</div>
+        <div class="knob" data-knob data-gain id="master-gain" data-angle="66"><div class="knob-dial" style="--angle:66deg"><span class="knob-pointer"></span></div></div>
+        <div class="master-meta"><span class="master-cap">gain</span><span class="ch-label" id="master-db">−14</span></div>
+        <div class="master-bar" id="master-bar">
+          <div class="master-bar-fill" id="master-bar-fill" style="width:72%"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="clip-light" class="is-hidden">clip</div>
+
+  <script type="layout-lint">
+    define preset as ".preset";
+    define active-preset as ".preset.active";
+    define strip as ".strip";
+    define pad as ".pad";
+    define lit-pad as ".pad.lit";
+
+    group desk as topbar, sidebar, content;
+    @desk visible;
+
+    # shell geometry
+    topbar distance-from-top 0 to 4px;
+    page-head distance-from-top 40 to 320px;
+    sidebar below topbar 0px;
+    content below topbar 0px;
+    content right-of sidebar 0px;
+    sidebar left-of content;
+    # the rack's resting design width; collapsing it trips this contract live
+    sidebar width 220 to 260px;
+    # hard ceiling that must hold whether the rack is open or collapsed
+    sidebar width <320px;
+
+    # transport bar
+    brand left-of patch-name;
+    transport-badge left-of transport;
+    brand aligned horizontally centered transport-badge;
+    transport-mark centered all inside transport;
+    transport-mark centered horizontally inside transport;
+    transport-mark centered vertically inside transport;
+    transport-badge css text-transform is "uppercase";
+
+    # preset rack
+    count any preset is 5;
+    # exactly one patch is loaded at a time; clicking the rack keeps this true
+    count any active-preset is 1;
+    preset-1 inside sidebar;
+    preset-1 equal-gap-y [preset-2 preset-3 preset-4 preset-5] 2px;
+    preset-1 aligned-left preset-2;
+    meter-label centered all inside meter;
+
+    # channel strips — a tidy pair
+    count any strip is 2;
+    count visible strip is 2;
+    strip-1 same-width strip-2;
+    strip-1 same-height strip-2;
+    strip-1 aligned horizontally all strip-2;
+    strip-1 aligned-top strip-2;
+    strip-1 left-of strip-2;
+    strip-2 right-of strip-1;
+    strip-1 width 30 to 55% of desk/width;
+
+    # pads sit beside the strips; the master bus takes the row below
+    desk left-of pads;
+    desk above master 0px;
+    pads above master 0px;
+    master wider-than strip-1;
+
+    # faders + master gain bar
+    fader-fill-1 height 55 to 65% of fader-rail-1/height;
+    fader-cap-1 aligned-top fader-cap-2;
+    master-bar-fill width 40 to 90% of master-bar/width;
+
+    # pad grid
+    count any pad is 9;
+    # four on the floor: the pattern must keep exactly four hits lit
+    count any lit-pad is 4;
+    pad-1 equal-gap-x [pad-2 pad-3] 2px;
+    pad-1 equal-gap-y [pad-4 pad-7] 2px;
+
+    # transport timeline: park the playhead in the cue's pocket
+    playhead near cue 2 to 18px right;
+    playhead near cue 2 to 18px top;
+    playhead near cue 2 to 18px right, 2 to 18px top;
+
+    # overload light hidden until a fader is pushed into the red
+    clip-light absent;
+
+    page-title text starts "Studio";
+  </script>
+  <script type="module" src="../../dist/auto.bundle.js"></script>
+
+  <script>
+    // Most controls here move something the spec actually measures; the trim
+    // knobs are independent tone controls and turn on their own.
+
+    const clip = document.getElementById("clip-light");
+    const meter = document.getElementById("meter");
+    const meterLabel = document.getElementById("meter-label");
+    const masterGain = document.getElementById("master-gain");
+    const masterBarFill = document.getElementById("master-bar-fill");
+    const masterDb = document.getElementById("master-db");
+    const rails = Array.from(document.querySelectorAll(".fader-rail[data-fader]"));
+
+    const railLevel = (rail) => parseFloat(rail.dataset.level || "60");
+
+    function refreshClip() {
+      const over = rails.some((r) => railLevel(r) > 92);
+      clip.classList.toggle("is-hidden", !over);
+    }
+
+    function updateMeter(pct) {
+      meter.style.setProperty("--meter-fill", pct + "%");
+      const db = Math.round((pct - 100) * 0.5);
+      meterLabel.textContent = db === 0 ? "0" : "\u2212" + Math.abs(db);
+    }
+
+    // set a fader level (0..100) and propagate to the clip light
+    function setRailLevel(rail, pct) {
+      pct = Math.max(0, Math.min(100, pct));
+      rail.dataset.level = pct.toFixed(1);
+      rail.querySelector(".fader-fill").style.height = pct + "%";
+      rail.querySelector(".fader-cap").style.bottom = pct + "%";
+      refreshClip();
+    }
+
+    // master gain knob -> output meter + the master bus bar
+    const angleToLevel = (a) => Math.round(((a + 150) / 300) * 100);
+    const levelToAngle = (lvl) => (lvl / 100) * 300 - 150;
+    function applyMasterLevel(level) {
+      level = Math.max(0, Math.min(100, level));
+      masterBarFill.style.width = level + "%";
+      updateMeter(level);
+      const db = Math.round((level - 100) * 0.5);
+      masterDb.textContent = db === 0 ? "0" : "\u2212" + Math.abs(db);
+    }
+    // recall the master to a level: positions the bar, meter, dB and the knob
+    function setMasterGain(level) {
+      const a = levelToAngle(Math.max(0, Math.min(100, level)));
+      masterGain.dataset.angle = String(a);
+      masterGain.querySelector(".knob-dial").style.setProperty("--angle", a + "deg");
+      applyMasterLevel(level);
+    }
+
+    rails.forEach((rail) => {
+      const fill = rail.querySelector(".fader-fill");
+      rail.dataset.level = String(parseFloat(fill.style.height) || 60);
+    });
+    applyMasterLevel(angleToLevel(parseFloat(masterGain.dataset.angle || "66")));
+    refreshClip();
+
+    // ---- faders: drag to set level; pushing into the red reveals the clip light
+    let activeRail = null;
+    function levelFromPointer(rail, clientY) {
+      const rect = rail.getBoundingClientRect();
+      return (1 - (clientY - rect.top) / rect.height) * 100;
+    }
+    rails.forEach((rail) => {
+      rail.addEventListener("pointerdown", (e) => {
+        activeRail = rail;
+        rail.setPointerCapture(e.pointerId);
+        setRailLevel(rail, levelFromPointer(rail, e.clientY));
+        e.preventDefault();
+      });
+      rail.addEventListener("pointermove", (e) => {
+        if (activeRail === rail) setRailLevel(rail, levelFromPointer(rail, e.clientY));
+      });
+      const end = () => { activeRail = null; };
+      rail.addEventListener("pointerup", end);
+      rail.addEventListener("pointercancel", end);
+    });
+
+    // ---- presets: each one is a whole patch (mix, tone, tempo, pattern)
+    const presets = Array.from(document.querySelectorAll(".preset"));
+    const recallRails = ["fader-rail-1", "fader-rail-2"].map((id) => document.getElementById(id));
+    const stripKnobs = Array.from(document.querySelectorAll(".strip .knob[data-knob]"));
+    const padEls = Array.from(document.querySelectorAll(".pad"));
+    const patchName = document.getElementById("patch-name");
+    const transportBadge = document.getElementById("transport-badge");
+    const pageSub = document.getElementById("page-sub");
+
+    // recall a channel's trim knob to its stored angle (independent of the fader)
+    function setKnobAngle(knob, angle) {
+      const a = Math.max(-150, Math.min(150, angle));
+      knob.dataset.angle = String(a);
+      knob.querySelector(".knob-dial").style.setProperty("--angle", a + "deg");
+    }
+
+    presets.forEach((btn, idx) => {
+      btn.addEventListener("click", () => {
+        presets.forEach((p) => p.classList.toggle("active", p === btn));
+
+        const levels = (btn.dataset.levels || "").split(",").map(Number);
+        recallRails.forEach((rail, i) => {
+          if (rail && !Number.isNaN(levels[i])) setRailLevel(rail, levels[i]);
+        });
+        if (!Number.isNaN(levels[2])) setMasterGain(levels[2]);
+        const trims = (btn.dataset.trims || "").split(",").map(Number);
+        stripKnobs.forEach((knob, i) => {
+          if (!Number.isNaN(trims[i])) setKnobAngle(knob, trims[i]);
+        });
+
+        // recall the drum pattern; every patch keeps exactly four hits lit
+        const mask = btn.dataset.pads || "";
+        padEls.forEach((pad, i) => pad.classList.toggle("lit", mask[i] === "1"));
+
+        // tempo + the loaded slot name in the topbar
+        const bpm = btn.dataset.bpm || "123";
+        transportBadge.textContent = bpm + " BPM";
+        pageSub.textContent = "8 voices · " + bpm + " BPM · 4/4";
+        patchName.value = "homework · 0" + (idx + 1);
+      });
+    });
+
+    // ---- collapsible rack: narrowing the rail trips the design-width contract
+    const sidebar = document.getElementById("sidebar");
+    const sidebarToggle = document.getElementById("sidebar-toggle");
+    sidebarToggle.addEventListener("click", () => {
+      const collapsed = sidebar.classList.toggle("collapsed");
+      sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+    });
+
+    // ---- channel strips: drag a handle to pull a strip out of line, release to snap home
+    document.querySelectorAll(".strip-handle[data-handle]").forEach((handle) => {
+      const strip = handle.closest(".channel");
+      let sx = 0, sy = 0, dragging = false;
+      handle.addEventListener("pointerdown", (e) => {
+        dragging = true;
+        sx = e.clientX;
+        sy = e.clientY;
+        strip.classList.add("dragging");
+        handle.setPointerCapture(e.pointerId);
+        e.preventDefault();
+      });
+      handle.addEventListener("pointermove", (e) => {
+        if (!dragging) return;
+        strip.style.transform = `translate(${e.clientX - sx}px, ${e.clientY - sy}px)`;
+      });
+      const end = () => {
+        if (!dragging) return;
+        dragging = false;
+        strip.classList.remove("dragging");
+        strip.style.transform = "";
+      };
+      handle.addEventListener("pointerup", end);
+      handle.addEventListener("pointercancel", end);
+    });
+
+    // ---- channel trim knobs: independent rotaries; they only turn
+    document.querySelectorAll(".strip .knob[data-knob]").forEach((knob) => {
+      const dial = knob.querySelector(".knob-dial");
+      let startY = 0, startAngle = 0, turning = false;
+      knob.addEventListener("pointerdown", (e) => {
+        turning = true;
+        startY = e.clientY;
+        startAngle = parseFloat(knob.dataset.angle || "0");
+        knob.setPointerCapture(e.pointerId);
+        e.preventDefault();
+      });
+      knob.addEventListener("pointermove", (e) => {
+        if (!turning) return;
+        const dy = startY - e.clientY;
+        const a = Math.max(-150, Math.min(150, startAngle + dy));
+        knob.dataset.angle = String(a);
+        dial.style.setProperty("--angle", a + "deg");
+      });
+      const end = () => { turning = false; };
+      knob.addEventListener("pointerup", end);
+      knob.addEventListener("pointercancel", end);
+    });
+
+    // ---- master gain knob: turning it drives the output meter + master bar
+    (() => {
+      const dial = masterGain.querySelector(".knob-dial");
+      let startY = 0, startAngle = 0, turning = false;
+      masterGain.addEventListener("pointerdown", (e) => {
+        turning = true;
+        startY = e.clientY;
+        startAngle = parseFloat(masterGain.dataset.angle || "0");
+        masterGain.setPointerCapture(e.pointerId);
+        e.preventDefault();
+      });
+      masterGain.addEventListener("pointermove", (e) => {
+        if (!turning) return;
+        const dy = startY - e.clientY;
+        const a = Math.max(-150, Math.min(150, startAngle + dy));
+        masterGain.dataset.angle = String(a);
+        dial.style.setProperty("--angle", a + "deg");
+        applyMasterLevel(angleToLevel(a));
+      });
+      const end = () => { turning = false; };
+      masterGain.addEventListener("pointerup", end);
+      masterGain.addEventListener("pointercancel", end);
+    })();
+
+    // ---- transport + playhead: play actually walks the head along the timeline
+    const playhead = document.getElementById("playhead");
+    const transport = document.getElementById("transport");
+    const mark = document.getElementById("transport-mark");
+    const HOME = { left: 170, top: 70 };
+    let timer = null;
+
+    function stopTransport() {
+      if (timer) { clearInterval(timer); timer = null; }
+      mark.textContent = "\u25B6";
+    }
+    function startTransport() {
+      let x = playhead.offsetLeft;
+      timer = setInterval(() => {
+        x += 14;
+        if (x > 224) x = 24;
+        playhead.style.left = x + "px";
+        playhead.style.top = HOME.top + "px";
+      }, 150);
+      mark.textContent = "\u23F8";
+    }
+    transport.addEventListener("click", () => { timer ? stopTransport() : startTransport(); });
+
+    // manual scrub; release near the cue's pocket to snap the head home
+    let scrubbing = false, px = 0, py = 0, ol = 0, ot = 0;
+    playhead.addEventListener("pointerdown", (e) => {
+      stopTransport();
+      scrubbing = true;
+      ol = playhead.offsetLeft;
+      ot = playhead.offsetTop;
+      px = e.clientX;
+      py = e.clientY;
+      playhead.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    playhead.addEventListener("pointermove", (e) => {
+      if (!scrubbing) return;
+      playhead.style.left = ol + e.clientX - px + "px";
+      playhead.style.top = ot + e.clientY - py + "px";
+    });
+    function settlePlayhead() {
+      // pocket centre is the head's home position; snap in when close
+      const cx = playhead.offsetLeft + 6;
+      const cy = playhead.offsetTop + 6;
+      if (Math.hypot(cx - 176, cy - 76) <= 30) {
+        playhead.style.left = HOME.left + "px";
+        playhead.style.top = HOME.top + "px";
+      }
+    }
+    const scrubEnd = () => {
+      if (!scrubbing) return;
+      scrubbing = false;
+      settlePlayhead();
+    };
+    playhead.addEventListener("pointerup", scrubEnd);
+    playhead.addEventListener("pointercancel", scrubEnd);
+    playhead.addEventListener("dblclick", () => {
+      stopTransport();
+      playhead.style.left = HOME.left + "px";
+      playhead.style.top = HOME.top + "px";
+    });
+
+    // ---- pads: tap to toggle a hit; the spec wants exactly four on the floor
+    document.querySelectorAll(".pad").forEach((p) => {
+      p.addEventListener("click", () => p.classList.toggle("lit"));
+    });
+  </script>
+</body>
+</html>

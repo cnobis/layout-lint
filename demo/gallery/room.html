@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="fr" translate="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="google" content="notranslate" />
+  <title>Galerie Blanche — Room II</title>
+  <link rel="stylesheet" href="../shared.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+  <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT DEMO</a>
+
+  <header id="header">
+    <h1 id="gallery-name">Galerie Blanche</h1>
+    <p id="gallery-tagline">Room II · The Rehang</p>
+  </header>
+
+  <nav id="nav">
+    <a href="./index.html">Room I</a>
+    <a href="./room.html">Room II</a>
+    <a href="./work.html">On View</a>
+    <input id="search-box" type="text" placeholder="Search the collection">
+  </nav>
+
+  <section id="gallery">
+    <a id="artwork-1" class="artwork" href="./work.html?work=bassin-3">
+      <div id="artwork-1-image" class="artwork-image">
+        <img src="../images/gallery/swimmer.jpeg" alt="Bassin, No. 3">
+      </div>
+      <div id="artwork-1-info" class="artwork-info">
+        <div class="artwork-title">Bassin, No. 3</div>
+        <div class="artwork-artist">Sophie Laurent</div>
+        <div id="artwork-1-price" class="artwork-price">€7,200</div>
+      </div>
+    </a>
+
+    <a id="artwork-2" class="artwork" href="./work.html?work=interieur">
+      <div id="artwork-2-image" class="artwork-image">
+        <img src="../images/gallery/barbershop.jpeg" alt="Intérieur au Fauteuil">
+      </div>
+      <div id="artwork-2-info" class="artwork-info">
+        <div class="artwork-title">Intérieur au Fauteuil</div>
+        <div class="artwork-artist">Marie Côté</div>
+        <div id="artwork-2-price" class="artwork-price">€9,400</div>
+      </div>
+    </a>
+
+    <a id="artwork-3" class="artwork" href="./work.html?work=champ-rouge">
+      <div id="artwork-3-image" class="artwork-image">
+        <img src="../images/gallery/bluewithred.jpeg" alt="Champ Rouge">
+      </div>
+      <div id="artwork-3-info" class="artwork-info">
+        <div class="artwork-title">Champ Rouge</div>
+        <div class="artwork-artist">James Whitfield</div>
+        <div id="artwork-3-price" class="artwork-price">€11,000</div>
+      </div>
+    </a>
+  </section>
+
+  <footer id="footer">
+    Galerie Blanche · Rue de Sèvres · By appointment
+  </footer>
+
+  <script type="layout-lint">
+    define card-* as ".artwork";
+    group room as header, nav, gallery, footer;
+
+    header above nav 0px;
+    gallery below nav 0px;
+    footer below gallery 0px;
+
+    card-1 inside gallery;
+    card-2 inside gallery;
+    card-3 inside gallery;
+    card-1 same-width card-3;
+    card-1 left-of card-2;
+    card-3 right-of card-2 40 to 80px;
+
+    artwork-1-image taller-than artwork-1-info;
+    artwork-2-image width 100% of artwork-2/width;
+
+    @room visible;
+  </script>
+  <script type="module" src="../../dist/auto.bundle.js"></script>
+
+  <script type="module">
+    // The search box filters this room's wall; the layout rules re-check live.
+    const box = document.getElementById("search-box");
+    const cards = Array.from(document.querySelectorAll(".artwork"));
+    box.addEventListener("input", () => {
+      const q = box.value.trim().toLowerCase();
+      cards.forEach((card) => {
+        card.style.display = !q || card.textContent.toLowerCase().includes(q) ? "" : "none";
+      });
+    });
+  </script>
+
+</body>
+</html>

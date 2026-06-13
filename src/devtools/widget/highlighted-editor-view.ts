@@ -13,13 +13,13 @@ export const EDITOR_CSS = `
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 13px;
   line-height: 1.5;
-  padding: 10px;
+  padding: 10px 10px 10px calc(var(--ll-gutter-w, 0px) + 10px);
   margin: 0;
   border: none;
   border-radius: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-  overflow-wrap: break-word;
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
   box-sizing: border-box;
   width: 100%;
   min-height: 120px;
@@ -35,6 +35,7 @@ export const EDITOR_CSS = `
   resize: none;
   outline: none;
   display: block;
+  overflow: auto;
 }
 .ll-editor-wrapper .ll-highlight-overlay {
   position: absolute;
@@ -43,6 +44,24 @@ export const EDITOR_CSS = `
   pointer-events: none;
   background: transparent;
   overflow: hidden;
+}
+.ll-editor-wrapper .ll-editor-gutter {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: var(--ll-gutter-w, 0px);
+  z-index: 2;
+  box-sizing: border-box;
+  padding: 10px 6px 10px 0;
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: right;
+  white-space: pre;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 /* Dark theme */
 .ll-editor-wrapper[data-editor-theme="dark"] { border: 1px solid #23272e; }
@@ -112,6 +131,11 @@ export const EDITOR_CSS = `
 .ll-editor-wrapper[data-editor-theme="dusk"] .token.error { color: #f87171; text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #f87171; text-decoration-skip-ink: none; text-underline-offset: 2px; }
 .ll-editor-wrapper[data-editor-theme="dusk"] .token.diagnostic-error { text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #f87171; text-decoration-skip-ink: none; text-underline-offset: 2px; }
 .ll-editor-wrapper[data-editor-theme="dusk"] .token.diagnostic-warning { text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #fbbf24; text-decoration-skip-ink: none; text-underline-offset: 2px; }
+/* Line-number gutter colours per theme */
+.ll-editor-wrapper[data-editor-theme="dark"] .ll-editor-gutter { color: #5b626c; border-right: 1px solid #23272e; }
+.ll-editor-wrapper[data-editor-theme="light"] .ll-editor-gutter { color: #9aa6c4; border-right: 1px solid #d7e0ff; }
+.ll-editor-wrapper[data-editor-theme="warm"] .ll-editor-gutter { color: #b3ab9b; border-right: 1px solid #e2e0d5; }
+.ll-editor-wrapper[data-editor-theme="dusk"] .ll-editor-gutter { color: #7a6e85; border-right: 1px solid #3d2e42; }
 /* Flash highlight animation for click-to-locate */
 @keyframes ll-flash-highlight {
   0% { background-color: rgba(99, 102, 241, 0.35); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4); border-radius: 2px; }
@@ -136,6 +160,7 @@ export class HighlightedEditorView implements EditorView {
   private wrapper: HTMLDivElement;
   private textarea: HTMLTextAreaElement;
   private overlay: HTMLDivElement;
+  private gutter: HTMLDivElement;
   private changeCb: ((value: string) => void) | null = null;
   private externalTokens: Array<{ text: string; className?: string }> | null = null;
   private highlighter: Highlighter | null = null;
@@ -153,6 +178,10 @@ export class HighlightedEditorView implements EditorView {
     this.overlay = document.createElement("div");
     this.overlay.className = "ll-highlight-overlay";
 
+    this.gutter = document.createElement("div");
+    this.gutter.className = "ll-editor-gutter";
+    this.gutter.setAttribute("aria-hidden", "true");
+
     this.textarea = document.createElement("textarea");
     this.textarea.value = initialValue;
     this.textarea.spellcheck = false;
@@ -161,6 +190,7 @@ export class HighlightedEditorView implements EditorView {
 
     this.wrapper.appendChild(this.overlay);
     this.wrapper.appendChild(this.textarea);
+    this.wrapper.appendChild(this.gutter);
 
     // Apply default light theme
     this.setBackground("#f5f7fe");
@@ -177,6 +207,7 @@ export class HighlightedEditorView implements EditorView {
     this.textarea.addEventListener("scroll", () => {
       this.overlay.scrollTop = this.textarea.scrollTop;
       this.overlay.scrollLeft = this.textarea.scrollLeft;
+      this.gutter.scrollTop = this.textarea.scrollTop;
     });
   }
 
@@ -192,6 +223,7 @@ export class HighlightedEditorView implements EditorView {
 
   private renderHighlight(text: string) {
     this.overlay.innerHTML = "";
+    this.updateGutter(text);
 
     // Priority: external tokens > tree-sitter highlighter > naive fallback
     if (this.externalTokens) {
@@ -204,8 +236,21 @@ export class HighlightedEditorView implements EditorView {
     }
   }
 
-  private renderTokens(tokens: Array<{ text: string; className?: string }>) {
-    let cursor = 0;
+  private updateGutter(text: string) {
+    const lineCount = text.length === 0 ? 1 : text.split("\n").length;
+    let numbers = "";
+    for (let i = 1; i <= lineCount; i++) {
+      numbers += (i > 1 ? "\n" : "") + i;
+    }
+    this.gutter.textContent = numbers;
+    const digits = Math.max(2, String(lineCount).length);
+    if (typeof this.wrapper.style.setProperty === "function") {
+      this.wrapper.style.setProperty("--ll-gutter-w", `${digits * 8 + 14}px`);
+    }
+    this.gutter.scrollTop = this.textarea.scrollTop;
+  }
+
+  private renderTokens(tokens: Array<{ text: string; className?: string }>) {    let cursor = 0;
     for (const token of tokens) {
       if (token.text === "\n") {
         this.overlay.appendChild(document.createElement("br"));

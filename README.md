@@ -1,12 +1,12 @@
 # layout-lint
 
-<img width="1966" height="252" alt="logo" src="https://github.com/user-attachments/assets/cc27bec9-9574-49da-8880-8761a77bdce7" />
+![layout-lint](demo/images/logo-very-wide.svg)
 
 A DSL for testing layout constraints in the browser. Write rules like `nav below header 20px` to verify spatial relationships between elements. A floating widget shows pass/fail in real time.
 
 Full language reference: [docs/LANGUAGE.md](docs/LANGUAGE.md).
 
-<!-- TODO: drop a screenshot/GIF of the widget against the jazz-club demo here.
+<!-- TODO: drop a screenshot/GIF of the widget against the gallery demo here.
      Recommended size: ~1200x700, PNG or animated GIF. -->
 
 ## Which entry should I use?
@@ -150,9 +150,9 @@ import { formatDiagnostic } from 'layout-lint/diagnostics';
 | Demo | Mode | What it shows |
 | --- | --- | --- |
 | [demo/tutorial](demo/tutorial/) | programmatic | 8-step guided tour of the DSL. The broken layout snaps into place as you apply each rule. **Start here.** |
-| [demo/gallery](demo/gallery/) | drop-in | Spatial composition: `inside`, `partially inside`, percent-of widths, wildcards, groups. Drag the badge to break rules live. |
-| [demo/jazz-club](demo/jazz-club/) | drop-in | Text and CSS assertions: `text starts/ends/matches`, `css ... contains`, `count visible`. Toggle case, font, and mode to perturb the rules. |
-| [demo/control-room](demo/control-room/) | programmatic | Lab for `equal-gap`, `centered`, `aligned`, and `near`. Built on the programmatic monitor, swaps the spec live on every preset change. |
+| [demo/gallery](demo/gallery/) | drop-in | Containment and sizing across three rooms: `inside` with offsets, `partially inside`, percent-of widths, wildcards, groups. Drag the badge to break rules live. |
+| [demo/bar](demo/bar/) | drop-in | Text, CSS, visibility and count on an izakaya menu: `text starts/ends/matches`, `css ... contains`, `visible`/`absent`, `count`. Switch the language or filter the board to perturb the rules. |
+| [demo/studio](demo/studio/) | drop-in | Alignment and proximity on a web mixing desk: `aligned`, `centered`, `equal-gap`, `near`, percent-of. Ride a fader, drag a channel, or scrub the playhead. |
 
 Run them locally:
 

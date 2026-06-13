@@ -133,7 +133,6 @@ export function createLayoutLintWidget(
   const createElementRoleLabel = overlays.createElementRoleLabel;
   const createConnector = overlays.createConnector;
   const formatMeasurement = overlays.formatMeasurement;
-  const getDirectionalConnectorPoints = overlays.getDirectionalConnectorPoints;
   const getEqualGapConnectorPoints = overlays.getEqualGapConnectorPoints;
 
   let latestResults: RuleResult[] = [];
@@ -378,20 +377,6 @@ export function createLayoutLintWidget(
         createConnector(equalGapPoints[1].x1, equalGapPoints[1].y1, equalGapPoints[1].x2, equalGapPoints[1].y2, color);
         continue;
       }
-
-      if (!primaryRect || !targetRect) continue;
-
-      const connectorPoints = getDirectionalConnectorPoints(rule.relation, primaryRect, targetRect);
-      if (!connectorPoints) continue;
-
-      createConnector(
-        connectorPoints.x1,
-        connectorPoints.y1,
-        connectorPoints.x2,
-        connectorPoints.y2,
-        color,
-        `${rulePrefix} actual: ${formatMeasurement(rule.actual)}`
-      );
     }
   };
   const dragController = createWidgetDragController({

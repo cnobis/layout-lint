@@ -36,10 +36,44 @@ declare global {
   }
 }
 
+function dedent(raw: string): string {
+  const lines = raw.split("\n");
+  while (lines.length > 0 && lines[0].trim() === "") lines.shift();
+  while (lines.length > 0 && lines[lines.length - 1].trim() === "") lines.pop();
+  if (lines.length === 0) return "";
+
+  // Strip the longest leading-whitespace prefix shared by every non-blank
+  // line. A spec authored inside an indented <script type="layout-lint">
+  // block then reads flush-left in the editor instead of carrying the
+  // surrounding HTML indentation on all but the first line.
+  let common: string | null = null;
+  for (const line of lines) {
+    if (line.trim() === "") continue;
+    const indent = line.match(/^[ \t]*/)?.[0] ?? "";
+    if (common === null) {
+      common = indent;
+      continue;
+    }
+    let i = 0;
+    const max = Math.min(common.length, indent.length);
+    while (i < max && common[i] === indent[i]) i += 1;
+    common = common.slice(0, i);
+    if (common === "") break;
+  }
+
+  const prefix = common ?? "";
+  return lines
+    .map((line) => (line.startsWith(prefix) ? line.slice(prefix.length) : line.trimStart()))
+    .join("\n");
+}
+
 function collectSpecText(): { text: string; hostScript: HTMLScriptElement | null } {
   const scripts = Array.from(document.querySelectorAll<HTMLScriptElement>(SPEC_SCRIPT_SELECTOR));
   if (scripts.length === 0) return { text: "", hostScript: null };
-  const text = scripts.map((s) => s.textContent ?? "").join("\n").trim();
+  const text = scripts
+    .map((s) => dedent(s.textContent ?? ""))
+    .filter((block) => block.length > 0)
+    .join("\n");
   return { text, hostScript: scripts[0] };
 }
 
