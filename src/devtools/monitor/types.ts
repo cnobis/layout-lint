@@ -10,6 +10,12 @@ export interface LayoutLintMonitorOptions {
   autoStart?: boolean;
   observeResize?: boolean;
   observeMutations?: boolean;
+  /**
+   * Minimum interval (ms) between observer-driven evaluations. Evaluations are
+   * coalesced onto animation frames and throttled to at most one per interval,
+   * so high-frequency mutation sources (animations, live data) can't saturate
+   * the main thread. Defaults to 80.
+   */
   debounceMs?: number;
 }
 

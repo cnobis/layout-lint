@@ -92,19 +92,58 @@ export function collectSemanticDiagnostics(results: RuleResult[]): LayoutLintDia
   return diagnostics;
 }
 
-export async function runLayoutLint({
+/**
+ * Parsed form of a spec: the rules, alias definitions, and any syntax/extract
+ * diagnostics. Parsing is pure in `specText`, so callers that evaluate the same
+ * spec repeatedly (e.g. the monitor reacting to DOM changes) can parse once and
+ * re-measure many times instead of re-running the tree-sitter parser per frame.
+ */
+export interface ParsedSpec {
+  rules: Rule[];
+  definitions: Map<string, string>;
+  parseDiagnostics: LayoutLintDiagnostic[];
+}
+
+export interface ParseSpecOptions {
+  specText: string;
+  wasmUrl?: string;
+  locateFile?: (path: string) => string;
+}
+
+/** Parse a spec into rules + definitions. Loads the WASM parser on demand. */
+export async function parseSpec({
   specText,
   wasmUrl,
-  resolve,
   locateFile,
-  dom,
-}: RunLayoutLintOptions): Promise<RunLayoutLintResult> {
+}: ParseSpecOptions): Promise<ParsedSpec> {
   if (!specText) throw new Error("specText is required");
 
   const parser = await getParser(wasmUrl, locateFile);
   const tree = parser.parse(specText);
   const { rules, definitions, diagnostics: parseDiagnostics } = extractRules(tree, specText);
 
+  return { rules, definitions, parseDiagnostics };
+}
+
+export interface EvaluateParsedSpecOptions {
+  resolve?: (id: string) => HTMLElement | null;
+  /**
+   * Document used for element resolution. Defaults to `globalThis.document`.
+   * Pass an explicit value to lint against a synthetic DOM (e.g. JSDOM, happy-dom)
+   * or omit in non-browser contexts to skip DOM evaluation entirely.
+   */
+  dom?: Document;
+}
+
+/**
+ * Measure an already-parsed spec against the DOM. This is the hot path: it does
+ * no parsing, only element resolution and geometry checks, so it is cheap enough
+ * to run on every relevant DOM mutation.
+ */
+export function evaluateParsedSpec(
+  { rules, definitions, parseDiagnostics }: ParsedSpec,
+  { resolve, dom }: EvaluateParsedSpecOptions = {}
+): RunLayoutLintResult {
   const doc: Document | undefined = dom ?? (typeof document !== "undefined" ? document : undefined);
 
   // Headless mode: no DOM available. Return parse/extract diagnostics so the
@@ -125,6 +164,21 @@ export async function runLayoutLint({
 
   // Cache querySelectorAll results per selector to avoid repeated DOM queries
   const wildcardCache = new Map<string, HTMLElement[]>();
+
+  // Id-pattern count rules (e.g. `count any set-* is 5`) fall back to scanning
+  // the whole document for elements with an id. Compute that scan once per
+  // evaluation and share it across every id-pattern rule; the DOM is stable
+  // within a single synchronous evaluation, so this is safe and avoids a
+  // full-document query per such rule on large pages.
+  let idElements: HTMLElement[] | null = null;
+  const getIdElements = (): HTMLElement[] => {
+    if (idElements == null) {
+      idElements = Array.from(doc.querySelectorAll<HTMLElement>("[id]")).filter(
+        (node): node is HTMLElement => node instanceof HTMLElement
+      );
+    }
+    return idElements;
+  };
 
   const resolveWithDefinitions = (id: string): HTMLElement | null => {
     // 1. Exact match in definitions
@@ -179,9 +233,7 @@ export async function runLayoutLint({
 
     if (typeof document === "undefined") return [];
     const matcher = idPatternToRegex(pattern);
-    return Array.from(doc.querySelectorAll<HTMLElement>("[id]"))
-      .filter((node): node is HTMLElement => node instanceof HTMLElement)
-      .filter((node) => matcher.test(node.id));
+    return getIdElements().filter((node) => matcher.test(node.id));
   };
 
   const results = evaluateRules(rules, resolveWithDefinitions, resolvePatternWithDefinitions);
@@ -189,6 +241,23 @@ export async function runLayoutLint({
   const diagnostics = [...parseDiagnostics, ...semanticDiagnostics];
 
   return { rules, results, diagnostics, definitions };
+}
+
+/**
+ * Parse and evaluate a spec in one call. Convenience wrapper around
+ * `parseSpec` + `evaluateParsedSpec` for callers that evaluate a spec once.
+ * Long-lived callers that re-measure the same spec should hold the
+ * `ParsedSpec` and call `evaluateParsedSpec` directly to skip re-parsing.
+ */
+export async function runLayoutLint({
+  specText,
+  wasmUrl,
+  resolve,
+  locateFile,
+  dom,
+}: RunLayoutLintOptions): Promise<RunLayoutLintResult> {
+  const parsed = await parseSpec({ specText, wasmUrl, locateFile });
+  return evaluateParsedSpec(parsed, { resolve, dom });
 }
 
 function idPatternToRegex(pattern: string): RegExp {

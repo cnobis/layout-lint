@@ -1,3 +1,21 @@
+/* ============================================================
+   Galerie Blanche — bright, editorial, Frédéric Malle minimalism.
+   A calm warm-white room: fine serif, hairline rules, one sparse
+   red accent, and a great deal of negative space.
+   ============================================================ */
+
+:root {
+  --paper: #f6f3ee;
+  --paper-2: #fffefb;
+  --ink: #17140f;
+  --muted: #8d867a;
+  --line: #e2dbcf;
+  --line-strong: #cfc6b6;
+  --accent: #9a1b12; /* Malle red, used sparingly */
+  --serif: "Garamond", "Hoefler Text", "Georgia", serif;
+  --sans: "Helvetica Neue", "Arial", sans-serif;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -5,184 +23,373 @@
 }
 
 body {
-  font-family: 'Garamond', 'Georgia', serif;
-  background: #0a0a0a;
-  color: #e8e8e8;
-  line-height: 1.6;
-  letter-spacing: 0.05em;
+  font-family: var(--serif);
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
 }
 
+/* small tracked sans labels, the editorial connective tissue */
+#gallery-tagline,
+#nav a,
+.artwork-artist,
+#featured-heading,
+#work-medium,
+#work-dims,
+#footer,
+#back-link {
+  font-family: var(--sans);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 10.5px;
+}
+
+/* ---------- exit corner ----------
+   The exit chip itself is left exactly as every other demo renders it
+   (styled only by shared.css). To anchor it we turn up the top-right
+   corner of the sheet, like a dog-eared page. The fold shows the warm
+   back of the paper (a shade deeper than the page) with a soft crease
+   shadow, so it belongs to this warm-white room instead of sitting on
+   top of it. */
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 168px;
+  height: 168px;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(125% 125% at 100% 0%, #d8ccb6 0%, #efe8db 80%);
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+  filter: drop-shadow(-2px 2px 3px rgba(23, 20, 15, 0.12));
+}
+
+/* ---------- header ---------- */
 #header {
-  background: #000;
-  border-bottom: 1px solid #333;
-  padding: 36px 48px;
+  position: relative;
   text-align: center;
+  padding: 64px 48px 32px;
+  background:
+    radial-gradient(120% 140% at 50% -10%, #fdf4ec 0%, rgba(253, 244, 236, 0) 62%),
+    linear-gradient(180deg, #fbf5ec 0%, var(--paper) 100%);
+  border-bottom: 1px solid var(--line);
 }
 
-#header h1 {
-  font-size: 40px;
-  font-weight: 300;
-  letter-spacing: 0.15em;
+/* thin red rule pinned to the very top edge, like a Malle label frame */
+#header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 72px;
+  height: 3px;
+  background: var(--accent);
+}
+
+#gallery-kicker {
+  font-family: var(--sans);
   text-transform: uppercase;
-  color: #ccc;
-  margin-bottom: 10px;
+  letter-spacing: 0.34em;
+  font-size: 10px;
+  color: var(--accent);
+  margin-bottom: 16px;
 }
 
-#header p {
-  font-size: 12px;
-  color: #888;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+#gallery-name {
+  position: relative;
+  font-weight: 400;
+  font-size: 34px;
+  letter-spacing: 0.06em;
 }
 
+/* short centred red mark beneath the name */
+#gallery-name::after {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 2px;
+  margin: 16px auto 0;
+  background: var(--accent);
+}
+
+#gallery-tagline {
+  margin-top: 14px;
+  color: var(--muted);
+}
+
+/* ---------- nav (hairline rules) ---------- */
 #nav {
-  background: #0f0f0f;
-  padding: 18px 48px;
-  border-bottom: 1px solid #222;
   display: flex;
-  gap: 36px;
   align-items: center;
-  margin-bottom: 5px;
+  gap: 32px;
+  padding: 16px 48px;
+  max-width: 1180px;
+  margin: 0 auto;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 #nav a {
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  color: #aaa;
+  color: var(--ink);
   text-decoration: none;
-  text-transform: uppercase;
-  transition: color 0.3s ease;
+  transition: color 0.25s ease;
 }
 
 #nav a:hover {
-  color: #e8e8e8;
+  color: var(--accent);
 }
 
 #search-box {
   margin-left: auto;
-  padding: 10px 16px;
-  background: #1a1a1a;
-  border: 1px solid #333;
-  color: #e8e8e8;
-  font-family: 'Garamond', serif;
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  width: 200px;
+  width: 220px;
+  padding: 8px 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line-strong);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.1em;
 }
 
 #search-box::placeholder {
-  color: #666;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 10px;
 }
 
+#search-box:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+/* ---------- the wall: a calm grid of works ---------- */
 #gallery {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 48px;
-  padding: 64px;
-  max-width: 1400px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 56px;
+  max-width: 1180px;
   margin: 0 auto;
+  padding: 72px 48px 40px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 860px) {
   #gallery {
     grid-template-columns: 1fr;
+    gap: 64px;
   }
 }
 
 .artwork {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  display: block;
+  text-decoration: none;
+  color: inherit;
 }
 
 .artwork-image {
   width: 100%;
-  aspect-ratio: 3/4;
-  background: #1a1a1a;
+  aspect-ratio: 3 / 4;
+  background: var(--paper-2);
   overflow: hidden;
-  border: 1px solid #222;
+  box-shadow: 0 1px 0 var(--line);
 }
 
 .artwork-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-.artwork-image img:hover {
-  opacity: 0.9;
+.artwork:hover .artwork-image img {
+  opacity: 0.92;
+  transform: scale(1.012);
 }
 
 .artwork-info {
-  padding: 16px 0;
-  border-bottom: 1px solid #222;
-  padding-bottom: 16px;
+  padding-top: 18px;
 }
 
 .artwork-title {
-  font-size: 16px;
-  color: #e8e8e8;
-  margin-bottom: 8px;
-  font-weight: 400;
-  letter-spacing: 0.03em;
+  font-size: 17px;
+  font-style: italic;
+  letter-spacing: 0.01em;
 }
 
 .artwork-artist {
-  font-size: 12px;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 12px;
+  margin-top: 8px;
+  color: var(--muted);
 }
 
 .artwork-price {
-  font-size: 13px;
-  color: #aaa;
-  letter-spacing: 0.05em;
-}
-
-#footer {
-  background: #000;
-  border-top: 1px solid #222;
-  padding: 48px 64px;
-  text-align: center;
-  font-size: 12px;
-  color: #666;
+  margin-top: 10px;
+  font-family: var(--sans);
+  font-size: 11px;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-top: 50px;
+  color: var(--ink);
 }
 
+/* ---------- detail / viewing room ---------- */
+#viewing {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 80px 48px 40px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 72px;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+#featured-heading {
+  width: 100%;
+  text-align: center;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+/* The frame carries no border, so #plate's 32px inset is the exact
+   gap layout-lint measures: a generous white museum mat. */
+#frame {
+  position: relative;
+  width: 380px;
+  height: 500px;
+  background: var(--paper-2);
+  box-shadow:
+    inset 0 0 0 1px var(--line-strong),
+    0 24px 50px rgba(23, 20, 15, 0.16);
+}
+
+#plate {
+  position: absolute;
+  top: 32px;
+  left: 32px;
+  right: 32px;
+  bottom: 32px;
+  overflow: hidden;
+  background: var(--paper);
+}
+
+#plate img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* small "Acquired" tab overhanging the top-right corner */
+#sold-ribbon {
+  position: absolute;
+  top: -11px;
+  right: -11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 78px;
+  height: 22px;
+  background: var(--accent);
+  color: #f6ece9;
+  font-family: var(--sans);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+#caption-block {
+  width: 260px;
+  padding-top: 12px;
+}
+
+#work-title {
+  font-weight: 400;
+  font-style: italic;
+  font-size: 26px;
+  letter-spacing: 0.01em;
+}
+
+#work-artist {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+#work-medium {
+  margin-top: 26px;
+  color: var(--muted);
+}
+
+#work-dims {
+  margin-top: 6px;
+  color: var(--muted);
+}
+
+#work-price {
+  margin-top: 26px;
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+#back-link {
+  display: inline-block;
+  margin-top: 34px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+#back-link:hover {
+  color: var(--accent);
+}
+
+/* ---------- footer ---------- */
+#footer {
+  text-align: center;
+  color: var(--muted);
+  padding: 56px 48px 64px;
+  margin-top: 40px;
+  border-top: 1px solid var(--line);
+  font-size: 9.5px;
+}
+
+/* ---------- draggable Editor's Pick card ---------- */
 #featured-badge {
   position: fixed;
-  top: 280px;
+  top: 326px;
   left: 50%;
-  width: 180px;
-  background: #1a1a1a;
-  border: 1px solid #666;
-  padding: 16px;
-  border-radius: 2px;
+  width: 184px;
+  background: var(--paper-2);
+  border: 1px solid var(--line-strong);
+  padding: 16px 16px 18px;
   z-index: 500;
   cursor: grab;
   user-select: none;
+  box-shadow: 0 12px 30px rgba(23, 20, 15, 0.14);
 }
 
 #featured-badge.dragging {
   cursor: grabbing;
-  opacity: 0.9;
+  box-shadow: 0 18px 40px rgba(23, 20, 15, 0.22);
 }
 
 #featured-badge .badge-title {
-  font-size: 11px;
-  color: #aaa;
+  font-family: var(--sans);
+  font-size: 9.5px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 8px;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  margin-bottom: 10px;
 }
 
 #featured-badge .badge-content {
-  font-size: 12px;
-  color: #ddd;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+#featured-badge .badge-content strong {
+  font-weight: 400;
+  font-style: italic;
 }

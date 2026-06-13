@@ -1,20 +1,38 @@
-import { runLayoutLint, type RunLayoutLintResult } from "../../core/runtime.js";
+import {
+  parseSpec,
+  evaluateParsedSpec,
+  type ParsedSpec,
+  type RunLayoutLintResult,
+} from "../../core/runtime.js";
 import type { LayoutLintMonitorController, LayoutLintMonitorOptions } from "./types.js";
 
 export function createLayoutLintMonitor(options: LayoutLintMonitorOptions): LayoutLintMonitorController {
   let specText = options.specText;
+  let parsedSpec: ParsedSpec | null = null;
   let latestResult: RunLayoutLintResult | null = null;
   let running = false;
   let resizeHandler: ((event?: Event) => void) | null = null;
   let mutationObserver: MutationObserver | null = null;
-  let debounceTimer: number | null = null;
+
+  // Throttle scheduler state (see queueEvaluation).
+  let frameScheduled = false;
+  let trailingTimer: number | null = null;
+  let lastRunAt = 0;
 
   const listeners = new Set<(result: RunLayoutLintResult) => void>();
   const reporters = options.reporters ?? [];
 
-  const debounceMs = options.debounceMs ?? 80;
+  // Minimum gap between observer-driven evaluations. Bursts within this window
+  // are coalesced into a single trailing run, so high-frequency mutation
+  // sources (animations, live data) can't saturate the main thread.
+  const minIntervalMs = options.debounceMs ?? 80;
   const observeResize = options.observeResize ?? true;
   const observeMutations = options.observeMutations ?? true;
+
+  const now = (): number =>
+    typeof performance !== "undefined" && typeof performance.now === "function"
+      ? performance.now()
+      : Date.now();
 
   const isWidgetOwnedNode = (node: Node | null): boolean => {
     if (!node) return false;
@@ -49,24 +67,59 @@ export function createLayoutLintMonitor(options: LayoutLintMonitorOptions): Layo
       }
     });
 
+  const runScheduledEvaluation = () => {
+    frameScheduled = false;
+    if (!running) return;
+    lastRunAt = now();
+    void evaluateNow();
+  };
+
+  // Coalesce a burst of mutations into a single evaluation on the next animation
+  // frame (so geometry is read after the browser has laid out the frame), and
+  // never run more often than minIntervalMs. A sustained mutation stream is
+  // therefore bounded to roughly one evaluation per interval with a trailing run
+  // to capture the final state.
+  const requestFrame = () => {
+    if (frameScheduled) return;
+    frameScheduled = true;
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(runScheduledEvaluation);
+    } else {
+      window.setTimeout(runScheduledEvaluation, 16);
+    }
+  };
+
   const queueEvaluation = () => {
     if (!running) return;
-    if (debounceTimer != null) window.clearTimeout(debounceTimer);
-    debounceTimer = window.setTimeout(() => {
-      debounceTimer = null;
-      void evaluateNow();
-    }, debounceMs);
+    const elapsed = now() - lastRunAt;
+    if (elapsed >= minIntervalMs) {
+      requestFrame();
+    } else if (trailingTimer == null) {
+      trailingTimer = window.setTimeout(() => {
+        trailingTimer = null;
+        requestFrame();
+      }, minIntervalMs - elapsed);
+    }
+  };
+
+  const ensureParsed = async (): Promise<ParsedSpec> => {
+    if (!parsedSpec) {
+      parsedSpec = await parseSpec({
+        specText,
+        wasmUrl: options.wasmUrl,
+        locateFile: options.locateFile,
+      });
+    }
+    return parsedSpec;
   };
 
   const evaluateNow = async (): Promise<RunLayoutLintResult> => {
-    const result = await runLayoutLint({
-      specText,
-      wasmUrl: options.wasmUrl,
-      resolve: options.resolve,
-      locateFile: options.locateFile,
-    });
+    // Parse once per spec change; subsequent evaluations only re-measure the DOM.
+    const parsed = await ensureParsed();
+    const result = evaluateParsedSpec(parsed, { resolve: options.resolve });
 
     latestResult = result;
+    lastRunAt = now();
 
     for (const report of reporters) report(result);
     for (const listener of listeners) listener(result);
@@ -114,14 +167,17 @@ export function createLayoutLintMonitor(options: LayoutLintMonitorOptions): Layo
     mutationObserver?.disconnect();
     mutationObserver = null;
 
-    if (debounceTimer != null) {
-      window.clearTimeout(debounceTimer);
-      debounceTimer = null;
+    if (trailingTimer != null) {
+      window.clearTimeout(trailingTimer);
+      trailingTimer = null;
     }
+    frameScheduled = false;
   };
 
   const setSpecText = (nextSpecText: string) => {
     specText = nextSpecText;
+    // Spec changed: drop the cached parse so the next evaluation re-parses.
+    parsedSpec = null;
     queueEvaluation();
   };
 

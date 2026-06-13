@@ -1,16 +1,70 @@
+/*
+  Shared design tokens for the demo suite.
+
+  Every demo links this file first, then overrides these custom properties in
+  its own stylesheet to get a distinct skin while keeping spacing, radii, the
+  type scale, and the exit chip consistent across the set.
+*/
+
+:root {
+  /* Surfaces and ink */
+  --ll-bg: #0f1117;
+  --ll-surface: #171a22;
+  --ll-surface-2: #1f232e;
+  --ll-border: rgba(255, 255, 255, 0.1);
+  --ll-text: #eceeff;
+  --ll-muted: #9aa3b8;
+
+  /* Accents */
+  --ll-accent: #7a81ff;
+  --ll-accent-ink: #0f1117;
+  --ll-positive: #5cffaa;
+  --ll-warn: #ffcc66;
+  --ll-danger: #ff6b81;
+
+  /* Radius scale */
+  --ll-radius-sm: 6px;
+  --ll-radius-md: 10px;
+  --ll-radius-lg: 16px;
+  --ll-radius-pill: 999px;
+
+  /* Spacing scale */
+  --ll-space-1: 4px;
+  --ll-space-2: 8px;
+  --ll-space-3: 12px;
+  --ll-space-4: 16px;
+  --ll-space-5: 24px;
+  --ll-space-6: 32px;
+
+  /* Type */
+  --ll-font-sans: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  --ll-font-mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+  --ll-font-serif: "Georgia", "Times New Roman", serif;
+  --ll-fs-xs: 11px;
+  --ll-fs-sm: 13px;
+  --ll-fs-md: 15px;
+  --ll-fs-lg: 20px;
+  --ll-fs-xl: 32px;
+
+  --ll-shadow: 0 18px 40px rgba(0, 0, 0, 0.38);
+
+  /* Exit chip accent (kept constant across skins) */
+  --ll-exit-accent: 122, 129, 255;
+}
+
 #demo-exit {
   position: fixed;
   top: 12px;
   right: 14px;
   z-index: 900;
   padding: 6px 11px;
-  border-radius: 999px;
-  border: 1px solid rgba(122, 129, 255, 0.58);
-  background: rgba(122, 129, 255, 0.24);
+  border-radius: var(--ll-radius-pill);
+  border: 1px solid rgba(var(--ll-exit-accent), 0.58);
+  background: rgba(var(--ll-exit-accent), 0.24);
   color: #eceeff;
   text-decoration: none;
   font-size: 10px;
-  font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  font-family: var(--ll-font-sans);
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -20,8 +74,8 @@
 
 #demo-exit:hover,
 #demo-exit:focus-visible {
-  background: rgba(122, 129, 255, 0.36);
-  border-color: rgba(122, 129, 255, 0.78);
+  background: rgba(var(--ll-exit-accent), 0.36);
+  border-color: rgba(var(--ll-exit-accent), 0.78);
   color: #f7f8ff;
   outline: none;
 }

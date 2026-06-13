@@ -54,7 +54,7 @@ export const createWidgetHeaderControls = (titleText: string): WidgetHeaderContr
 
   const title = document.createElement("span");
   title.textContent = titleText;
-  title.style.fontFamily = '"Helvetica Neue", Helvetica, Arial, sans-serif';
+  title.style.fontFamily = '"Helvetica Rounded", ui-rounded, "Helvetica Neue", Helvetica, Arial, sans-serif';
   title.style.fontWeight = "300";
   title.style.letterSpacing = "0.01em";
   title.style.whiteSpace = "nowrap";

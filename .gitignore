@@ -2,6 +2,9 @@
 # Never tracked or pushed to the main repo.
 thesis/
 notes/
+
+# Claude Code workspace instructions (local AI tooling, not part of the repo)
+CLAUDE.md
 *.tex
 *.bib
 THESIS_LOG.md

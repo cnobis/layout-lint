@@ -1,0 +1,669 @@
+/* ============================================================
+   Studio — a small web synth / mixing desk.
+   Teenage-Engineering-ish: charcoal panel, cream legends, one
+   warm accent. Every control is a real affordance: faders slide,
+   strips drag, knobs turn, the playhead scrubs.
+   ============================================================ */
+
+:root {
+  --panel: #1b1c21;
+  --panel-2: #23242b;
+  --panel-3: #2b2d36;
+  --rail: #0f1014;
+  --ink: #eceae3;
+  --cream: #e7e1d2;
+  --muted: #8a8d99;
+  --line: #34363f;
+  --line-soft: #2a2c34;
+  --accent: #e8772e;  /* warm orange */
+  --teal: #46c6b0;
+  --yellow: #f2c14e;
+  --mono: "SFMono-Regular", "JetBrains Mono", "Menlo", "Consolas", monospace;
+  --sans: "Inter", "Helvetica Neue", "Arial", sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--sans);
+  background: #0c0d10;
+  color: var(--ink);
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- top transport bar ---------- */
+#topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  /* extra right room so the transport clears the fixed exit chip */
+  padding: 12px 132px 12px 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+
+#brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+
+#sidebar-toggle {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--panel-3);
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 1;
+}
+
+#sidebar-toggle:hover {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
+#logo {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.brand-word {
+  font-family: var(--mono);
+  font-size: 15px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+#patch-name {
+  flex: 1 1 auto;
+  max-width: 360px;
+  padding: 7px 12px;
+  background: var(--rail);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+#patch-name:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+#transport-badge {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+
+#transport {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--panel-3);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+#transport-mark {
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* ---------- app frame ---------- */
+#app {
+  display: flex;
+  align-items: stretch;
+  min-height: calc(100vh - 59px);
+}
+
+#sidebar {
+  flex: none;
+  width: 240px;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: hidden;
+  transition: width 0.18s ease, padding 0.18s ease;
+}
+
+#sidebar.collapsed {
+  width: 72px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+#sidebar.collapsed .rack-label {
+  display: none;
+}
+
+#sidebar.collapsed .preset {
+  padding-left: 10px;
+  padding-right: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#preset-rack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rack-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.preset {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 12px;
+  border-radius: 6px;
+  background: var(--panel-2);
+  border: 1px solid var(--line-soft);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.preset:hover {
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.preset.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(232, 119, 46, 0.08);
+}
+
+#meter {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 120px;
+  border-radius: 8px;
+  background: var(--rail);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+#meter::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* master fader drives the fill height */
+  height: var(--meter-fill, 62%);
+  background: linear-gradient(180deg, var(--teal), rgba(70, 198, 176, 0.15));
+  opacity: 0.55;
+}
+
+#meter-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--cream);
+  z-index: 2;
+}
+
+.meter-cap {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  z-index: 2;
+}
+
+/* ---------- main desk ---------- */
+#content {
+  flex: 1;
+  min-width: 0;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+#page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+#page-title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+#page-sub {
+  margin-top: 4px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+/* transport timeline: a fixed cue and a draggable playhead */
+#transport-zone {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+#timeline {
+  position: relative;
+  flex: none;
+  width: 248px;
+  height: 120px;
+  border-radius: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+#timeline::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 156px;
+  width: 1px;
+  background: repeating-linear-gradient(180deg, var(--line) 0 4px, transparent 4px 8px);
+}
+
+#cue {
+  position: absolute;
+  left: 150px;
+  top: 90px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 0 4px rgba(70, 198, 176, 0.2);
+}
+
+#playhead {
+  position: absolute;
+  left: 170px;
+  top: 70px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(232, 119, 46, 0.22);
+  cursor: grab;
+  touch-action: none;
+  z-index: 5;
+}
+
+#playhead:active {
+  cursor: grabbing;
+}
+
+#playhead::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+
+/* the cue's pocket: a dashed target the playhead snaps into */
+#cue-target {
+  position: absolute;
+  left: 164px;
+  top: 64px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px dashed rgba(232, 119, 46, 0.55);
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* ---------- mixer row: two channel strips beside the pads ---------- */
+#mixer-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+#desk {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex: 0 0 auto;
+  width: 280px;
+  max-width: 100%;
+}
+
+.channel {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 248px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 10px 14px;
+  border-radius: 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+/* master bus: its own full-width row beneath the mixer */
+.channel.master {
+  flex: none;
+  flex-direction: row;
+  align-items: center;
+  gap: 18px;
+  min-height: 0;
+  margin-top: 16px;
+  padding: 14px 18px;
+  background: var(--panel-2);
+  border-color: var(--line);
+}
+
+.channel.master .strip-handle {
+  width: auto;
+  flex: none;
+  padding: 0;
+  border-bottom: none;
+  cursor: default;
+  color: var(--ink);
+  letter-spacing: 0.18em;
+}
+
+.channel.master .knob {
+  width: 56px;
+  flex: none;
+}
+
+#master-gain .knob-pointer {
+  background: var(--accent);
+}
+
+.master-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: none;
+  min-width: 42px;
+}
+
+.master-cap {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.master-bar {
+  position: relative;
+  flex: 1 1 auto;
+  height: 14px;
+  border-radius: 7px;
+  background: var(--rail);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.master-bar-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 7px 0 0 7px;
+  background: linear-gradient(90deg, rgba(232, 119, 46, 0.3), var(--accent));
+}
+
+.strip-handle {
+  width: 100%;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line-soft);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+/* per-channel identity: a colour LED on the handle and a matching knob
+   pointer, so the four strips read as distinct channels rather than copies */
+.ch-led {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: middle;
+  background: var(--led, var(--muted));
+  box-shadow: 0 0 6px var(--led, transparent);
+}
+
+#strip-1 {
+  --led: var(--accent);
+}
+#strip-2 {
+  --led: var(--yellow);
+}
+
+#strip-1 .knob-pointer {
+  background: var(--accent);
+}
+#strip-2 .knob-pointer {
+  background: var(--yellow);
+}
+
+.channel.dragging {
+  border-color: var(--accent);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+}
+
+.channel.dragging .strip-handle {
+  cursor: grabbing;
+}
+
+/* knobs: real rotary affordances */
+.knob {
+  position: relative;
+  width: 42px;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 38%, var(--panel-3), #15161b 80%);
+  border: 1px solid var(--line);
+  touch-action: none;
+  cursor: ns-resize;
+}
+
+.knob-dial {
+  position: absolute;
+  inset: 0;
+  transform: rotate(var(--angle, 0deg));
+}
+
+.knob-pointer {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  width: 2px;
+  height: 14px;
+  margin-left: -1px;
+  background: var(--cream);
+  border-radius: 1px;
+}
+
+/* faders: drag to set level */
+.fader {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  width: 100%;
+}
+
+.fader-rail {
+  position: relative;
+  width: 12px;
+  border-radius: 7px;
+  background: var(--rail);
+  border: 1px solid var(--line);
+  touch-action: none;
+  cursor: ns-resize;
+}
+
+.fader-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 0 0 7px 7px;
+  background: linear-gradient(180deg, var(--accent), rgba(232, 119, 46, 0.25));
+}
+
+.fader-cap {
+  position: absolute;
+  left: 50%;
+  width: 30px;
+  height: 12px;
+  margin-left: -15px;
+  border-radius: 3px;
+  background: var(--cream);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+  transform: translateY(50%);
+}
+
+.ch-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+/* ---------- pad grid (sits beside the strips) ---------- */
+#pads {
+  flex: 1 1 320px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  max-width: 520px;
+}
+
+.pad {
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: background 0.08s ease, border-color 0.08s ease;
+}
+
+.pad:hover {
+  border-color: var(--muted);
+}
+
+.pad.lit {
+  background: rgba(232, 119, 46, 0.85);
+  border-color: var(--accent);
+  box-shadow: 0 0 14px rgba(232, 119, 46, 0.5);
+}
+
+/* overload light, hidden until a fader is pushed into the red */
+#clip-light {
+  position: fixed;
+  top: 70px;
+  right: 22px;
+  z-index: 40;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #1b1c21;
+  background: var(--yellow);
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+#clip-light.is-hidden {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  #timeline { width: 200px; }
+}

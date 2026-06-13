@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="fr" translate="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="google" content="notranslate" />
+  <title>Galerie Blanche — Luminescence</title>
+  <link rel="stylesheet" href="../shared.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+  <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT DEMO</a>
+
+  <header id="header">
+    <h1 id="gallery-name">Galerie Blanche</h1>
+    <p id="gallery-tagline">Éditions Contemporaines</p>
+  </header>
+
+  <nav id="nav">
+    <a href="./index.html">Room I</a>
+    <a href="./room.html">Room II</a>
+    <a href="./work.html">On View</a>
+    <input id="search-box" type="text" placeholder="Search the collection">
+  </nav>
+
+  <section id="viewing">
+    <h2 id="featured-heading">On view</h2>
+
+    <div id="frame">
+      <div id="plate">
+        <img src="../images/gallery/bluewithred.jpeg" alt="Luminescence by James Whitfield">
+      </div>
+      <span id="sold-ribbon">Acquired</span>
+    </div>
+
+    <div id="caption-block">
+      <h3 id="work-title">Luminescence</h3>
+      <div id="work-artist">James Whitfield, 2024</div>
+      <div id="work-medium">Oil on linen</div>
+      <div id="work-dims">120 × 90 cm</div>
+      <div id="work-price">€12,000</div>
+      <a id="back-link" href="./index.html">Return to Room I</a>
+    </div>
+  </section>
+
+  <footer id="footer">
+    Galerie Blanche · Rue de Sèvres · By appointment
+  </footer>
+
+  <!--
+    The framed piece is the geometry showcase: the mat is a fixed 32px inset,
+    so #plate sits an exact gap from every edge of #frame, and the Acquired
+    tab overhangs the corner with negative offsets.
+  -->
+  <script type="layout-lint">
+    group room as header, nav, viewing, footer;
+
+    header above nav 0px;
+    viewing below nav 0px;
+    footer below viewing 0px;
+
+    # containment with per-side offsets: the museum mat is an exact 32px
+    frame inside viewing;
+    plate inside frame 32px top right bottom left;
+    plate inside frame 32px top, 32px bottom;
+    plate width 80 to 90% of frame/width;
+
+    # the Acquired tab overhangs the corner: only partially contained
+    sold-ribbon partially inside frame;
+    sold-ribbon partially inside frame -11px top, -11px right;
+
+    # caption sits to the right of the frame
+    caption-block right-of frame 40 to 90px;
+    frame taller-than caption-block;
+
+    # the label stacks in reading order
+    work-artist below work-title 0px;
+    work-medium below work-artist 0px;
+    work-price below work-medium 0px;
+    back-link inside caption-block;
+
+    @room visible;
+  </script>
+  <script type="module" src="../../dist/auto.bundle.js"></script>
+
+  <script type="module">
+    // The detail page is shared: each artwork links here with ?work=<slug>,
+    // and we swap in that piece's plate, caption, and ribbon. Defaults to
+    // Luminescence so the "On View" nav link keeps its featured piece.
+    const works = {
+      "luminescence": {
+        title: "Luminescence", artist: "James Whitfield", year: "2024",
+        medium: "Oil on linen", dims: "120 \u00d7 90 cm", price: "\u20ac12,000",
+        img: "../images/gallery/bluewithred.jpeg", ribbon: "Acquired"
+      },
+      "coupe-severe": {
+        title: "Coupe S\u00e9v\u00e8re", artist: "Marie C\u00f4t\u00e9", year: "2023",
+        medium: "Gelatin silver print", dims: "60 \u00d7 45 cm", price: "\u20ac8,500",
+        img: "../images/gallery/barbershop.jpeg", ribbon: "Available"
+      },
+      "apnee": {
+        title: "Apn\u00e9e", artist: "Sophie Laurent", year: "2022",
+        medium: "Archival pigment print", dims: "90 \u00d7 90 cm", price: "\u20ac6,800",
+        img: "../images/gallery/swimmer.jpeg", ribbon: "Available"
+      },
+      "bassin-3": {
+        title: "Bassin, No. 3", artist: "Sophie Laurent", year: "2023",
+        medium: "Archival pigment print", dims: "80 \u00d7 100 cm", price: "\u20ac7,200",
+        img: "../images/gallery/swimmer.jpeg", ribbon: "Available"
+      },
+      "interieur": {
+        title: "Int\u00e9rieur au Fauteuil", artist: "Marie C\u00f4t\u00e9", year: "2024",
+        medium: "Oil on linen", dims: "100 \u00d7 80 cm", price: "\u20ac9,400",
+        img: "../images/gallery/barbershop.jpeg", ribbon: "Available"
+      },
+      "champ-rouge": {
+        title: "Champ Rouge", artist: "James Whitfield", year: "2023",
+        medium: "Acrylic on canvas", dims: "130 \u00d7 110 cm", price: "\u20ac11,000",
+        img: "../images/gallery/bluewithred.jpeg", ribbon: "Acquired"
+      }
+    };
+
+    const slug = new URLSearchParams(window.location.search).get("work");
+    const work = works[slug] || works["luminescence"];
+
+    const plate = document.querySelector("#plate img");
+    plate.src = work.img;
+    plate.alt = `${work.title} by ${work.artist}`;
+    document.getElementById("work-title").textContent = work.title;
+    document.getElementById("work-artist").textContent = `${work.artist}, ${work.year}`;
+    document.getElementById("work-medium").textContent = work.medium;
+    document.getElementById("work-dims").textContent = work.dims;
+    document.getElementById("work-price").textContent = work.price;
+    document.getElementById("sold-ribbon").textContent = work.ribbon;
+    document.title = `Galerie Blanche \u2014 ${work.title}`;
+
+    // No wall on the detail page, so the search box takes you back to the
+    // rooms to browse the full collection.
+    const box = document.getElementById("search-box");
+    box.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") window.location.href = "./index.html";
+    });
+  </script>
+
+</body>
+</html>

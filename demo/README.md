@@ -1,17 +1,17 @@
 # layout-lint demos
 
-Four fixtures: one guided tutorial, two drop-in showcases, and one power-user lab.
+Four pages: one guided tutorial and three drop-in demos that get progressively harder to hold together.
 
 | Folder | Mode | Focus |
 | --- | --- | --- |
 | [tutorial](./tutorial/) | programmatic | Learn the DSL in 8 guided rules; the broken layout snaps into place as you apply each one |
-| [gallery](./gallery/) | drop-in | Spatial composition: `inside`, `partially inside`, percent-of widths, wildcards, groups |
-| [jazz-club](./jazz-club/) | drop-in | Text and CSS assertions: `text starts/ends/matches`, `css ... contains`, `count visible` |
-| [control-room](./control-room/) | programmatic | Builds the monitor by hand and swaps the spec live on every preset change |
+| [gallery](./gallery/) | drop-in | Containment and sizing: `inside` with offsets, `partially inside`, percent-of widths, wildcards, groups |
+| [bar](./bar/) | drop-in | Text, CSS, visibility and count: `text starts/ends/matches`, `css ... contains`, `visible`/`absent`, `count` |
+| [studio](./studio/) | drop-in | Alignment and proximity on a web mixing desk: `aligned`, `centered`, `equal-gap`, `near`, percent-of |
 
 ## How the drop-in demos are wired
 
-Both drop-in demos use the same two tags you'd ship in production:
+All three demos use the same two tags you'd ship in production:
 
 ```html
 <script type="layout-lint">
@@ -24,9 +24,9 @@ That's it. No imports, no `createLayoutLintMonitor`, no reporter wiring. The aut
 
 The demos point at `../../dist/auto.bundle.js` so they work offline; in production swap that path for `https://esm.sh/layout-lint/auto` or your bundled npm import.
 
-## How the programmatic demos are wired
+## How the tutorial is wired
 
-The Tutorial and Control Room demos drive the monitor by hand because they need to rewrite the spec live (the tutorial grows it rule-by-rule; control-room swaps it on every preset). Both use `createLayoutLintMonitor` + `createLayoutLintWidget` directly from `../../dist/devtools/index.js`. This is also a useful reference if you ever need to drive the monitor yourself from a framework.
+The Tutorial drives the monitor by hand because it rewrites the spec live, growing it rule-by-rule as you advance. It uses `createLayoutLintMonitor` + `createLayoutLintWidget` directly from `../../dist/devtools/index.js`. This is also a useful reference if you ever need to drive the monitor yourself from a framework.
 
 ## Run
 

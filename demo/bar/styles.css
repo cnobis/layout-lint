@@ -1,0 +1,476 @@
+:root {
+  --wood: #241813;
+  --wood-2: #2e1f17;
+  --paper: #f3ead3;
+  --paper-2: #fbf5e6;
+  --ink: #221810;
+  --muted: #7c6a52;
+  --line: #d9caa6;
+  --line-strong: #c4ad7e;
+  --lantern: #c0392b; /* the red akachōchin */
+  --gold: #c9972f;
+  --mincho: "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", "Songti SC", serif;
+  --gothic: "Hiragino Kaku Gothic ProN", "Yu Gothic", "MS PGothic", "Heiti SC", sans-serif;
+  --latin: "Georgia", "Times New Roman", serif;
+  --pixel: "DotGothic16", var(--gothic); /* Japanese dot-bitmap font, gamey feel */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--gothic);
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--wood) 0,
+      var(--wood) 38px,
+      var(--wood-2) 38px,
+      var(--wood-2) 39px
+    );
+  color: var(--ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  padding: 0 16px 48px;
+}
+
+#page {
+  max-width: 940px;
+  margin: 0 auto;
+}
+
+/* ---------- header: the shopfront ---------- */
+#header {
+  position: relative;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-top: 8px solid var(--lantern);
+  margin-top: 24px;
+  padding: 26px 28px 22px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+#lantern {
+  flex: none;
+  width: 76px;
+  height: 92px;
+  border-radius: 42% / 50%;
+  background:
+    radial-gradient(circle at 50% 38%, #e2604f, var(--lantern) 62%, #8c241a 100%);
+  border: 2px solid #5e1813;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fbe9c8;
+  font-family: var(--mincho);
+  font-size: 34px;
+  font-weight: 700;
+  box-shadow:
+    inset 0 0 0 6px rgba(94, 24, 19, 0.35),
+    0 6px 14px rgba(0, 0, 0, 0.4);
+}
+
+#shop-block {
+  flex: 1 1 auto;
+}
+
+#shop-name {
+  font-family: var(--mincho);
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--ink);
+}
+
+#shop-sub {
+  margin-top: 6px;
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+#lang-btn {
+  flex: none;
+  align-self: flex-start;
+  font-family: var(--gothic);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  padding: 8px 14px;
+  background: var(--ink);
+  color: var(--paper-2);
+  border: none;
+  cursor: pointer;
+}
+
+#lang-btn:hover {
+  background: var(--lantern);
+}
+
+#status-pill {
+  flex: none;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--pixel);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: #2f7d32;
+  background: #eaf3ea;
+  border: 1px solid #b7d3b5;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+#status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #34a853;
+  box-shadow: 0 0 0 2px rgba(52, 168, 83, 0.25);
+}
+
+/* ---------- hero: the backlit bottle shelf ---------- */
+#hero {
+  position: relative;
+  height: 160px;
+  overflow: hidden;
+  background: #1a0e0a;
+  border-left: 2px solid var(--ink);
+  border-right: 2px solid var(--ink);
+}
+
+#hero-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 40%;
+}
+
+#hero-caption {
+  position: absolute;
+  left: 20px;
+  bottom: 16px;
+  font-family: var(--pixel);
+  font-size: 24px;
+  letter-spacing: 0.12em;
+  color: #fbe9c8;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.9), 0 1px 8px rgba(0, 0, 0, 0.85);
+}
+
+/* ---------- category tabs ---------- */
+#tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin-top: 0;
+  border-left: 2px solid var(--ink);
+  border-right: 2px solid var(--ink);
+  background: var(--ink);
+}
+
+.tab {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--pixel);
+  letter-spacing: 0.08em;
+  padding: 9px 8px;
+  background: var(--wood-2);
+  color: var(--paper);
+  border: none;
+  border-right: 1px solid #000;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.tab-en {
+  font-size: 13px;
+  letter-spacing: 0.1em;
+}
+
+.tab-jp {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--line);
+}
+
+.tab:last-child {
+  border-right: none;
+}
+
+.tab:hover {
+  background: #3c2a1f;
+}
+
+.tab.active {
+  background: var(--lantern);
+  color: #fff6e6;
+}
+
+.tab.active .tab-jp {
+  color: #f6dccd;
+}
+
+/* ---------- main: menu board + sidebar ---------- */
+#main {
+  display: flex;
+  gap: 28px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-top: none;
+  padding: 26px 28px 30px;
+}
+
+#board {
+  flex: 1 1 60%;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+body.lang-en #board {
+  flex-direction: column;
+  gap: 0;
+}
+
+#board-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#sidebar {
+  flex: 1 1 36%;
+  min-width: 0;
+}
+
+#board-title {
+  flex: none;
+  font-family: var(--mincho);
+  font-size: 24px;
+  letter-spacing: 0.18em;
+  writing-mode: vertical-rl;
+  padding-left: 10px;
+  border-left: 2px solid var(--ink);
+}
+
+body.lang-en #board-title {
+  writing-mode: horizontal-tb;
+  font-family: var(--latin);
+  font-style: italic;
+  align-self: stretch;
+  letter-spacing: 0.1em;
+  padding-left: 0;
+  padding-bottom: 8px;
+  border-left: none;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 16px;
+}
+
+.menu-group {
+  margin-bottom: 22px;
+}
+
+.group-title {
+  font-family: var(--pixel);
+  font-size: 16px;
+  color: var(--lantern);
+  letter-spacing: 0.14em;
+  padding: 3px 0;
+  border-bottom: 1px dashed var(--line-strong);
+  margin-bottom: 10px;
+}
+
+.menu-list {
+  list-style: none;
+}
+
+.menu-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px dotted var(--line);
+}
+
+.menu-jp {
+  font-family: var(--mincho);
+  font-size: 15px;
+  letter-spacing: 0.04em;
+}
+
+#furigana-rt {
+  font-size: 0.55em;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.menu-en {
+  display: none;
+  font-family: var(--gothic);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  margin-top: 1px;
+}
+
+body.lang-en .menu-en {
+  display: block;
+}
+
+.menu-price {
+  flex: none;
+  font-family: var(--mincho);
+  font-size: 15px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.menu-price::before {
+  content: "·····";
+  color: var(--line-strong);
+  margin-right: 8px;
+  letter-spacing: 2px;
+}
+
+#price-note {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line-strong);
+  font-family: var(--mincho);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+/* ---------- sidebar cards ---------- */
+.card {
+  background: var(--paper-2);
+  border: 1px solid var(--line-strong);
+  padding: 16px 16px 18px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-family: var(--mincho);
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  color: var(--lantern);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+#special .special-name {
+  font-family: var(--mincho);
+  font-size: 19px;
+  margin-bottom: 4px;
+}
+
+#special .special-meta {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+#special-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+#special-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#limited-stamp {
+  flex: none;
+  width: 72px;
+  height: 72px;
+  display: block;
+}
+
+/* lo-fi pixelation: tiny rasters upscaled with nearest-neighbour, the chunky
+   look older Japanese sites get from baking kanji into small bitmaps. */
+#limited-stamp,
+.pixel-glyph {
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+.hours-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.hours-table th,
+.hours-table td {
+  text-align: left;
+  padding: 4px 0;
+  border-bottom: 1px dotted var(--line);
+}
+
+.hours-table th {
+  font-weight: 400;
+  color: var(--muted);
+  font-family: var(--mincho);
+  letter-spacing: 0.06em;
+}
+
+.hours-table td {
+  text-align: right;
+  font-family: var(--mincho);
+}
+
+#welcome {
+  font-family: var(--mincho);
+  font-size: 14px;
+  line-height: 1.85;
+  color: var(--ink);
+  white-space: pre-line;
+}
+
+#staff-note {
+  display: none;
+}
+
+/* ---------- footer ---------- */
+#footer {
+  background: var(--ink);
+  color: var(--line);
+  border: 2px solid var(--ink);
+  border-top: none;
+  padding: 16px 28px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.foot-jp {
+  font-family: var(--mincho);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--line);
+}
+
+.foot-en {
+  font-family: var(--gothic);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}

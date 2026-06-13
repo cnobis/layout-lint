@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>赤提灯 — Akachōchin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" />
+  <link rel="stylesheet" href="../shared.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT DEMO</a>
+
+  <div id="page">
+
+    <header id="header">
+      <div id="lantern" aria-hidden="true">酒</div>
+      <div id="shop-block">
+        <h1 id="shop-name">赤提灯</h1>
+        <p id="shop-sub">Akachōchin · Izakaya · Since 1974</p>
+      </div>
+      <div id="status-pill"><span id="status-dot" aria-hidden="true"></span>営業中</div>
+      <button id="lang-btn" type="button">English</button>
+    </header>
+
+    <!-- the backlit bottle shelf behind the counter, with a caption laid over it -->
+    <div id="hero">
+      <img id="hero-img" src="../images/bar/catclub.jpg" alt="" />
+      <div id="hero-caption">一杯どうぞ</div>
+    </div>
+
+    <!-- category tabs: a real bilingual menu filter, default すべて -->
+    <nav id="tabs">
+      <button class="tab active" type="button" data-cat="all"><span class="tab-en">All</span><span class="tab-jp">すべて</span></button>
+      <button class="tab" type="button" data-cat="skewer"><span class="tab-en">Skewers</span><span class="tab-jp">焼き鳥</span></button>
+      <button class="tab" type="button" data-cat="plate"><span class="tab-en">Small Plates</span><span class="tab-jp">一品</span></button>
+      <button class="tab" type="button" data-cat="drink"><span class="tab-en">Drinks</span><span class="tab-jp">飲み物</span></button>
+      <button class="tab" type="button" data-cat="finish"><span class="tab-en">To Finish</span><span class="tab-jp">しめ</span></button>
+    </nav>
+
+    <div id="main">
+      <section id="board">
+        <h2 id="board-title">本日のお品書き</h2>
+        <div id="board-body">
+
+        <div class="menu-group" data-cat="skewer">
+          <h3 class="group-title">焼き鳥 · Skewers</h3>
+          <ul class="menu-list">
+            <li class="menu-item" data-cat="skewer" id="skewer-1">
+              <div><p class="menu-jp">ねぎま</p><p class="menu-en">Chicken &amp; Leek</p></div>
+              <p class="menu-price">¥220</p>
+            </li>
+            <li class="menu-item" data-cat="skewer" id="skewer-2">
+              <div><p class="menu-jp">つくね</p><p class="menu-en">Chicken Meatball</p></div>
+              <p class="menu-price">¥240</p>
+            </li>
+            <li class="menu-item" data-cat="skewer" id="skewer-3">
+              <div><p class="menu-jp"><ruby><span id="furigana-base">砂肝</span><rt id="furigana-rt">すなぎも</rt></ruby></p><p class="menu-en">Gizzard</p></div>
+              <p class="menu-price">¥200</p>
+            </li>
+            <li class="menu-item" data-cat="skewer" id="skewer-4">
+              <div><p class="menu-jp">鶏皮</p><p class="menu-en">Crispy Chicken Skin</p></div>
+              <p class="menu-price">¥200</p>
+            </li>
+            <li class="menu-item" data-cat="skewer" id="skewer-5">
+              <div><p class="menu-jp">ぼんじり</p><p class="menu-en">Chicken Tail</p></div>
+              <p class="menu-price">¥260</p>
+            </li>
+          </ul>
+        </div>
+
+        <div class="menu-group" data-cat="plate">
+          <h3 class="group-title">一品 · Small Plates</h3>
+          <ul class="menu-list">
+            <li class="menu-item" data-cat="plate" id="plate-1">
+              <div><p class="menu-jp">冷奴</p><p class="menu-en">Chilled Tofu</p></div>
+              <p class="menu-price">¥320</p>
+            </li>
+            <li class="menu-item" data-cat="plate" id="plate-2">
+              <div><p class="menu-jp">枝豆</p><p class="menu-en">Edamame</p></div>
+              <p class="menu-price">¥300</p>
+            </li>
+            <li class="menu-item" data-cat="plate" id="plate-3">
+              <div><p class="menu-jp">だし巻き玉子</p><p class="menu-en">Rolled Omelette</p></div>
+              <p class="menu-price">¥420</p>
+            </li>
+            <li class="menu-item" data-cat="plate" id="plate-4">
+              <div><p class="menu-jp">ポテトサラダ</p><p class="menu-en">Potato Salad</p></div>
+              <p class="menu-price">¥360</p>
+            </li>
+          </ul>
+        </div>
+
+        <div class="menu-group" data-cat="drink">
+          <h3 class="group-title">飲み物 · Drinks</h3>
+          <ul class="menu-list">
+            <li class="menu-item" data-cat="drink" id="drink-1">
+              <div><p class="menu-jp">生ビール</p><p class="menu-en">Draft Beer</p></div>
+              <p class="menu-price">¥520</p>
+            </li>
+            <li class="menu-item" data-cat="drink" id="drink-2">
+              <div><p class="menu-jp">角ハイボール</p><p class="menu-en">Kaku Highball</p></div>
+              <p class="menu-price">¥470</p>
+            </li>
+            <li class="menu-item" data-cat="drink" id="drink-3">
+              <div><p class="menu-jp">レモンサワー</p><p class="menu-en">Lemon Sour</p></div>
+              <p class="menu-price">¥420</p>
+            </li>
+            <li class="menu-item" data-cat="drink" id="drink-4">
+              <div><p class="menu-jp">熱燗</p><p class="menu-en">Hot Sake</p></div>
+              <p class="menu-price">¥480</p>
+            </li>
+            <li class="menu-item" data-cat="drink" id="drink-5">
+              <div><p class="menu-jp">ウーロン茶</p><p class="menu-en">Oolong Tea</p></div>
+              <p class="menu-price">¥210</p>
+            </li>
+          </ul>
+        </div>
+
+        <div class="menu-group" data-cat="finish">
+          <h3 class="group-title">しめ · To Finish</h3>
+          <ul class="menu-list">
+            <li class="menu-item" data-cat="finish" id="finish-1">
+              <div><p class="menu-jp">焼きおにぎり</p><p class="menu-en">Grilled Rice Ball</p></div>
+              <p class="menu-price">¥260</p>
+            </li>
+            <li class="menu-item" data-cat="finish" id="finish-2">
+              <div><p class="menu-jp">鶏そぼろ丼</p><p class="menu-en">Chicken Soboro Bowl</p></div>
+              <p class="menu-price">¥580</p>
+            </li>
+            <li class="menu-item" data-cat="finish" id="finish-3">
+              <div><p class="menu-jp">お茶漬け</p><p class="menu-en">Ochazuke</p></div>
+              <p class="menu-price">¥420</p>
+            </li>
+          </ul>
+        </div>
+
+        <p id="price-note">お通し ¥300 ・ 価格はすべて税込</p>
+        </div>
+      </section>
+
+      <aside id="sidebar">
+        <div id="special" class="card">
+          <h3 class="card-title">本日のおすすめ · Today's Special</h3>
+          <div id="special-row">
+            <div id="special-text">
+              <p class="special-name">鶏白湯ラーメン</p>
+              <p class="special-meta">Chicken Paitan Ramen · ¥780<br>限定二十食</p>
+            </div>
+            <!-- 期間限定: the title is baked into an image, not set as live text -->
+            <img id="limited-stamp" width="72" height="72" alt="期間限定"
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cg transform='rotate(-7 50 50)'%3E%3Ccircle cx='50' cy='50' r='44' fill='none' stroke='%23c0392b' stroke-width='4'/%3E%3Ccircle cx='50' cy='50' r='38' fill='none' stroke='%23c0392b' stroke-width='1.5'/%3E%3Ctext x='50' y='35' text-anchor='middle' dominant-baseline='central' font-family='serif' font-size='27' font-weight='700' fill='%23c0392b'%3E限%3C/text%3E%3Ctext x='50' y='65' text-anchor='middle' dominant-baseline='central' font-family='serif' font-size='27' font-weight='700' fill='%23c0392b'%3E定%3C/text%3E%3C/g%3E%3C/svg%3E" />
+          </div>
+        </div>
+
+        <div id="hours-card" class="card">
+          <h3 class="card-title">営業時間 · Hours</h3>
+          <table class="hours-table">
+            <tr><th>月 – 木</th><td>17:00 – 24:00</td></tr>
+            <tr><th>金 · 土</th><td>17:00 – 26:00</td></tr>
+            <tr><th>日</th><td>定休</td></tr>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">店主より · From the Owner</h3>
+          <p id="welcome">Pull up a stool,
+stay a while,
+the lantern is lit.</p>
+        </div>
+
+        <div id="staff-note">Staff only · 賄いは21時</div>
+      </aside>
+    </div>
+
+    <footer id="footer">
+      <span class="foot-jp">赤提灯 · 新宿ゴールデン街 · 現金のみ</span>
+      <span class="foot-en">Akachōchin · Shinjuku Golden Gai, Tokyo · Cash only · Open from 17:00</span>
+    </footer>
+
+  </div>
+
+  <!--
+    Drop-in usage: the auto entry picks up the <script type="layout-lint">
+    block and mounts the widget. The two fixture interactions are real menu
+    features: the JP/English switch swaps the board title text and font, and
+    the category tabs filter the list. Both are DOM/style mutations the default
+    observer catches, so layout-lint re-evaluates on its own.
+  -->
+  <script type="layout-lint">
+    # a class selector needs a name; id-prefix wildcards (skewer-*) resolve on their own
+    define menu-item as ".menu-item";
+
+    # structure of the shopfront
+    hero below header 0px;
+    tabs below hero 0px;
+    main below tabs 0px;
+    footer below main 0px;
+    lantern inside header;
+    lang-btn inside header;
+    board left-of sidebar;
+    sidebar right-of board 20 to 60px;
+
+    # the hero is a real photo, so layout-lint guards what actually breaks with
+    # media: the band must span the full width, can't collapse, and the caption
+    # laid over it must stay inside the frame.
+    hero same-width header;
+    hero height >= 120px;
+    hero-img inside hero;
+    hero-caption inside hero;
+
+    # count: any (in DOM), visible (rendered), absent (hidden) with every comparator
+    count any menu-item is 17;
+    count visible menu-item is 17;
+    count visible menu-item is >= 12;
+    count visible menu-item is <= 17;
+    count visible menu-item is 12 to 17;
+    count absent menu-item is 0;
+    count any skewer-* is 5;
+    count any drink-* is 5;
+    count any plate-* is 4;
+    count any finish-* is 3;
+    count visible skewer-* is 5;
+
+    # visibility predicates
+    skewer-1 visible;
+    staff-note absent;
+
+    # text on the board title: flips when you switch to English
+    board-title text is "本日のお品書き";
+    board-title text starts "本日";
+    board-title text ends "品書き";
+    board-title text contains "お品書";
+
+    # css: the title is set in Mincho until the English switch swaps the face
+    board-title css font-family contains "Mincho";
+    # custom property pulled straight from :root
+    header css --lantern is "#c0392b";
+
+    # text modifiers on the house note
+    welcome text lowercase starts "pull up";
+    welcome text uppercase contains "LANTERN";
+    welcome text singleline lowercase contains "stay a while";
+    welcome text singleline lowercase matches "pull up a stool, stay a while, the lantern is lit\.";
+
+    # 縦書き: the board title is set vertically beside the list; the English
+    # toggle flips it horizontal, so these geometry rules go red live.
+    board-title left-of board-body 6 to 40px;
+    board-title height >= 140px;
+    board-title width <= 72px;
+
+    # お通し + 税込: the seat-charge + tax-included footnote every izakaya carries
+    price-note below board-title 0px;
+    price-note visible;
+    price-note text contains "税込";
+    price-note text contains "お通し";
+
+    # 営業中: open-now pill with its status lamp centred inside the badge
+    status-pill inside header;
+    status-pill left-of lang-btn 0px;
+    status-dot inside status-pill;
+    status-dot centered vertically inside status-pill;
+
+    # furigana: the reading must sit above its kanji (ruby annotation placement)
+    furigana-rt above furigana-base;
+
+    # 期間限定: Japanese sites often set bespoke titles as images, not live
+    # fonts (scarce CJK faces, per-tile typefaces), so this seal is an <img>.
+    # text rules can't read its pixels, so we assert its fixed raster box.
+    limited-stamp inside special;
+    limited-stamp visible;
+    limited-stamp width 72px;
+    limited-stamp height 72px;
+  </script>
+  <script type="module" src="../../dist/auto.bundle.js"></script>
+
+  <script type="module">
+    // Fixture-only, but both are genuine restaurant-site features.
+    const body = document.body;
+    const langBtn = document.getElementById("lang-btn");
+    const boardTitle = document.getElementById("board-title");
+    let english = false;
+
+    langBtn.addEventListener("click", () => {
+      english = !english;
+      body.classList.toggle("lang-en", english);
+      boardTitle.textContent = english ? "Today's Specials" : "本日のお品書き";
+      langBtn.textContent = english ? "日本語" : "English";
+    });
+
+    const tabs = Array.from(document.querySelectorAll(".tab"));
+    const items = Array.from(document.querySelectorAll(".menu-item"));
+    const groups = Array.from(document.querySelectorAll(".menu-group"));
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const cat = tab.dataset.cat;
+        tabs.forEach((t) => t.classList.toggle("active", t === tab));
+        items.forEach((item) => {
+          item.style.display = cat === "all" || item.dataset.cat === cat ? "" : "none";
+        });
+        groups.forEach((group) => {
+          group.style.display = cat === "all" || group.dataset.cat === cat ? "" : "none";
+        });
+      });
+    });
+  </script>
+
+  <script>
+    // Render the 酒 lantern glyph and the 限定 seal as tiny bitmaps, then let
+    // CSS upscale them with nearest-neighbour (image-rendering: pixelated). It
+    // mimics the chunky, slightly sloppy look older Japanese sites get from
+    // baking kanji into small GIFs instead of trusting a web font. Boxes are
+    // untouched, so the layout-lint constraints still measure the same.
+    (function () {
+      const MINCHO =
+        '"Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", "Songti SC", serif';
+
+      function drawGlyph(ctx, ch, cx, cy, size, color) {
+        ctx.font = "700 " + size + 'px ' + MINCHO;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = color;
+        ctx.fillText(ch, cx, cy);
+      }
+
+      // 酒 in the lantern: rendered a little under its display size, then
+      // upscaled with nearest-neighbour for a subtle pixel shimmer.
+      const lantern = document.getElementById("lantern");
+      if (lantern) {
+        const res = 40;
+        const c = document.createElement("canvas");
+        c.width = res;
+        c.height = res;
+        c.className = "pixel-glyph";
+        c.style.width = "46px";
+        c.style.height = "46px";
+        c.setAttribute("aria-hidden", "true");
+        drawGlyph(c.getContext("2d"), "酒", res / 2, res / 2 + 1, res * 0.82, "#fbe9c8");
+        lantern.textContent = "";
+        lantern.appendChild(c);
+      }
+
+      // 限定 seal: redraw the rotated double-ring stamp slightly under size.
+      const stamp = document.getElementById("limited-stamp");
+      if (stamp) {
+        const res = 64;
+        const c = document.createElement("canvas");
+        c.width = res;
+        c.height = res;
+        const ctx = c.getContext("2d");
+        const red = "#c0392b";
+        ctx.translate(res / 2, res / 2);
+        ctx.rotate((-7 * Math.PI) / 180);
+        ctx.translate(-res / 2, -res / 2);
+        ctx.strokeStyle = red;
+        ctx.lineWidth = res * 0.05;
+        ctx.beginPath();
+        ctx.arc(res / 2, res / 2, res / 2 - res * 0.075, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.lineWidth = res * 0.025;
+        ctx.beginPath();
+        ctx.arc(res / 2, res / 2, res / 2 - res * 0.15, 0, Math.PI * 2);
+        ctx.stroke();
+        drawGlyph(ctx, "限", res / 2, res / 2 - res * 0.16, res * 0.32, red);
+        drawGlyph(ctx, "定", res / 2, res / 2 + res * 0.16, res * 0.32, red);
+        try {
+          stamp.src = c.toDataURL("image/png");
+        } catch (err) {
+          /* keep the original SVG if the canvas can't be exported */
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
