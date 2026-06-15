@@ -10,6 +10,14 @@ CLAUDE.md
 THESIS_LOG.md
 library-improvements.md
 .github/instructions/
+
+# Internal project docs (kept local, not published)
+/.github/copilot-instructions.md
+/DEVELOPMENT.md
+/BUGS.md
+/CHANGELOG.md
+/PROJECT_STATE.md
+/TODO.md
 *.bak
 # Logs
 logs
