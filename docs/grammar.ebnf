@@ -1,0 +1,166 @@
+(*
+# Language Reference
+
+Each entry is one grammar rule, shown as a railroad diagram and its EBNF (ISO/IEC 14977).
+*)
+
+source file = { ( definition | group definition | rule ) , ";" } ;
+
+(*
+## Definitions and groups
+
+`define <name> as "<selector>"` binds a friendly name to a CSS selector. A `*`
+suffix declares an indexed family, so `card-1`, `card-2` resolve to the 1st and
+2nd matches of `define card-* as ".card"`. `group <name> as a, b, c` names a
+tuple; a rule written on `@name` expands to one rule per member.
+*)
+
+definition = "define" , ( wildcard name | identifier ) , "as" , quoted text ;
+
+group definition = "group" , identifier , "as" ,
+                   identifier , { "," , identifier } ;
+
+(*
+## Rules
+
+Every rule (except `count`) begins with an element, then a relation and its
+operands. Prefix the element with `not` to invert the whole rule, e.g.
+`popover not inside footer;`. The five rule families follow.
+*)
+
+rule = count rule
+     | spatial rule
+     | visual rule
+     | text or css rule
+     | alignment rule ;
+
+(* The subject prefix shared by every rule except `count`. *)
+element = ( identifier | group reference ) , [ "not" ] ;
+
+(*
+## Count rules
+
+Count the elements matching a pattern, optionally filtered to `visible` or
+`absent` ones. The target is an exact number, a comparator (`>= 3`), or an
+inclusive range (`2 to 5`). Example: `count visible card-* is >= 3;`.
+*)
+
+count rule = "count" , count scope , object pattern , "is" ,
+             ( number
+             | comparator , number
+             | number , "to" , number ) ;
+
+(*
+## Spatial rules
+
+Geometry between boxes. `near` checks proximity in one or more directions;
+`inside` / `partially inside` check containment with optional signed side
+offsets; the directional relations (`left-of`, `below`, `aligned-top`, …) take a
+target and optional distance; `equal-gap-x` / `equal-gap-y` assert even spacing
+across a chain of targets. Example: `badge inside page -8px top right;`.
+*)
+
+spatial rule =
+      element , "near" , identifier , near clause , { near clause }
+    | element , "inside" , identifier , { inside clause }
+    | element , "partially" , "inside" , identifier , { inside clause }
+    | element , relation , identifier , [ distance ]
+    | element , relation , distance
+    | element , ternary relation , identifier , identifier , [ distance ]
+    | element , ternary relation ,
+        "[" , identifier , identifier , { identifier } , "]" , [ distance ] ;
+
+(* A `near` clause: a distance plus the directions it applies to. *)
+near clause = distance , direction , { direction } , [ "," ] ;
+
+(* An `inside` clause: a signed distance (offset) plus its sides. *)
+inside clause = signed distance , direction , { direction } , [ "," ] ;
+
+(*
+## Visual rules
+
+Visibility and size. Size is absolute (`sidebar width <= 320px`) or expressed as
+a percentage of another element's dimension (`thumb width 100% of card/width`).
+*)
+
+visual rule =
+      element , visibility relation
+    | element , size property , [ comparator ] , distance
+    | element , size property , [ comparator ] , percentage ,
+        "of" , identifier , "/" , size property ;
+
+(*
+## Text and CSS rules
+
+Assert against rendered text content or a computed CSS property. Text rules may
+apply `lowercase`, `uppercase`, or `singleline` transforms before matching.
+Example: `headline text starts "Welcome";` or `nav css display is "flex";`.
+*)
+
+text or css rule =
+      element , "text" , { text operation } , match mode , quoted text
+    | element , "css" , css property , match mode , quoted text ;
+
+(*
+## Alignment rules
+
+`aligned` matches shared edges or centers along an axis; `centered` centers an
+element inside a target. Example: `icon centered all inside button;` or
+`title aligned horizontally top subtitle 4px;`.
+*)
+
+alignment rule =
+      element , "aligned" , aligned axis , aligned mode ,
+        identifier , [ distance ]
+    | element , "centered" , centered axis , "inside" ,
+        identifier , [ distance ] ;
+
+(*
+## Terminal keyword sets
+
+The fixed vocabularies referenced above.
+*)
+
+relation = "below" | "above" | "left-of" | "right-of"
+         | "aligned-top" | "aligned-bottom" | "aligned-left" | "aligned-right"
+         | "wider-than" | "taller-than" | "same-width" | "same-height"
+         | "distance-from-top" ;
+
+ternary relation   = "equal-gap-x" | "equal-gap-y" ;
+direction          = "left" | "right" | "top" | "bottom" ;
+visibility relation = "visible" | "absent" ;
+count scope        = "any" | "visible" | "absent" ;
+size property      = "width" | "height" ;
+aligned axis       = "horizontally" | "vertically" ;
+centered axis      = "horizontally" | "vertically" | "all" ;
+aligned mode       = "all" | "top" | "bottom" | "left" | "right" | "centered" ;
+comparator         = "<=" | ">=" | "<" | ">" ;
+match mode         = "is" | "contains" | "starts" | "ends" | "matches" ;
+text operation     = "lowercase" | "uppercase" | "singleline" ;
+
+(*
+## Measurements
+
+Distances and percentages, each available as a single value or an inclusive
+range.
+*)
+
+distance        = number , "to" , number , "px" | number , "px" ;
+percentage      = number , "to" , number , "%"  | number , "%" ;
+signed distance = signed number , "px" ;
+
+(*
+## Lexical tokens
+
+The regular (non-recursive) tokens, described as special sequences.
+*)
+
+identifier      = ? letter or _, then letters/digits/_/- (not ending in *) ? ;
+wildcard name   = ? identifier characters followed by a single * ? ;
+group reference = ? "@" followed by identifier characters ? ;
+object pattern  = ? CSS-ish pattern: letters digits . # * _ - ? ;
+css property    = ? a CSS property name, or a --custom-property ? ;
+quoted text     = ? a double-quoted string with backslash escapes ? ;
+number          = ? one or more decimal digits ? ;
+signed number   = ? optional "-" then one or more decimal digits ? ;
+comment         = ? "#" through to the end of the line ? ;

@@ -1,0 +1,146 @@
+<svg class="railroad-diagram" width="396" style="max-height: 70px;" viewBox="0 0 396 70">
+<style>
+:root {
+    --subtleText: #777;
+    --highlightText: hotpink;
+    --itemHeadingBackground: #eee;
+    --background: white;
+    --borderColor: #ccc;
+    --textColor: #111;
+
+    --diagramBackground: #f8f8f8;
+    --diagramLines: black;
+    --diagramText: black;
+    --terminalLines: black;
+    --terminalFill: #feffdf;
+    --nonTerminalLines: black;
+    --nonTerminalFill: #feffdf;
+    --specialSequenceLines: black;
+    --specialSequenceFill: #ffe79a;
+
+    --ebnfCodeBackground: #e8e8e8;
+    --ebnfIdentifier: #ef5a5a;
+    --ebnfTerminal: #ffa952;
+    --ebnfBaseColor: #777;
+}
+svg.railroad-diagram{background:var(--diagramBackground)}
+svg.railroad-diagram {
+  width: 100%;
+}
+svg.railroad-diagram path {
+  stroke-width: 3;
+  stroke: var(--diagramLines);
+  fill: rgba(0,0,0,0);
+}
+svg.railroad-diagram text {
+  font: bold 14px monospace;
+  text-anchor: middle;
+  fill: var(--diagramText);
+}
+svg.railroad-diagram text.diagram-text {
+  font-size: 12px;
+}
+svg.railroad-diagram text.diagram-arrow {
+  font-size: 16px;
+}
+svg.railroad-diagram text.label {
+  text-anchor: start;
+}
+svg.railroad-diagram text.comment {
+  font: italic 12px monospace;
+}
+svg.railroad-diagram g.non-terminal text {
+  /*font-style: italic;*/
+}
+svg.railroad-diagram g.special-sequence rect {
+  fill: var(--specialSequenceFill);
+  stroke: var(--specialSequenceLines);
+}
+svg.railroad-diagram g.special-sequence text {
+  font-style: italic;
+}
+svg.railroad-diagram rect {
+  stroke-width: 3;
+}
+svg.railroad-diagram rect.group-box {
+  stroke: gray;
+  stroke-dasharray: 10 5;
+  fill: none;
+}
+svg.railroad-diagram g.non-terminal rect {
+  fill: var(--nonTerminalFill);
+  stroke: var(--nonTerminalLines);
+}
+svg.railroad-diagram g.terminal rect {
+  fill: var(--terminalFill);
+  stroke: var(--terminalLines);
+}
+svg.railroad-diagram path.diagram-text {
+  stroke-width: 3;
+  stroke: black;
+  fill: white;
+  cursor: help;
+}
+svg.railroad-diagram g.diagram-text:hover path.diagram-text {
+  fill: #eee;
+}
+
+</style>
+<g transform="translate(.5 .5)">
+<g>
+<path d="M20 29v20m10 -20v20m-10 -10h20"></path>
+</g>
+<path d="M40 39h10"></path>
+<g>
+<path d="M50 39h0"></path>
+<path d="M346 39h0"></path>
+<g class="non-terminal">
+<path d="M50 39h0"></path>
+<path d="M121 39h0"></path>
+<rect x="50" y="28" width="71" height="22"></rect>
+<a xlink:href="#number"><text x="85.5" y="43">number</text>
+</a>
+</g>
+<path d="M121 39h10"></path>
+<g>
+<path d="M131 39h0"></path>
+<path d="M299 39h0"></path>
+<path d="M131 39a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M151 19h128"></path>
+</g>
+<path d="M279 19a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M131 39h20"></path>
+<g>
+<path d="M151 39h0"></path>
+<path d="M279 39h0"></path>
+<g class="terminal">
+<path d="M151 39h0"></path>
+<path d="M188 39h0"></path>
+<rect x="151" y="28" width="37" height="22" rx="10" ry="10"></rect>
+<text x="169.5" y="43">to</text>
+</g>
+<path d="M188 39h10"></path>
+<path d="M198 39h10"></path>
+<g class="non-terminal">
+<path d="M208 39h0"></path>
+<path d="M279 39h0"></path>
+<rect x="208" y="28" width="71" height="22"></rect>
+<a xlink:href="#number"><text x="243.5" y="43">number</text>
+</a>
+</g>
+</g>
+<path d="M279 39h20"></path>
+</g>
+<path d="M299 39h10"></path>
+<g class="terminal">
+<path d="M309 39h0"></path>
+<path d="M346 39h0"></path>
+<rect x="309" y="28" width="37" height="22" rx="10" ry="10"></rect>
+<text x="327.5" y="43">px</text>
+</g>
+</g>
+<path d="M346 39h10"></path>
+<path d="M 356 39 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>

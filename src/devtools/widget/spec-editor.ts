@@ -18,6 +18,7 @@ interface RenderSpecEditorPanelArgs {
   footerPassedCount: number;
   footerTotalCount: number;
   editorBackground: string;
+  editorLineNumbers: boolean;
   scheduleClampWidgetIntoViewport: () => void;
 }
 
@@ -184,6 +185,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     footerPassedCount,
     footerTotalCount,
     editorBackground,
+    editorLineNumbers,
     scheduleClampWidgetIntoViewport,
   }: RenderSpecEditorPanelArgs) => {
     body.innerHTML = "";
@@ -226,6 +228,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
       ? new HighlightedEditorView(draft)
       : new PlainTextareaEditorView(draft, { rows: 12 });
     editorView.setBackground(editorBackground);
+    if (editorView.setLineNumbers) editorView.setLineNumbers(editorLineNumbers);
 
     // Feed diagnostic ranges into the editor for squiggly underlines
     if (editorView.setDiagnosticRanges && diagnostics.length > 0) {
@@ -342,43 +345,59 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
           editorView.flashRange(diagnostic.range.startIndex, diagnostic.range.endIndex);
         }
       });
+      item.style.gap = "2px";
 
-      const summary = document.createElement("div");
-      summary.style.display = "flex";
-      summary.style.alignItems = "baseline";
-      summary.style.gap = "6px";
+      const topRow = document.createElement("div");
+      topRow.style.display = "flex";
+      topRow.style.alignItems = "baseline";
+      topRow.style.gap = "5px";
 
       const icon = document.createElement("span");
       icon.textContent = isWarning ? "\u26A0" : "\u2717";
       icon.style.color = accentColor;
       icon.style.flexShrink = "0";
-      icon.style.fontSize = "11px";
+      icon.style.fontSize = "10px";
 
       const location = document.createElement("span");
       location.textContent = `L${diagnostic.range.start.line}:${diagnostic.range.start.column + 1}`;
       location.style.color = "#6366f1";
-      location.style.fontWeight = "600";
+      location.style.fontWeight = "700";
       location.style.flexShrink = "0";
+      location.style.fontSize = "11px";
 
-      const message = document.createElement("span");
-      const labelPrefix = diagnostic.primaryLabel ? `${diagnostic.primaryLabel}: ` : "";
-      const suggestion = diagnostic.suggestion ? ` Did you mean \u201C${diagnostic.suggestion}\u201D?` : "";
-      message.textContent = `${labelPrefix}${diagnostic.message}${suggestion}`;
-      message.style.color = "#374151";
+      const rawLabel = diagnostic.primaryLabel ?? "";
+      const nameText = rawLabel
+        ? rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1)
+        : diagnostic.code;
+      const name = document.createElement("span");
+      name.textContent = nameText;
+      name.style.color = "#1f2937";
+      name.style.fontWeight = "700";
+      name.style.flex = "1";
+      name.style.fontSize = "11px";
 
       const code = document.createElement("span");
       code.textContent = diagnostic.code;
       code.style.color = "#9ca3af";
       code.style.marginLeft = "auto";
       code.style.flexShrink = "0";
-      code.style.paddingLeft = "8px";
-      code.style.fontSize = "10px";
+      code.style.fontSize = "9px";
+      code.style.letterSpacing = "0.02em";
 
-      summary.appendChild(icon);
-      summary.appendChild(location);
-      summary.appendChild(message);
-      summary.appendChild(code);
-      item.appendChild(summary);
+      topRow.appendChild(icon);
+      topRow.appendChild(location);
+      topRow.appendChild(name);
+      topRow.appendChild(code);
+      item.appendChild(topRow);
+
+      const suggestion = diagnostic.suggestion ? ` Did you mean \u201C${diagnostic.suggestion}\u201D?` : "";
+      const desc = document.createElement("div");
+      desc.textContent = `${diagnostic.message}${suggestion}`;
+      desc.style.color = "#6b7280";
+      desc.style.fontSize = "10px";
+      desc.style.lineHeight = "1.4";
+      desc.style.paddingLeft = "16px";
+      item.appendChild(desc);
 
       if (diagnostic.hint) {
         const hintRow = document.createElement("div");

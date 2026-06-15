@@ -239,6 +239,15 @@ export const renderWidgetSettingsPanel = ({
   // --- Spec Editor section ---
   const specHeader = createSectionHeader("Spec Editor");
 
+  const lineNumbersRow = createToggleRow(
+    "Line Numbers",
+    "Show line numbers in the spec editor",
+    settings.editorLineNumbers,
+    (nextValue) => {
+      onUpdateSettings({ editorLineNumbers: nextValue });
+    }
+  );
+
   const bgRow = document.createElement("div");
   bgRow.style.display = "flex";
   bgRow.style.alignItems = "center";
@@ -363,6 +372,7 @@ export const renderWidgetSettingsPanel = ({
   section.appendChild(tabsRow);
   section.appendChild(thresholdWrap);
   section.appendChild(specHeader);
+  section.appendChild(lineNumbersRow);
   section.appendChild(bgRow);
   section.appendChild(resetRow);
   body.appendChild(section);

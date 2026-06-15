@@ -80,7 +80,7 @@ describe('parse diagnostics extraction', () => {
 
     assert.strictEqual(diagnostics.length, 1);
     assert.strictEqual(diagnostics[0].code, 'LL-RULE-MALFORMED');
-    assert.ok(diagnostics[0].message.includes('Malformed rule'));
+    assert.ok(diagnostics[0].message.includes('must begin with an element name'));
     assert.ok(diagnostics[0].primaryLabel);
     assert.ok((diagnostics[0].hint ?? '').includes('relation'));
   });

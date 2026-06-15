@@ -15,19 +15,20 @@ export const DIAGNOSTIC_CATALOGUE: Record<string, DiagnosticExplanation> = {
     ].join(" "),
   },
   "LL-PARSE-MISSING": {
-    title: "Incomplete rule",
+    title: "Missing semicolon",
     explain: [
-      "A required token is missing where the parser expected one. The most",
-      "common cause is a relation keyword that has been left without its",
-      "target element, for example `nav above` with no second element.",
+      "A required token was absent where the parser expected one. In",
+      "layout-lint this almost always means a missing semicolon: every",
+      "statement must end with `;`.",
     ].join(" "),
   },
   "LL-RULE-MALFORMED": {
     title: "Malformed rule",
     explain: [
-      "The rule parses but its required slots could not be filled. This",
-      "typically indicates a missing CSS property name, a missing pattern",
-      "in a count rule, or a structurally invalid offset list.",
+      "The rule node parsed without a syntax error but does not carry both",
+      "a subject element and a relation keyword. A valid rule must name an",
+      "element, then a relation such as `above` or `inside`, then any",
+      "required operands.",
     ].join(" "),
   },
   "LL-SEMANTIC-UNKNOWN-GROUP": {

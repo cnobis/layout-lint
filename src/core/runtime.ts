@@ -52,7 +52,7 @@ const semanticPrimaryLabel = (code: string): string | undefined => {
     case "LL-SEMANTIC-INVALID-TARGET":
       return "invalid size target";
     default:
-      return undefined;
+      return "rule failed";
   }
 };
 
@@ -78,10 +78,13 @@ export function collectSemanticDiagnostics(results: RuleResult[]): LayoutLintDia
     if (!result.reason || result.pass) return;
 
     const code = semanticCodeFromReason(result.reason);
+    const message = code === "LL-SEMANTIC-ELEMENT-NOT-FOUND"
+      ? `"${result.element}" did not match any element on this page.`
+      : result.reason;
     diagnostics.push({
       code,
       severity: "error",
-      message: result.reason,
+      message,
       range: syntheticRangeForResult(result, index),
       snippet: `${result.element} ${result.relation}`,
       primaryLabel: semanticPrimaryLabel(code),

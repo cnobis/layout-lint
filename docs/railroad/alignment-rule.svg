@@ -1,0 +1,228 @@
+<svg class="railroad-diagram" width="856" style="max-height: 108px;" viewBox="0 0 856 108">
+<style>
+:root {
+    --subtleText: #777;
+    --highlightText: hotpink;
+    --itemHeadingBackground: #eee;
+    --background: white;
+    --borderColor: #ccc;
+    --textColor: #111;
+
+    --diagramBackground: #f8f8f8;
+    --diagramLines: black;
+    --diagramText: black;
+    --terminalLines: black;
+    --terminalFill: #feffdf;
+    --nonTerminalLines: black;
+    --nonTerminalFill: #feffdf;
+    --specialSequenceLines: black;
+    --specialSequenceFill: #ffe79a;
+
+    --ebnfCodeBackground: #e8e8e8;
+    --ebnfIdentifier: #ef5a5a;
+    --ebnfTerminal: #ffa952;
+    --ebnfBaseColor: #777;
+}
+svg.railroad-diagram{background:var(--diagramBackground)}
+svg.railroad-diagram {
+  width: 100%;
+}
+svg.railroad-diagram path {
+  stroke-width: 3;
+  stroke: var(--diagramLines);
+  fill: rgba(0,0,0,0);
+}
+svg.railroad-diagram text {
+  font: bold 14px monospace;
+  text-anchor: middle;
+  fill: var(--diagramText);
+}
+svg.railroad-diagram text.diagram-text {
+  font-size: 12px;
+}
+svg.railroad-diagram text.diagram-arrow {
+  font-size: 16px;
+}
+svg.railroad-diagram text.label {
+  text-anchor: start;
+}
+svg.railroad-diagram text.comment {
+  font: italic 12px monospace;
+}
+svg.railroad-diagram g.non-terminal text {
+  /*font-style: italic;*/
+}
+svg.railroad-diagram g.special-sequence rect {
+  fill: var(--specialSequenceFill);
+  stroke: var(--specialSequenceLines);
+}
+svg.railroad-diagram g.special-sequence text {
+  font-style: italic;
+}
+svg.railroad-diagram rect {
+  stroke-width: 3;
+}
+svg.railroad-diagram rect.group-box {
+  stroke: gray;
+  stroke-dasharray: 10 5;
+  fill: none;
+}
+svg.railroad-diagram g.non-terminal rect {
+  fill: var(--nonTerminalFill);
+  stroke: var(--nonTerminalLines);
+}
+svg.railroad-diagram g.terminal rect {
+  fill: var(--terminalFill);
+  stroke: var(--terminalLines);
+}
+svg.railroad-diagram path.diagram-text {
+  stroke-width: 3;
+  stroke: black;
+  fill: white;
+  cursor: help;
+}
+svg.railroad-diagram g.diagram-text:hover path.diagram-text {
+  fill: #eee;
+}
+
+</style>
+<g transform="translate(.5 .5)">
+<g>
+<path d="M20 29v20m10 -20v20m-10 -10h20"></path>
+</g>
+<path d="M40 39h10"></path>
+<g>
+<path d="M50 39h0"></path>
+<path d="M806 39h0"></path>
+<g class="non-terminal">
+<path d="M50 39h0"></path>
+<path d="M129.5 39h0"></path>
+<rect x="50" y="28" width="79.5" height="22"></rect>
+<a xlink:href="#element"><text x="89.75" y="43">element</text>
+</a>
+</g>
+<path d="M129.5 39h10"></path>
+<g>
+<path d="M139.5 39h0"></path>
+<path d="M806 39h0"></path>
+<path d="M139.5 39h20"></path>
+<g>
+<path d="M159.5 39h0"></path>
+<path d="M786 39h0"></path>
+<g class="terminal">
+<path d="M159.5 39h0"></path>
+<path d="M239 39h0"></path>
+<rect x="159.5" y="28" width="79.5" height="22" rx="10" ry="10"></rect>
+<text x="199.25" y="43">aligned</text>
+</g>
+<path d="M239 39h10"></path>
+<path d="M249 39h10"></path>
+<g class="non-terminal">
+<path d="M259 39h0"></path>
+<path d="M381 39h0"></path>
+<rect x="259" y="28" width="122" height="22"></rect>
+<a xlink:href="#aligned-axis"><text x="320" y="43">aligned axis</text>
+</a>
+</g>
+<path d="M381 39h10"></path>
+<path d="M391 39h10"></path>
+<g class="non-terminal">
+<path d="M401 39h0"></path>
+<path d="M523 39h0"></path>
+<rect x="401" y="28" width="122" height="22"></rect>
+<a xlink:href="#aligned-mode"><text x="462" y="43">aligned mode</text>
+</a>
+</g>
+<path d="M523 39h10"></path>
+<path d="M533 39h10"></path>
+<g class="non-terminal">
+<path d="M543 39h0"></path>
+<path d="M648 39h0"></path>
+<rect x="543" y="28" width="105" height="22"></rect>
+<a xlink:href="#identifier"><text x="595.5" y="43">identifier</text>
+</a>
+</g>
+<path d="M648 39h10"></path>
+<g>
+<path d="M658 39h0"></path>
+<path d="M786 39h0"></path>
+<path d="M658 39a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M678 19h88"></path>
+</g>
+<path d="M766 19a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M658 39h20"></path>
+<g class="non-terminal">
+<path d="M678 39h0"></path>
+<path d="M766 39h0"></path>
+<rect x="678" y="28" width="88" height="22"></rect>
+<a xlink:href="#distance"><text x="722" y="43">distance</text>
+</a>
+</g>
+<path d="M766 39h20"></path>
+</g>
+</g>
+<path d="M786 39h20"></path>
+<path d="M139.5 39a10 10 0 0 1 10 10v18a10 10 0 0 0 10 10"></path>
+<g>
+<path d="M159.5 77h17"></path>
+<path d="M769 77h17"></path>
+<g class="terminal">
+<path d="M176.5 77h0"></path>
+<path d="M264.5 77h0"></path>
+<rect x="176.5" y="66" width="88" height="22" rx="10" ry="10"></rect>
+<text x="220.5" y="81">centered</text>
+</g>
+<path d="M264.5 77h10"></path>
+<path d="M274.5 77h10"></path>
+<g class="non-terminal">
+<path d="M284.5 77h0"></path>
+<path d="M415 77h0"></path>
+<rect x="284.5" y="66" width="130.5" height="22"></rect>
+<a xlink:href="#centered-axis"><text x="349.75" y="81">centered axis</text>
+</a>
+</g>
+<path d="M415 77h10"></path>
+<path d="M425 77h10"></path>
+<g class="terminal">
+<path d="M435 77h0"></path>
+<path d="M506 77h0"></path>
+<rect x="435" y="66" width="71" height="22" rx="10" ry="10"></rect>
+<text x="470.5" y="81">inside</text>
+</g>
+<path d="M506 77h10"></path>
+<path d="M516 77h10"></path>
+<g class="non-terminal">
+<path d="M526 77h0"></path>
+<path d="M631 77h0"></path>
+<rect x="526" y="66" width="105" height="22"></rect>
+<a xlink:href="#identifier"><text x="578.5" y="81">identifier</text>
+</a>
+</g>
+<path d="M631 77h10"></path>
+<g>
+<path d="M641 77h0"></path>
+<path d="M769 77h0"></path>
+<path d="M641 77a10 10 0 0 0 10 -10v0a10 10 0 0 1 10 -10"></path>
+<g>
+<path d="M661 57h88"></path>
+</g>
+<path d="M749 57a10 10 0 0 1 10 10v0a10 10 0 0 0 10 10"></path>
+<path d="M641 77h20"></path>
+<g class="non-terminal">
+<path d="M661 77h0"></path>
+<path d="M749 77h0"></path>
+<rect x="661" y="66" width="88" height="22"></rect>
+<a xlink:href="#distance"><text x="705" y="81">distance</text>
+</a>
+</g>
+<path d="M749 77h20"></path>
+</g>
+</g>
+<path d="M786 77a10 10 0 0 0 10 -10v-18a10 10 0 0 1 10 -10"></path>
+</g>
+</g>
+<path d="M806 39h10"></path>
+<path d="M 816 39 h 20 m -10 -10 v 20 m 10 -20 v 20"></path>
+</g>
+</svg>

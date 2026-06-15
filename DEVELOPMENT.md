@@ -64,6 +64,20 @@ npm run serve         # Start dev server (kills old instance first)
 
 Then **hard refresh the demo** (`Cmd+Shift+R`) to test.
 
+> **Grammar reference & diagrams.** The EBNF reference and railroad diagrams are
+> *not* derived from `grammar.js` automatically. `docs/grammar.ebnf` is a
+> hand-curated ISO/IEC 14977 transcription that doubles as the language guide:
+> the `(* ... *)` blocks are **Markdown** (start the prose on the line after
+> `(*`) and render as the explanations in `grammar.html`. After a grammar change,
+> update the EBNF (and its prose) by hand, then regenerate:
+> ```bash
+> npm run build:railroad   # docs/grammar.ebnf → grammar.html + per-rule SVGs
+> ```
+> This writes `demo/internals/grammar.html`, `demo/internals/railroad/*.svg`, and
+> `docs/railroad/*.svg` (the last reused as thesis figures). Branding is applied
+> by injecting `docs/grammar-theme.css` (see `docs/BRAND.md` for the tokens). It
+> is intentionally kept out of `build:ts`/`build:wasm` so normal dev stays fast.
+
 ---
 
 ## 5. Add Test Cases to a Demo Page

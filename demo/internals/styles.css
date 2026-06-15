@@ -1,0 +1,237 @@
+/* Internals demo — "Under the Hood". Matches the playground selection screen
+   (demo/index.css) so the whole demo suite feels like one product. */
+
+:root {
+  /* Re-map the shared design tokens to the playground palette so the live
+     AST viewer (which reads --ll-* vars) matches this page automatically. */
+  --ll-bg: #0b1020;
+  --ll-surface: #111827;
+  --ll-surface-2: #1f2937;
+  --ll-border: #374151;
+  --ll-text: #e5e7eb;
+  --ll-muted: #7a86b4;
+  --ll-accent: #7a81ff;
+  --ll-accent-ink: #0b1020;
+  --ll-positive: #5cffaa;
+  --ll-danger: #ff6b81;
+  --ll-radius-md: 12px;
+}
+
+body {
+  margin: 0;
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #0b1020;
+  color: #e5e7eb;
+}
+
+main {
+  max-width: 1080px;
+  margin: 20px auto 32px;
+  padding: 0 16px;
+}
+
+.brand-banner {
+  border: 1px solid #7a81ff;
+  border-radius: 14px;
+  background: #7a81ff;
+  padding: 8px 10px;
+}
+.brand-banner img { width: 100%; height: auto; display: block; }
+
+.page-head { margin-top: 20px; }
+.page-head h1 { margin: 0; font-size: 26px; font-weight: 700; }
+.page-head .lede {
+  color: #dde3ff;
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 8px 0 0;
+  max-width: 72ch;
+}
+.page-head .lede strong { color: #b9c0ff; }
+
+.pipeline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 16px 0 0;
+  font: 12.5px/1 "SF Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+}
+.pipeline .stage {
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid #374151;
+  background: #111827;
+  color: #b9c0ff;
+}
+.pipeline .stage.live {
+  border-color: #7a81ff;
+  box-shadow: 0 0 0 1px rgba(122, 129, 255, 0.2), 0 0 10px rgba(122, 129, 255, 0.28);
+}
+.pipeline .arrow { color: #3a4575; }
+
+section { margin-top: 32px; }
+section h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+section .hint {
+  color: #aeb5e9;
+  font-size: 13.5px;
+  line-height: 1.6;
+  margin: 6px 0 16px;
+  max-width: 84ch;
+}
+
+/* tree-sitter attribution badge */
+.ts-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 4px 10px 4px 6px;
+  border-radius: 999px;
+  border: 1px solid #374151;
+  background: #111827;
+  font: 600 11px/1 "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  color: #aeb5e9;
+  text-decoration: none;
+}
+.ts-badge img { width: 16px; height: 16px; display: block; }
+.ts-badge:hover { border-color: #7a81ff; color: #b9c0ff; }
+
+/* ── Live AST explorer ─────────────────────────────────────────────── */
+
+.ast-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.presets-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #6b76a8; white-space: nowrap; }
+#ast-presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.ast-preset {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #374151;
+  background: #111827;
+  color: #aeb5e9;
+  font: 600 12px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.ast-preset:hover { color: #b9c0ff; border-color: #4b5563; }
+.ast-preset.active {
+  color: #b9c0ff;
+  background: #1f2547;
+  border-color: #7a81ff;
+  box-shadow: 0 0 0 1px rgba(122, 129, 255, 0.2), 0 0 8px rgba(122, 129, 255, 0.28);
+}
+
+.explorer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  height: 460px;
+}
+.explorer .pane { display: flex; flex-direction: column; min-height: 0; }
+.explorer .pane-label {
+  font: 700 11px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7a86b4;
+  margin-bottom: 8px;
+}
+.explorer .tree-wrap {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  border-radius: 12px;
+  border: 1px solid #374151;
+  background: #111827;
+  overflow: hidden;
+}
+.explorer .tree-wrap > #ast-tree { flex: 1 1 0; min-width: 0; display: flex; }
+#ast-editor { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
+
+@media (max-width: 860px) {
+  .explorer { grid-template-columns: 1fr; height: auto; }
+  .explorer .pane { height: 320px; }
+}
+
+/* ── Grammar reference ─────────────────────────────────────────────── */
+
+.diagram-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.diagram-card {
+  border-radius: 12px;
+  border: 1px solid #374151;
+  background: #f8f8fb;
+  padding: 14px 16px;
+  overflow: auto;
+}
+.diagram-card h3 {
+  margin: 0 0 10px;
+  font: 600 13px/1 "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  color: #374151;
+}
+.diagram-card svg { display: block; max-width: 100%; height: auto; }
+
+.reference-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: #7a81ff;
+  color: #0b1020;
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+  transition: filter 0.15s ease;
+}
+.reference-cta:hover { filter: brightness(1.08); }
+
+/* ── Footer (matches playground impressum) ─────────────────────────── */
+
+.impressum {
+  margin-top: 56px;
+  padding-top: 20px;
+  border-top: 1px solid #1e2742;
+  text-align: center;
+  color: #6b76a8;
+}
+.impressum-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.impressum-mark { font-weight: 700; color: #b9c0ff; letter-spacing: 0.01em; }
+.impressum-ver {
+  font: 11.5px/1 "SF Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #1f2547;
+  color: #b9c0ff;
+}
+.impressum-sep { color: #3a4575; }
+.impressum-line { color: #6b76a8; font-size: 12.5px; line-height: 1.6; margin: 8px 0 0; }
+.impressum-line a {
+  color: #8b93c8;
+  text-decoration: none;
+  border-bottom: 1px solid #2b345c;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.impressum-line a:hover { color: #b9c0ff; border-color: #7a81ff; }

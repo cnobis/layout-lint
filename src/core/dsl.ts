@@ -246,22 +246,45 @@ function collapseSyntaxDiagnostics(rawDiagnostics: LayoutLintDiagnostic[]): Layo
   });
 }
 
+function nodeHasSyntaxError(node: NodeLike): boolean {
+  if (node.type === "ERROR" || node.isMissing) return true;
+  for (let i = 0; i < node.childCount; i++) {
+    const child = node.child(i);
+    if (child && nodeHasSyntaxError(child)) return true;
+  }
+  return false;
+}
+
 function collectSyntaxDiagnostics(node: NodeLike | null, source: string, diagnostics: LayoutLintDiagnostic[]) {
   if (!node) return;
 
   const isErrorNode = node.type === "ERROR";
   const isMissingNode = node.isMissing === true;
   if (isErrorNode || isMissingNode) {
-    const snippet = source.slice(node.startIndex, node.endIndex).trim();
+    // MISSING nodes are zero-width (startIndex === endIndex). Extend the range
+    // back to the last non-whitespace character so the editor can render a
+    // squiggly underline and flashRange can locate a span to animate.
+    let rangeStart = node.startIndex;
+    const rangeEnd = node.endIndex;
+    if (isMissingNode && rangeStart === rangeEnd && rangeStart > 0) {
+      let i = rangeStart - 1;
+      while (i > 0 && /\s/.test(source[i])) i--;
+      rangeStart = i;
+    }
+    const snippet = source.slice(rangeStart, rangeEnd).trim();
     diagnostics.push({
       code: isMissingNode ? "LL-PARSE-MISSING" : "LL-PARSE-SYNTAX",
       severity: "error",
       message: isMissingNode
-        ? "Incomplete spec segment. A required token appears to be missing."
+        ? node.type === ";"
+          ? "Every statement must end with a semicolon."
+          : "The statement is incomplete."
         : "Invalid spec syntax near this segment.",
-      range: getSourceRange(source, node.startIndex, node.endIndex),
+      range: getSourceRange(source, rangeStart, rangeEnd),
       snippet: snippet || undefined,
-      primaryLabel: isMissingNode ? "expected token here" : "unexpected token",
+      primaryLabel: isMissingNode
+        ? node.type === ";" ? "missing semicolon" : `missing ${node.type}`
+        : "unexpected token",
     });
   }
 
@@ -455,15 +478,19 @@ export function extractRules(tree: Tree | null, source: string): ExtractRulesRes
     const target2 = txt(node.childForFieldName("target2"));
 
     if (!element || !relation) {
-      diagnostics.push({
-        code: "LL-RULE-MALFORMED",
-        severity: "error",
-        message: "Malformed rule: missing element or relation.",
-        range: getSourceRange(source, node.startIndex, node.endIndex),
-        snippet: txt(node).trim() || undefined,
-        primaryLabel: !element ? "missing element" : "missing relation",
-        hint: "a rule names an element, then a relation keyword, then any operands, e.g. `nav above header`.",
-      });
+      if (!nodeHasSyntaxError(node)) {
+        diagnostics.push({
+          code: "LL-RULE-MALFORMED",
+          severity: "error",
+          message: !element
+            ? "A rule must begin with an element name."
+            : "A relation keyword is required after the element name.",
+          range: getSourceRange(source, node.startIndex, node.endIndex),
+          snippet: txt(node).trim() || undefined,
+          primaryLabel: !element ? "missing element" : "missing relation",
+          hint: "a rule names an element, then a relation keyword, then any operands, e.g. `nav above header`.",
+        });
+      }
       continue;
     }
 

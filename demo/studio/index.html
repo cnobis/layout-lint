@@ -133,7 +133,7 @@
     content below topbar 0px;
     content right-of sidebar 0px;
     sidebar left-of content;
-    # the rack's resting design width; collapsing it trips this contract live
+    # the rack's resting design width. collapsing it trips this contract live
     sidebar width 220 to 260px;
     # hard ceiling that must hold whether the rack is open or collapsed
     sidebar width <320px;
@@ -149,14 +149,14 @@
 
     # preset rack
     count any preset is 5;
-    # exactly one patch is loaded at a time; clicking the rack keeps this true
+    # exactly one patch is loaded at a time. clicking the rack keeps this true
     count any active-preset is 1;
     preset-1 inside sidebar;
     preset-1 equal-gap-y [preset-2 preset-3 preset-4 preset-5] 2px;
     preset-1 aligned-left preset-2;
     meter-label centered all inside meter;
 
-    # channel strips — a tidy pair
+    # channel strips, a matched pair
     count any strip is 2;
     count visible strip is 2;
     strip-1 same-width strip-2;
@@ -167,7 +167,7 @@
     strip-2 right-of strip-1;
     strip-1 width 30 to 55% of desk/width;
 
-    # pads sit beside the strips; the master bus takes the row below
+    # pads sit beside the strips. the master bus takes the row below
     desk left-of pads;
     desk above master 0px;
     pads above master 0px;
