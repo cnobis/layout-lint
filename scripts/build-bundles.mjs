@@ -8,6 +8,7 @@ const root = resolve(here, "..");
 const entries = [
   { in: "dist/auto.js", out: "dist/auto.bundle.js" },
   { in: "dist/web-component.js", out: "dist/web-component.bundle.js" },
+  { in: "dist/devtools/index.js", out: "dist/devtools.bundle.js" },
   { in: "dist/devtools/internals/main.js", out: "dist/internals.bundle.js" },
 ];
 

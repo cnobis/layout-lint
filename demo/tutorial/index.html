@@ -6,9 +6,6 @@
   <title>Tutorial — layout-lint</title>
   <link rel="stylesheet" href="../shared.css" />
   <link rel="stylesheet" href="./styles.css" />
-  <script type="importmap">
-    { "imports": { "web-tree-sitter": "/node_modules/web-tree-sitter/tree-sitter.js" } }
-  </script>
 </head>
 <body>
   <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT DEMO</a>
@@ -86,7 +83,7 @@
     import {
       createLayoutLintMonitor,
       createLayoutLintWidget
-    } from "../../dist/devtools/index.js";
+    } from "../../dist/devtools.bundle.js";
 
     const lessons = [
       {
