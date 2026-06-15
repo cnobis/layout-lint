@@ -8,6 +8,7 @@ export const DEFAULT_WIDGET_SETTINGS: LayoutLintWidgetSettings = {
   minimized: false,
   statusTransitionDelayEnabled: true,
   editorBackground: "#f5f7fe",
+  editorLineNumbers: true,
 };
 
 export const DEFAULT_WIDGET_SETTINGS_STORAGE_KEY = "layout-lint:widget-settings";
@@ -57,6 +58,8 @@ export const normalizeWidgetSettings = (
     typeof partial?.editorBackground === "string" && validBgs.includes(partial.editorBackground)
       ? partial.editorBackground
       : fallback.editorBackground;
+  const editorLineNumbers =
+    typeof partial?.editorLineNumbers === "boolean" ? partial.editorLineNumbers : fallback.editorLineNumbers;
   const widthValue = toFiniteNumber(partial?.widthPx);
   const heightValue = toFiniteNumber(partial?.heightPx);
   const constraintsValue = toFiniteNumber(partial?.constraintsPerPage);
@@ -69,6 +72,7 @@ export const normalizeWidgetSettings = (
     minimized,
     statusTransitionDelayEnabled,
     editorBackground,
+    editorLineNumbers,
     widthPx: widthValue != null ? clampWidgetWidthPx(widthValue) : fallback.widthPx,
     heightPx: heightValue != null ? clampWidgetHeightPx(heightValue) : fallback.heightPx,
   };

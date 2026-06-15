@@ -131,13 +131,13 @@ describe('spec editor diagnostic rendering', () => {
     hint: 'check the element id or the matching `define` declaration.',
   };
 
-  it('renders the primaryLabel as a prefix on the message', () => {
+  it('renders the primaryLabel as a capitalized heading', () => {
     const editor = makeEditor([semanticDiag]);
     editor.open();
     const body = new FakeElement('div');
     editor.renderPanel({ ...renderArgs, body, status: new FakeElement('span') });
     const text = collectText(body);
-    assert.ok(text.includes('element not in DOM:'), 'primary label should appear with a trailing colon');
+    assert.ok(text.includes('Element not in DOM'), 'capitalized primary label should appear');
     assert.ok(text.includes('Element not found: nav'), 'message text should still appear');
   });
 

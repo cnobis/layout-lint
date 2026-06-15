@@ -1,6 +1,6 @@
 # layout-lint
 
-![layout-lint](demo/images/logo-very-wide.svg)
+![layout-lint](demo/images/logo-wide.svg)
 
 A DSL for testing layout constraints in the browser. Write rules like `nav below header 20px` to verify spatial relationships between elements. A floating widget shows pass/fail in real time.
 

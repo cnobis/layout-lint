@@ -211,6 +211,8 @@ export function createWidgetState(options: CreateWidgetStateOptions): WidgetStat
           typeof patch.editorBackground === "string" && patch.editorBackground
             ? patch.editorBackground
             : settings.editorBackground,
+        editorLineNumbers:
+          typeof patch.editorLineNumbers === "boolean" ? patch.editorLineNumbers : settings.editorLineNumbers,
       };
       syncPages();
       syncActiveRuleVisibility();

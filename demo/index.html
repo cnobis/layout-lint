@@ -16,7 +16,9 @@
         <img src="./images/logo-very-wide.svg" alt="layout-lint" />
       </picture>
     </div>
-    <p>Welcome to the <strong>layout-lint playground</strong>! Pick one of the demos below to get a feel for the DSL and learn how to write your own layout contraints.</p>
+    <p>Welcome to the <strong>layout-lint playground</strong>! The demos let you explore the DSL hands-on. The learn section shows how the parser works and documents every rule.</p>
+
+    <div class="section-label">Demos</div>
     <div class="grid">
       <a class="card card-lead" href="./tutorial/index.html">
         <div class="name"><span class="step">0</span> Tutorial <span class="step-hint">Start here</span></div>
@@ -35,6 +37,19 @@
         <div>Combine <code>aligned</code>, <code>centered</code>, <code>equal-gap</code>, <code>near</code>, and percent-of rules. Move faders, channels, and the playhead.</div>
       </a>
     </div>
+
+    <div class="section-label">Learn</div>
+    <div class="grid grid-2">
+      <a class="card" href="./internals/index.html">
+        <div class="name">Live Parse Tree <img class="card-ts-logo" src="./images/tree-sitter-small.png" alt="tree-sitter" /></div>
+        <div>Watch tree-sitter parse a spec live. Every node type and field comes straight from the grammar.</div>
+      </a>
+      <a class="card" href="./internals/grammar.html">
+        <div class="name">Language Reference</div>
+        <div>Every grammar rule, explained with a railroad diagram.</div>
+      </a>
+    </div>
+
     <footer class="impressum">
       <div class="impressum-row">
         <span class="impressum-mark">layout-lint</span>

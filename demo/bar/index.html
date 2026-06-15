@@ -190,7 +190,7 @@ the lantern is lit.</p>
     observer catches, so layout-lint re-evaluates on its own.
   -->
   <script type="layout-lint">
-    # a class selector needs a name; id-prefix wildcards (skewer-*) resolve on their own
+    # a class selector needs a name. id-prefix wildcards (skewer-*) resolve on their own
     define menu-item as ".menu-item";
 
     # structure of the shopfront
@@ -245,7 +245,7 @@ the lantern is lit.</p>
     welcome text singleline lowercase contains "stay a while";
     welcome text singleline lowercase matches "pull up a stool, stay a while, the lantern is lit\.";
 
-    # 縦書き: the board title is set vertically beside the list; the English
+    # 縦書き: the board title is set vertically beside the list. the English
     # toggle flips it horizontal, so these geometry rules go red live.
     board-title left-of board-body 6 to 40px;
     board-title height >= 140px;

@@ -561,6 +561,7 @@ export function createLayoutLintWidget(
         footerPassedCount: passed,
         footerTotalCount: total,
         editorBackground: state.getSettings().editorBackground,
+        editorLineNumbers: state.getSettings().editorLineNumbers,
         scheduleClampWidgetIntoViewport,
       });
       return;

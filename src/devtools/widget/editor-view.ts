@@ -19,6 +19,7 @@ export interface EditorView {
   setHighlighter?(highlighter: Highlighter): void;
   setDiagnosticRanges?(ranges: DiagnosticRange[]): void;
   flashRange?(startIndex: number, endIndex: number): void;
+  setLineNumbers?(enabled: boolean): void;
 }
 
 export class PlainTextareaEditorView implements EditorView {

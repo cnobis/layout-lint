@@ -115,7 +115,7 @@ export const EDITOR_CSS = `
 .ll-editor-wrapper[data-editor-theme="warm"] .token.diagnostic-error { text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #dc2626; text-decoration-skip-ink: none; text-underline-offset: 2px; }
 .ll-editor-wrapper[data-editor-theme="warm"] .token.diagnostic-warning { text-decoration-line: underline; text-decoration-style: wavy; text-decoration-color: #d97706; text-decoration-skip-ink: none; text-underline-offset: 2px; }
 /* Dusk theme */
-.ll-editor-wrapper[data-editor-theme="dusk"] { border: 1px solid #3d2e42; }
+.ll-editor-wrapper[data-editor-theme="dusk"] { border: 1px solid #3d1f24; }
 .ll-editor-wrapper[data-editor-theme="dusk"] textarea { caret-color: #e8d5ee; }
 .ll-editor-wrapper[data-editor-theme="dusk"] .ll-highlight-overlay { color: #e8d5ee; }
 .ll-editor-wrapper[data-editor-theme="dusk"] .token { color: #d4c0da; }
@@ -135,7 +135,7 @@ export const EDITOR_CSS = `
 .ll-editor-wrapper[data-editor-theme="dark"] .ll-editor-gutter { color: #5b626c; border-right: 1px solid #23272e; }
 .ll-editor-wrapper[data-editor-theme="light"] .ll-editor-gutter { color: #9aa6c4; border-right: 1px solid #d7e0ff; }
 .ll-editor-wrapper[data-editor-theme="warm"] .ll-editor-gutter { color: #b3ab9b; border-right: 1px solid #e2e0d5; }
-.ll-editor-wrapper[data-editor-theme="dusk"] .ll-editor-gutter { color: #7a6e85; border-right: 1px solid #3d2e42; }
+.ll-editor-wrapper[data-editor-theme="dusk"] .ll-editor-gutter { color: #7a606a; border-right: 1px solid #3d1f24; }
 /* Flash highlight animation for click-to-locate */
 @keyframes ll-flash-highlight {
   0% { background-color: rgba(99, 102, 241, 0.35); box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4); border-radius: 2px; }
@@ -165,6 +165,7 @@ export class HighlightedEditorView implements EditorView {
   private externalTokens: Array<{ text: string; className?: string }> | null = null;
   private highlighter: Highlighter | null = null;
   private diagnosticRanges: DiagnosticRange[] = [];
+  private lineNumbersEnabled = true;
 
   constructor(initialValue: string) {
     ensureEditorStyles();
@@ -237,6 +238,7 @@ export class HighlightedEditorView implements EditorView {
   }
 
   private updateGutter(text: string) {
+    if (!this.lineNumbersEnabled) return;
     const lineCount = text.length === 0 ? 1 : text.split("\n").length;
     let numbers = "";
     for (let i = 1; i <= lineCount; i++) {
@@ -248,6 +250,20 @@ export class HighlightedEditorView implements EditorView {
       this.wrapper.style.setProperty("--ll-gutter-w", `${digits * 8 + 14}px`);
     }
     this.gutter.scrollTop = this.textarea.scrollTop;
+  }
+
+  setLineNumbers(enabled: boolean) {
+    this.lineNumbersEnabled = enabled;
+    if (!enabled) {
+      this.gutter.textContent = "";
+      this.gutter.style.display = "none";
+      if (typeof this.wrapper.style.setProperty === "function") {
+        this.wrapper.style.setProperty("--ll-gutter-w", "0px");
+      }
+    } else {
+      this.gutter.style.display = "";
+      this.updateGutter(this.textarea.value);
+    }
   }
 
   private renderTokens(tokens: Array<{ text: string; className?: string }>) {    let cursor = 0;
@@ -392,7 +408,7 @@ export class HighlightedEditorView implements EditorView {
       this.wrapper.dataset.editorTheme = "light";
     } else if (color === "#f3f3ed") {
       this.wrapper.dataset.editorTheme = "warm";
-    } else if (color === "#2a1f2e") {
+    } else if (color === "#2c1318") {
       this.wrapper.dataset.editorTheme = "dusk";
     } else {
       this.wrapper.dataset.editorTheme = "dark";

@@ -56,6 +56,9 @@ const isAlignmentRelation = (relation: string) =>
   relation.startsWith("aligned-") || relation === "centered-x" || relation === "centered-y";
 const isEqualGapRelation = (relation: string) => relation === "equal-gap-x" || relation === "equal-gap-y";
 const isCountRelation = (relation: string) => relation.startsWith("count-");
+const isPresenceRelation = (relation: string) => relation === "visible" || relation === "absent";
+const isTextRelation = (relation: string) => ["text-starts", "text-ends", "text-equals", "matches"].includes(relation);
+const isCssRelation = (relation: string) => relation === "css";
 
 const formatCountExpected = (item: { countExpected?: number; countMin?: number; countMax?: number; comparator?: string }): string => {
   if (item.comparator && item.countExpected != null) {
@@ -152,8 +155,7 @@ const buildMeta = (item: RuleResult) => {
   const hasPercentDistance = item.distancePct != null || item.distanceMinPct != null || item.distanceMaxPct != null;
 
   if (isSemanticRelation(item.relation)) {
-    const label = item.relation === "partially-inside" ? "partially inside" : "inside";
-    return item.pass ? `${label}: constraint met` : `${label}: constraint not met`;
+    return "";
   }
 
   if (isCountRelation(item.relation)) {
@@ -191,6 +193,18 @@ const buildMeta = (item: RuleResult) => {
   if (isEqualGapRelation(item.relation)) {
     const tolerance = item.distancePx ?? 1;
     return `actual gap delta: ${item.actual ?? "n/a"} | expected: <= ${tolerance}px`;
+  }
+
+  if (isPresenceRelation(item.relation)) {
+    return "";
+  }
+
+  if (isTextRelation(item.relation)) {
+    return item.actual != null ? `actual text: ${item.actual}` : "";
+  }
+
+  if (isCssRelation(item.relation)) {
+    return item.actual != null ? `actual value: ${item.actual}` : "";
   }
 
   return `actual distance: ${item.actual ?? "n/a"}${item.distancePx != null ? ` | expected: >= ${item.distancePx}px` : ""}`;

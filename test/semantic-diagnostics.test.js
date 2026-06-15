@@ -23,7 +23,7 @@ describe('semantic diagnostics collection', () => {
 
     assert.strictEqual(diagnostics.length, 1);
     assert.strictEqual(diagnostics[0].code, 'LL-SEMANTIC-ELEMENT-NOT-FOUND');
-    assert.strictEqual(diagnostics[0].message, 'Element not found: header');
+    assert.strictEqual(diagnostics[0].message, '"nav" did not match any element on this page.');
     assert.strictEqual(diagnostics[0].range.start.line, 2);
     assert.strictEqual(diagnostics[0].snippet, 'nav below');
   });

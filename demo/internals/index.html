@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Parse Tree · layout-lint</title>
+  <link rel="stylesheet" href="../shared.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT DEMO</a>
+
+  <main>
+    <div class="brand-banner">
+      <picture>
+        <source media="(max-width: 640px)" srcset="../images/logo-compact.svg" />
+        <source media="(max-width: 960px)" srcset="../images/logo-wide.svg" />
+        <img src="../images/logo-very-wide.svg" alt="layout-lint" />
+      </picture>
+    </div>
+
+    <header class="page-head">
+      <h1>
+        Live Parse Tree
+        <a class="ts-badge" href="https://tree-sitter.github.io/tree-sitter/"
+           target="_blank" rel="noopener"
+           title="The tree shown is the exact output of the tree-sitter parser">
+          <img src="../images/tree-sitter-small.png" alt="" />
+          parsed by Tree-sitter
+        </a>
+      </h1>
+      <p class="lede">
+        Hover any node to highlight its source span. Toggle anonymous nodes to
+        show the literal keywords and punctuation.
+      </p>
+    </header>
+
+    <section aria-labelledby="ast-heading">
+      <div class="ast-toolbar">
+        <span class="presets-label">Sample specs</span>
+        <div id="ast-presets"></div>
+        <div id="ast-toolbar"></div>
+      </div>
+      <div class="explorer">
+        <div class="pane">
+          <div class="pane-label">Source</div>
+          <div id="ast-editor"></div>
+        </div>
+        <div class="pane">
+          <div class="pane-label">Syntax tree</div>
+          <div class="tree-wrap">
+            <div id="ast-tree"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="impressum">
+      <div class="impressum-row">
+        <span class="impressum-mark">layout-lint</span>
+        <span class="impressum-ver">v1.1.0</span>
+        <span class="impressum-sep">·</span>
+        <span>MIT License</span>
+      </div>
+      <p class="impressum-line">
+        A tool for testing layout constraints in the browser.
+      </p>
+      <p class="impressum-line">
+        <a href="https://github.com/cnobis/layout-lint">github.com/cnobis/layout-lint</a>
+      </p>
+    </footer>
+  </main>
+
+  <script type="module" src="../../dist/internals.bundle.js"></script>
+</body>
+</html>

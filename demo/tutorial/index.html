@@ -152,7 +152,7 @@
     let viewingStep = 0;
     let started = false;
     let specLines = [];
-    const SPEC_HEADER = "# layout-lint tutorial -- spec grows as you apply each lesson.\n";
+    const SPEC_HEADER = "# layout-lint tutorial: spec grows as you apply each lesson.\n";
 
     const monitor = createLayoutLintMonitor({
       specText: SPEC_HEADER,
@@ -198,7 +198,7 @@
       delete lessonApply.dataset.mode;
       lessonStepLabel.textContent = "";
       lessonTitle.textContent = "Welcome to the layout-lint tutorial!";
-      lessonProse.innerHTML = "The page below has a few layout bugs. Learn the DSL by fixing them, one rule at a time. Each step adds a rule to the spec, and the widget shows it failing against the broken layout before it passes once the page snaps into place.";
+      lessonProse.innerHTML = "The page below has a few layout bugs. Learn the DSL by fixing them, one rule at a time. Each step adds a rule to the spec. Watch the widget: the rule fails first, then passes as the layout corrects itself.";
       lessonRule.textContent = "";
       lessonApply.disabled = false;
       lessonApply.textContent = "Start tutorial";

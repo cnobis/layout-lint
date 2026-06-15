@@ -58,6 +58,7 @@
     "web-tree-sitter": "^0.25.8"
   },
   "devDependencies": {
+    "ebnf2railroad": "^1.14.2",
     "esbuild": "^0.28.0",
     "http-server": "^14.1.1",
     "prebuildify": "^6.0.1",
@@ -78,8 +79,11 @@
     "start": "tree-sitter playground",
     "test": "node --test test/*.test.js",
     "build:wasm": "tree-sitter build --wasm -o layout_lint.wasm",
+    "build:railroad": "node scripts/gen-railroad.mjs",
     "build:ts": "tsc && node scripts/build-wasm-inline.mjs && node scripts/build-bundles.mjs",
-    "serve": "npx http-server -c-1 . || npx serve -n ."
+    "build:site": "npm run build:ts && npm run build:railroad && node scripts/build-site.mjs",
+    "serve": "npx http-server -c-1 -o /demo/index.html",
+    "demo": "npm run serve"
   },
   "type": "module"
 }

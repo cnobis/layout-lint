@@ -1,0 +1,114 @@
+/*
+  layout-lint brand theme for the generated grammar reference (grammar.html).
+
+  Injected verbatim into the <head> by scripts/gen-railroad.mjs, AFTER
+  ebnf2railroad's own stylesheet, so these rules win. It keeps the tool's clean,
+  light, diagram-first reading layout on purpose (a light surface is the right
+  call for a reference you scan) and only rebrands the palette, typography, and
+  header to the layout-lint design tokens. See docs/BRAND.md for the tokens.
+
+  Headers are black; the purple shows up only in soft background touches (code
+  blocks, diagram boxes) and the brand banner.
+*/
+
+:root {
+  /* Surfaces and ink */
+  --background: #ffffff;
+  --textColor: #1f2430;
+  --subtleText: #6b76a8;
+  --borderColor: #e4e7f5;
+  --itemHeadingBackground: #f3f4ff;
+  --highlightText: #5a61e6; /* links / hover */
+
+  /* EBNF code colouring */
+  --ebnfIdentifier: #5a61e6; /* non-terminal names */
+  --ebnfTerminal: #c2680f; /* literals */
+  --ebnfBaseColor: #4b5563;
+  --ebnfCodeBackground: #f6f7ff; /* soft purple bar behind EBNF */
+
+  /* Railroad diagrams — light lavender non-terminals, warm terminals */
+  --diagramBackground: #fbfbff;
+  --diagramText: #1f2430;
+  --diagramLines: #1f2430;
+  --nonTerminalFill: #eef0ff;
+  --nonTerminalLines: #7a81ff;
+  --terminalFill: #fff6e6;
+  --terminalLines: #c2680f;
+  --specialSequenceFill: #f3f4ff;
+  --specialSequenceLines: #7a81ff;
+
+  font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+
+html,
+body {
+  font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+
+code.ebnf,
+svg.railroad-diagram text {
+  font-family: "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+}
+
+/* ── Brand banner (purple, matches the playground brand banner) ──────── */
+header {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  background: #7a81ff;
+  border-bottom: none;
+  min-height: 72px;
+}
+.ll-doc-home {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-decoration: none;
+}
+.ll-doc-name {
+  height: 60px;
+  width: auto;
+  display: block;
+}
+.ll-doc-shapes {
+  height: 60px;
+  width: auto;
+  display: block;
+}
+/* mobile nav hamburger sits on the purple bar */
+header button {
+  color: #ffffff;
+}
+
+/* ── Headers: black ──────────────────────────────────────────────────── */
+nav h3 {
+  color: #1f2430;
+}
+article h2 {
+  margin-top: 2.2rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid #e4e7f5;
+  color: #1f2430;
+  font-size: 1.35rem;
+}
+article h4 {
+  color: #1f2430;
+}
+
+/* ── Back link (outside <footer> so ebnf2railroad's click handler misses it) */
+.ll-doc-back {
+  padding: 1rem 2rem;
+  border-left: 1px solid #e4e7f5;
+  color: #6b76a8;
+  font-size: 13px;
+}
+.ll-doc-back a {
+  color: #5a61e6;
+}
+
+/* ── EBNF code block: soft purple bar ────────────────────────────────── */
+code.ebnf {
+  border: 1px solid #e4e7f5;
+  border-radius: 8px;
+}
