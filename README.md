@@ -4,7 +4,7 @@
 
 A DSL for testing layout constraints in the browser. Write rules like `nav below header 20px` to verify spatial relationships between elements. A floating widget shows pass/fail in real time.
 
-**[Try it live](https://cnobis.github.io/layout-lint/)** — interactive demos, a live tree-sitter parse-tree explorer, and the full grammar reference.
+**[Try it live](https://cnobis.github.io/layout-lint/)**: interactive demos, a live tree-sitter parse-tree explorer, and the full grammar reference.
 
 Full language reference: [docs/LANGUAGE.md](docs/LANGUAGE.md).
 
