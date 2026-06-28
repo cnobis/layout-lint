@@ -65,6 +65,29 @@ describe('evaluator-helpers', () => {
       assert.strictEqual(evaluateMeasuredRulePass({ relation: 'below', distancePx: 10 }, 12), true);
     });
 
+    it('treats same-width/same-height as within-tolerance, not always-true', () => {
+      // measured is the absolute width/height difference returned by measure()
+      assert.strictEqual(evaluateMeasuredRulePass({ relation: 'same-width' }, 0.5), true);
+      assert.strictEqual(evaluateMeasuredRulePass({ relation: 'same-width' }, 5), false);
+      assert.strictEqual(evaluateMeasuredRulePass({ relation: 'same-height' }, 3), false);
+      assert.strictEqual(evaluateMeasuredRulePass({ relation: 'same-width', distancePx: 6 }, 5), true);
+      assert.strictEqual(evaluateMeasuredRulePass({ relation: 'same-width', distancePx: 6 }, 8), false);
+      assert.strictEqual(
+        evaluateMeasuredRulePass({ relation: 'same-width', distanceMinPx: 4, distanceMaxPx: 10 }, 7),
+        true
+      );
+    });
+
+    it('gives directional and range rules a sub-pixel tolerance', () => {
+      // directional: minimum gap with 1px give at the threshold
+      assert.strictEqual(evaluateMeasuredRulePass({ relation: 'below', distancePx: 20 }, 20), true);
+      assert.strictEqual(evaluateMeasuredRulePass({ relation: 'below', distancePx: 20 }, 19.5), true);
+      assert.strictEqual(evaluateMeasuredRulePass({ relation: 'below', distancePx: 20 }, 18), false);
+      // range: 0.5px give at each end
+      assert.strictEqual(evaluateMeasuredRulePass({ relation: 'below', distanceMinPx: 10, distanceMaxPx: 20 }, 20.4), true);
+      assert.strictEqual(evaluateMeasuredRulePass({ relation: 'below', distanceMinPx: 10, distanceMaxPx: 20 }, 21), false);
+    });
+
     it('evaluates inside offsets with and without explicit clauses', () => {
       const container = { left: 0, top: 0, right: 200, bottom: 200 };
       const inside = { left: 10, top: 10, right: 100, bottom: 100 };

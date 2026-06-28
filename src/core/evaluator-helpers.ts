@@ -420,27 +420,36 @@ export function evaluateMeasuredRulePass(rule: Rule, measured: number): boolean 
     rule.relation === "centered-x" ||
     rule.relation === "centered-y";
   const isEqualGap = rule.relation === "equal-gap-x" || rule.relation === "equal-gap-y";
+  // same-width / same-height measure an absolute size difference, so they are
+  // satisfied when that difference is within tolerance, not by the directional
+  // ">= distance" rule that the magnitude (always >= 0) would pass unconditionally.
+  const isSizeMatch = rule.relation === "same-width" || rule.relation === "same-height";
   const hasRange = rule.distanceMinPx != null && rule.distanceMaxPx != null;
 
+  // A range carries its intended slack in the interval, so only sub-pixel
+  // rounding needs absorbing: a small tolerance at each end. This holds for
+  // every category, so the range case is handled first.
+  if (hasRange) {
+    return evaluateRangeWithTolerance(
+      measured,
+      rule.distanceMinPx as number,
+      rule.distanceMaxPx as number
+    ).pass;
+  }
+
   if (isAlignment) {
-    if (hasRange) {
-      return measured >= (rule.distanceMinPx as number) && measured <= (rule.distanceMaxPx as number);
-    }
     if (rule.distancePx != null) {
       return Math.abs(measured - rule.distancePx) <= 1;
     }
     return measured <= 1;
   }
 
-  if (isEqualGap) {
-    if (hasRange) {
-      return measured >= (rule.distanceMinPx as number) && measured <= (rule.distanceMaxPx as number);
-    }
+  if (isEqualGap || isSizeMatch) {
     return measured <= (rule.distancePx ?? 1);
   }
 
-  if (hasRange) {
-    return measured >= (rule.distanceMinPx as number) && measured <= (rule.distanceMaxPx as number);
-  }
-  return measured >= (rule.distancePx ?? 0);
+  // Directional relations express a minimum gap. The 1-pixel tolerance relaxes
+  // the threshold so a gap a fraction under the target still passes, mirroring
+  // the sub-pixel give the alignment and range cases already carry.
+  return measured >= (rule.distancePx ?? 0) - 1;
 }
