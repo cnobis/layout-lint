@@ -14,6 +14,11 @@ library-improvements.md
 
 # Internal project docs (kept local, not published)
 /ARCHITECTURE.md
+/docs/BRAND.md
+
+# Local tree-sitter build artifacts
+/build/
+/parser.dylib
 /.github/copilot-instructions.md
 /DEVELOPMENT.md
 /BUGS.md
