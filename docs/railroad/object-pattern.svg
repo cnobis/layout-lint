@@ -1,41 +1,18 @@
 <svg class="railroad-diagram" width="485.5" style="max-height: 62px;" viewBox="0 0 485.5 62">
 <style>
-:root {
-    --subtleText: #777;
-    --highlightText: hotpink;
-    --itemHeadingBackground: #eee;
-    --background: white;
-    --borderColor: #ccc;
-    --textColor: #111;
-
-    --diagramBackground: #f8f8f8;
-    --diagramLines: black;
-    --diagramText: black;
-    --terminalLines: black;
-    --terminalFill: #feffdf;
-    --nonTerminalLines: black;
-    --nonTerminalFill: #feffdf;
-    --specialSequenceLines: black;
-    --specialSequenceFill: #ffe79a;
-
-    --ebnfCodeBackground: #e8e8e8;
-    --ebnfIdentifier: #ef5a5a;
-    --ebnfTerminal: #ffa952;
-    --ebnfBaseColor: #777;
-}
-svg.railroad-diagram{background:var(--diagramBackground)}
+svg.railroad-diagram{background:#fbfbff}
 svg.railroad-diagram {
   width: 100%;
 }
 svg.railroad-diagram path {
   stroke-width: 3;
-  stroke: var(--diagramLines);
+  stroke: #1f2430;
   fill: rgba(0,0,0,0);
 }
 svg.railroad-diagram text {
   font: bold 14px monospace;
   text-anchor: middle;
-  fill: var(--diagramText);
+  fill: #1f2430;
 }
 svg.railroad-diagram text.diagram-text {
   font-size: 12px;
@@ -53,8 +30,8 @@ svg.railroad-diagram g.non-terminal text {
   /*font-style: italic;*/
 }
 svg.railroad-diagram g.special-sequence rect {
-  fill: var(--specialSequenceFill);
-  stroke: var(--specialSequenceLines);
+  fill: #f3f4ff;
+  stroke: #7a81ff;
 }
 svg.railroad-diagram g.special-sequence text {
   font-style: italic;
@@ -68,12 +45,12 @@ svg.railroad-diagram rect.group-box {
   fill: none;
 }
 svg.railroad-diagram g.non-terminal rect {
-  fill: var(--nonTerminalFill);
-  stroke: var(--nonTerminalLines);
+  fill: #eef0ff;
+  stroke: #7a81ff;
 }
 svg.railroad-diagram g.terminal rect {
-  fill: var(--terminalFill);
-  stroke: var(--terminalLines);
+  fill: #fff6e6;
+  stroke: #c2680f;
 }
 svg.railroad-diagram path.diagram-text {
   stroke-width: 3;

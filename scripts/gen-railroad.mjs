@@ -106,7 +106,21 @@ writeFileSync(join(demoDir, "grammar.html"), html, "utf8");
 const fullStyle = documentStyle();
 const rootVars = (fullStyle.match(/:root\s*{[^}]*}/) || [""])[0];
 const svgRules = fullStyle.slice(fullStyle.indexOf("svg.railroad-diagram {"));
-const DIAGRAM_CSS = `${rootVars}\nsvg.railroad-diagram{background:var(--diagramBackground)}\n${svgRules}`;
+// The brand palette from grammar-theme.css applies to standalone SVGs as
+// well, with every var() resolved to its literal value at generation time.
+// librsvg (used to turn these SVGs into thesis figure PDFs) does not resolve
+// CSS custom properties, so the standalone files must not depend on them.
+const varsOf = (block) =>
+  Object.fromEntries(
+    [...block.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]),
+  );
+const themeRoot = (themeCss.match(/:root\s*{([^}]*)}/) || [, ""])[1];
+const palette = { ...varsOf(rootVars), ...varsOf(themeRoot) };
+const resolveVars = (css) =>
+  css.replace(/var\((--[\w-]+)\)/g, (_, name) => palette[name] ?? "black");
+const DIAGRAM_CSS = resolveVars(
+  `svg.railroad-diagram{background:${palette["--diagramBackground"]}}\n${svgRules}`,
+);
 
 const inlineStyle = (svg) =>
   svg.replace(/(<svg\b[^>]*>)/, `$1\n<style>\n${DIAGRAM_CSS}\n</style>`);
