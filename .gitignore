@@ -13,6 +13,7 @@ library-improvements.md
 .github/instructions/
 
 # Internal project docs (kept local, not published)
+/ARCHITECTURE.md
 /.github/copilot-instructions.md
 /DEVELOPMENT.md
 /BUGS.md
