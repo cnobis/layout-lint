@@ -2,6 +2,8 @@
 
 ![layout-lint](demo/images/logo-wide.svg)
 
+**[Try it live →](https://cnobis.github.io/layout-lint/)**
+
 A DSL for testing layout in the browser. Rules read as short sentences about the page, and a floating widget shows pass and fail against the live DOM.
 
 ```text
@@ -14,7 +16,7 @@ card-1 same-width card-2;
 count visible card-* is >= 3;
 ```
 
-**[Live demos](https://cnobis.github.io/layout-lint/)**, including a parse-tree explorer and the grammar reference. Language documentation: [docs/LANGUAGE.md](docs/LANGUAGE.md).
+The live site has four interactive demos, a parse-tree explorer, and the grammar reference. Language documentation: [docs/LANGUAGE.md](docs/LANGUAGE.md).
 
 ## Install
 

@@ -190,7 +190,7 @@ the lantern is lit.</p>
     observer catches, so layout-lint re-evaluates on its own.
   -->
   <script type="layout-lint">
-    # a class selector needs a name. id-prefix wildcards (skewer-*) resolve on their own
+    # menu items share a class, everything else resolves by id
     define menu-item as ".menu-item";
 
     # structure of the shopfront
@@ -203,15 +203,13 @@ the lantern is lit.</p>
     board left-of sidebar;
     sidebar right-of board 20 to 60px;
 
-    # the hero is a real photo, so layout-lint guards what actually breaks with
-    # media: the band must span the full width, can't collapse, and the caption
-    # laid over it must stay inside the frame.
+    # hero photo: full-width band, caption stays inside the frame
     hero same-width header;
     hero height >= 120px;
     hero-img inside hero;
     hero-caption inside hero;
 
-    # count: any (in DOM), visible (rendered), absent (hidden) with every comparator
+    # menu counts
     count any menu-item is 17;
     count visible menu-item is 17;
     count visible menu-item is >= 12;
@@ -224,19 +222,19 @@ the lantern is lit.</p>
     count any finish-* is 3;
     count visible skewer-* is 5;
 
-    # visibility predicates
+    # visibility
     skewer-1 visible;
     staff-note absent;
 
-    # text on the board title: flips when you switch to English
+    # board title text, flips with the language switch
     board-title text is "本日のお品書き";
     board-title text starts "本日";
     board-title text ends "品書き";
     board-title text contains "お品書";
 
-    # css: the title is set in Mincho until the English switch swaps the face
+    # title font, swapped by the language switch
     board-title css font-family contains "Mincho";
-    # custom property pulled straight from :root
+    # custom property
     header css --lantern is "#c0392b";
 
     # text modifiers on the house note
@@ -245,30 +243,27 @@ the lantern is lit.</p>
     welcome text singleline lowercase contains "stay a while";
     welcome text singleline lowercase matches "pull up a stool, stay a while, the lantern is lit\.";
 
-    # 縦書き: the board title is set vertically beside the list. the English
-    # toggle flips it horizontal, so these geometry rules go red live.
+    # the vertical title turns horizontal in English, so these go red
     board-title left-of board-body 6 to 40px;
     board-title height >= 140px;
     board-title width <= 72px;
 
-    # お通し + 税込: the seat-charge + tax-included footnote every izakaya carries
+    # price footnote under the board title
     price-note below board-title 0px;
     price-note visible;
     price-note text contains "税込";
     price-note text contains "お通し";
 
-    # 営業中: open-now pill with its status lamp centred inside the badge
+    # open-now pill and its status dot
     status-pill inside header;
     status-pill left-of lang-btn 0px;
     status-dot inside status-pill;
     status-dot centered vertically inside status-pill;
 
-    # furigana: the reading must sit above its kanji (ruby annotation placement)
+    # furigana sits above its kanji
     furigana-rt above furigana-base;
 
-    # 期間限定: Japanese sites often set bespoke titles as images, not live
-    # fonts (scarce CJK faces, per-tile typefaces), so this seal is an <img>.
-    # text rules can't read its pixels, so we assert its fixed raster box.
+    # the seal is an image, not text, so pin its box instead
     limited-stamp inside special;
     limited-stamp visible;
     limited-stamp width 72px;

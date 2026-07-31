@@ -77,7 +77,7 @@ export function createLayoutLintWidget(
     settingsToggle,
     specToggle,
     minimizeToggle,
-  } = createWidgetHeaderControls(options.title ?? "layout-lint");
+  } = createWidgetHeaderControls(options.title);
 
   const status = document.createElement("span");
   status.style.fontWeight = "600";

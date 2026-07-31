@@ -80,12 +80,12 @@
     MutationObserver picks up its inline-style changes.
   -->
   <script type="layout-lint">
-    # element definitions: map names to CSS selectors
+    # names for the page elements
     define card-* as ".artwork";
     define badge as "#featured-badge";
     define searchbox as "#search-box";
 
-    # group: apply one rule to several elements at once
+    # the page skeleton as one group
     group room as header, nav, gallery, footer;
 
     # vertical order of the page
@@ -119,7 +119,7 @@
 
     searchbox inside nav;
 
-    # group reference: expands to one rule per member
+    # the whole skeleton stays visible
     @room visible;
   </script>
   <script type="module" src="../../dist/auto.bundle.js"></script>
