@@ -23,7 +23,9 @@ describe('semantic diagnostics collection', () => {
 
     assert.strictEqual(diagnostics.length, 1);
     assert.strictEqual(diagnostics[0].code, 'LL-SEMANTIC-ELEMENT-NOT-FOUND');
-    assert.strictEqual(diagnostics[0].message, '"nav" did not match any element on this page.');
+    // The message must name the element the reason reports as missing (here the
+    // target `header`), not unconditionally the rule's subject.
+    assert.strictEqual(diagnostics[0].message, '"header" did not match any element on this page.');
     assert.strictEqual(diagnostics[0].range.start.line, 2);
     assert.strictEqual(diagnostics[0].snippet, 'nav below');
   });

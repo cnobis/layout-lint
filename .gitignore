@@ -5,6 +5,7 @@ notes/
 
 # Claude Code workspace instructions (local AI tooling, not part of the repo)
 CLAUDE.md
+.claude/
 *.tex
 *.bib
 THESIS_LOG.md

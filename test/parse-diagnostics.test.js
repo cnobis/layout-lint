@@ -79,7 +79,7 @@ describe('parse diagnostics extraction', () => {
     const { diagnostics } = extractRules({ rootNode }, source);
 
     assert.strictEqual(diagnostics.length, 1);
-    assert.strictEqual(diagnostics[0].code, 'LL-RULE-MALFORMED');
+    assert.strictEqual(diagnostics[0].code, 'LL-SEMANTIC-RULE-MALFORMED');
     assert.ok(diagnostics[0].message.includes('must begin with an element name'));
     assert.ok(diagnostics[0].primaryLabel);
     assert.ok((diagnostics[0].hint ?? '').includes('relation'));

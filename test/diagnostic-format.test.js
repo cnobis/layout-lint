@@ -119,7 +119,7 @@ describe('DIAGNOSTIC_CATALOGUE', () => {
     const required = [
       'LL-PARSE-SYNTAX',
       'LL-PARSE-MISSING',
-      'LL-RULE-MALFORMED',
+      'LL-SEMANTIC-RULE-MALFORMED',
       'LL-SEMANTIC-UNKNOWN-GROUP',
       'LL-SEMANTIC-ELEMENT-NOT-FOUND',
     ];

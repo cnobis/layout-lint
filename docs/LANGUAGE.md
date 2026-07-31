@@ -308,7 +308,7 @@ Every diagnostic has a stable `code`. The catalogue lives in [src/core/diagnosti
 | --- | --- |
 | `LL-PARSE-SYNTAX` | The text under the highlighted span does not parse as any known rule shape |
 | `LL-PARSE-MISSING` | A required token is missing (e.g. `nav above` with no target) |
-| `LL-RULE-MALFORMED` | The rule parses but a required slot could not be filled |
+| `LL-SEMANTIC-RULE-MALFORMED` | The rule parses but a required slot could not be filled |
 | `LL-SEMANTIC-UNKNOWN-GROUP` | `@name` refers to a group never declared |
 | `LL-SEMANTIC-ELEMENT-NOT-FOUND` | An identifier in a rule did not resolve to any DOM element |
 | `LL-SEMANTIC-INVALID-PATTERN` | A `matches` rule contains an invalid JavaScript regex |

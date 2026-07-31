@@ -22,7 +22,7 @@ export const DIAGNOSTIC_CATALOGUE: Record<string, DiagnosticExplanation> = {
       "statement must end with `;`.",
     ].join(" "),
   },
-  "LL-RULE-MALFORMED": {
+  "LL-SEMANTIC-RULE-MALFORMED": {
     title: "Malformed rule",
     explain: [
       "The rule node parsed without a syntax error but does not carry both",

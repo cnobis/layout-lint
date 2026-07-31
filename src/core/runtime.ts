@@ -78,8 +78,14 @@ export function collectSemanticDiagnostics(results: RuleResult[]): LayoutLintDia
     if (!result.reason || result.pass) return;
 
     const code = semanticCodeFromReason(result.reason);
+    // The reason names the element that actually failed to resolve, which for
+    // relational rules can be the target rather than the subject. Blaming
+    // `result.element` unconditionally misnames the target case.
+    const missingName = result.reason.startsWith("Element not found:")
+      ? result.reason.slice("Element not found:".length).trim()
+      : result.element;
     const message = code === "LL-SEMANTIC-ELEMENT-NOT-FOUND"
-      ? `"${result.element}" did not match any element on this page.`
+      ? `"${missingName}" did not match any element on this page.`
       : result.reason;
     diagnostics.push({
       code,

@@ -480,7 +480,7 @@ export function extractRules(tree: Tree | null, source: string): ExtractRulesRes
     if (!element || !relation) {
       if (!nodeHasSyntaxError(node)) {
         diagnostics.push({
-          code: "LL-RULE-MALFORMED",
+          code: "LL-SEMANTIC-RULE-MALFORMED",
           severity: "error",
           message: !element
             ? "A rule must begin with an element name."

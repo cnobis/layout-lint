@@ -83,7 +83,8 @@
     "build:ts": "tsc && node scripts/build-wasm-inline.mjs && node scripts/build-bundles.mjs",
     "build:site": "npm run build:ts && npm run build:railroad && node scripts/build-site.mjs",
     "serve": "npx http-server -c-1 -o /demo/index.html",
-    "demo": "npm run serve"
+    "demo": "npm run serve",
+    "bench": "node scripts/bench-spec-scaling.mjs"
   },
   "type": "module"
 }
