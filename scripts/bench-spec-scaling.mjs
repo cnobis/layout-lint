@@ -7,12 +7,23 @@
 // path runs; the stub computes no layout, so the figures cover the pipeline's
 // own work, not the browser's measurement calls.
 //
-// Reported: median parse / evaluate / full-run times over 60 iterations,
-// plus the cold first run (WASM init + parse + eval). Feeds Table 8 of the
-// thesis ("Median parse and evaluation times ...").
+// What each column times (median over 60 iterations):
+//   parse_ms   parser.parse(spec) alone, on the cached Tree-sitter parser
+//              (WASM init is burned before measurement and never included)
+//   extract_ms extractRules(tree, spec) alone, on the tree parsed in the
+//              same iteration (CST -> Rule objects, alias/group tables,
+//              diagnostics, per-rule source ranges)
+//   eval_ms    evaluateParsedSpec() alone: verdicts against the stub DOM
+//   full_ms    runLayoutLint() end to end (re-parses; sanity check, should
+//              track parse_ms + extract_ms + eval_ms)
+//
+// Feeds Table 8 of the thesis ("Median parse, extraction and evaluation
+// times ...").
 //
 // Run: npm run build:ts && node scripts/bench-spec-scaling.mjs
-import { runLayoutLint, parseSpec, evaluateParsedSpec } from '../dist/index.js';
+import { runLayoutLint, evaluateParsedSpec } from '../dist/index.js';
+import { getParser } from '../dist/core/parser.js';
+import { extractRules } from '../dist/core/dsl.js';
 
 const M = 60;
 function fakeRect(i) {
@@ -47,18 +58,22 @@ const median = xs => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
 
 const t0 = performance.now();
 await runLayoutLint({ specText: 'e0 below e1;' });
-console.log(`cold first run (init+parse+eval): ${(performance.now() - t0).toFixed(1)} ms`);
-console.log('N\tparse_ms\teval_ms\tfull_ms\tpass/total');
+console.log(`cold first run (init+parse+extract+eval): ${(performance.now() - t0).toFixed(1)} ms`);
+const parser = await getParser();
+console.log('N\tparse_ms\textract_ms\teval_ms\tfull_ms\tpass/total');
 for (const n of [10, 50, 100, 250, 500]) {
   const spec = genSpec(n);
-  const parseT = [], evalT = [], fullT = [];
+  const parseT = [], extractT = [], evalT = [], fullT = [];
   let passInfo = '';
   for (let iter = 0; iter < 60; iter++) {
     let t = performance.now();
-    const parsed = await parseSpec({ specText: spec });
+    const tree = parser.parse(spec);
     parseT.push(performance.now() - t);
     t = performance.now();
-    const res = evaluateParsedSpec(parsed);
+    const { rules, definitions, diagnostics } = extractRules(tree, spec);
+    extractT.push(performance.now() - t);
+    t = performance.now();
+    const res = evaluateParsedSpec({ rules, definitions, parseDiagnostics: diagnostics });
     evalT.push(performance.now() - t);
     t = performance.now();
     await runLayoutLint({ specText: spec });
@@ -67,5 +82,5 @@ for (const n of [10, 50, 100, 250, 500]) {
       passInfo = `${res.results.filter(r => r.pass).length}/${res.results.length}`;
     }
   }
-  console.log(`${n}\t${median(parseT).toFixed(2)}\t${median(evalT).toFixed(2)}\t${median(fullT).toFixed(2)}\t${passInfo}`);
+  console.log(`${n}\t${median(parseT).toFixed(2)}\t${median(extractT).toFixed(2)}\t${median(evalT).toFixed(2)}\t${median(fullT).toFixed(2)}\t${passInfo}`);
 }

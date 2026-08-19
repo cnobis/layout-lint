@@ -3,6 +3,9 @@
 thesis/
 notes/
 
+# Exam prep materials (private, never tracked)
+exam/
+
 # Claude Code workspace instructions (local AI tooling, not part of the repo)
 CLAUDE.md
 .claude/
