@@ -1,0 +1,89 @@
+# Galen translation of demo/gallery/index.html's layout-lint spec (26
+# constraints), for the cross-runner comparison.
+#
+# Mechanical translation policy (no per-rule judgment):
+#   - layout-lint's directional minimum-gap form (`above X 0px` = at least
+#     0px) becomes Galen's relation with an explicit `> -2px` bound: the
+#     baseline run showed Galen's integer rectangles reading a shared edge
+#     as -1px, which layout-lint's built-in 1px tolerance admits and
+#     Galen's zero-tolerance default rejects. The -2px bound applies the
+#     same approximation constant used for the equalities below.
+#   - exact equalities (`width 184px`, `same-width`) become Galen's
+#     approximate range `~`, which applies the configured approximation
+#     (galen.range.approximation = 2px, Galen's documented default), because
+#     Galen measures integer rectangles and a probe run showed exact values
+#     failing on 1px rounding.
+#   - range and comparator forms translate one to one.
+#   - `same-width A B` becomes `width ~ 100% of B/width` on A.
+#   - `taller-than` becomes `height > 100% of .../height`.
+#
+# The group broadcast `@room visible` expands to its four members'
+# `visible` checks below, mirroring the rule extractor's own expansion.
+# Not translatable (recorded for the expressiveness delta):
+# `badge not inside header` — Galen's parser rejects `not` as an unknown
+# spec and the language has no general negation of a spatial relation
+# (absence of an element, via `absent`, is its one negative form).
+
+@objects
+    header          #header
+    nav             #nav
+    gallery         #gallery
+    footer          #footer
+    card-*          .artwork
+    badge           #featured-badge
+    searchbox       #search-box
+    artwork-1       #artwork-1
+    artwork-1-image #artwork-1-image
+    artwork-1-info  #artwork-1-info
+
+= Skeleton =
+    header:
+        above nav > -2px
+        visible
+
+    nav:
+        visible
+
+    gallery:
+        below nav > -2px
+        visible
+
+    footer:
+        below gallery > -2px
+        visible
+
+= Wall =
+    card-1:
+        inside gallery
+        width ~ 100% of card-2/width
+        left-of card-2
+
+    card-2:
+        inside gallery
+        width ~ 100% of card-3/width
+        right-of card-1 40 to 80px
+
+    card-3:
+        inside gallery
+        right-of card-2 40 to 80px
+
+= Plate =
+    artwork-1-image:
+        height > 100% of artwork-1-info/height
+        width ~ 100% of artwork-1/width
+
+    artwork-1-info:
+        width 95 to 100% of artwork-1/width
+
+= Badge =
+    badge:
+        inside gallery
+        inside partly gallery
+        width ~ 184px
+        width < 185px
+        height > 60px
+        height < 240px
+
+= Search =
+    searchbox:
+        inside nav

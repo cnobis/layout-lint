@@ -174,3 +174,12 @@ vite.config.ts.timestamp-*
 
 # Thesis literature (PDFs of cited papers, not part of the repo)
 literature/
+
+# Evaluation study artifacts: regenerable outputs and the pinned
+# chromedriver binary stay local; results.json is the tracked evidence.
+scripts/eval/backstop/data/
+scripts/eval/backstop/data-survivors/
+scripts/eval/backstop/scenarios.json
+scripts/eval/backstop/scenarios-survivors.json
+scripts/eval/galen/rep-*/
+scripts/eval/galen/chromedriver

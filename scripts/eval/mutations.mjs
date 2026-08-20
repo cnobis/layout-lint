@@ -1,0 +1,159 @@
+// Mutation catalog for the fault-injection study.
+//
+// Each mutant injects exactly one layout fault into an otherwise passing demo
+// page, either as a CSS override (`css`, applied with !important via
+// page.addStyleTag) or as a DOM action (`action`, run via page.evaluate).
+//
+// `category` maps to the reported operator families:
+//   misaligned   — an element leaves a shared edge/center           (Hallé: misaligned)
+//   overlap      — two elements collide or invert their order       (Hallé: overlapping)
+//   container    — an element leaves or protrudes from its container (Hallé: outside container)
+//   stacking     — paint order changes, rectangles do not           (Hallé: incorrectly stacked;
+//                                                                    EXPECTED TO SURVIVE by design)
+//   size         — width/height/proportion changes
+//   spacing      — gaps and proximity changes
+//   count        — an element set gains/loses members or visibility
+//   text-style   — rendered text or computed style changes
+//
+// `expect` documents the hypothesis: "killed" (some rule should fail) or
+// "survives" (a deliberate blind-spot or spec-gap probe).
+
+export const PAGES = {
+  gallery: "/demo/gallery/index.html",
+  work: "/demo/gallery/work.html",
+  bar: "/demo/bar/index.html",
+  studio: "/demo/studio/index.html",
+};
+
+export const MUTANTS = [
+  // ── gallery/index.html ────────────────────────────────────────────────
+  { id: "G1", page: "gallery", category: "misaligned", expect: "survives",
+    css: "#search-box{margin-left:0 !important}",
+    note: "search box slides left inside the nav; the spec only constrains containment, not alignment (spec-gap probe)" },
+  { id: "G2", page: "gallery", category: "size", expect: "killed",
+    css: ".artwork-image{width:60% !important}",
+    note: "plate no longer fills its column" },
+  { id: "G3", page: "gallery", category: "size", expect: "killed",
+    css: "#gallery{grid-template-columns:2fr 1fr 1fr !important}",
+    note: "unequal grid columns break the matched card widths" },
+  { id: "G4", page: "gallery", category: "container", expect: "killed",
+    css: "#featured-badge{transform:translateY(-300px) !important}",
+    note: "badge escapes the wall upward" },
+  { id: "G5", page: "gallery", category: "overlap", expect: "killed",
+    css: ".artwork{margin-right:-60px !important}",
+    note: "cards collide; the 40-80px gap contract fails" },
+  { id: "G6", page: "gallery", category: "overlap", expect: "killed",
+    css: "#nav{margin-top:-80px !important}",
+    note: "nav rides up into the header; vertical order inverts" },
+  { id: "G7", page: "gallery", category: "size", expect: "killed",
+    css: "#featured-badge{width:220px !important}",
+    note: "badge grows past its fixed and bounded widths" },
+  { id: "G8", page: "gallery", category: "count", expect: "killed",
+    css: "#footer{display:none !important}",
+    note: "footer disappears; the skeleton group is no longer visible" },
+  { id: "G9", page: "gallery", category: "spacing", expect: "killed",
+    css: "#gallery{column-gap:120px !important}",
+    note: "column gap exceeds the 40-80px window" },
+  { id: "G10", page: "gallery", category: "stacking", expect: "survives",
+    css: "#featured-badge{z-index:-1 !important}",
+    note: "badge paints under the cards; every rectangle stays identical" },
+
+  // ── gallery/work.html ────────────────────────────────────────────────
+  { id: "W1", page: "work", category: "container", expect: "killed",
+    css: "#plate{top:20px !important}",
+    note: "museum mat shrinks from 32px on top; the per-side offsets fail" },
+  { id: "W2", page: "work", category: "container", expect: "killed",
+    css: "#sold-ribbon{transform:translate(-30px,30px) !important}",
+    note: "ribbon pulls fully inside; the deliberate -11px overhang contract fails" },
+  { id: "W3", page: "work", category: "spacing", expect: "killed",
+    css: "#caption-block{margin-left:120px !important}",
+    note: "caption drifts beyond the 40-90px pocket" },
+  { id: "W4", page: "work", category: "overlap", expect: "killed",
+    css: "#work-artist{margin-top:-40px !important}",
+    note: "artist line rides up over the title; reading order inverts" },
+  { id: "W5", page: "work", category: "size", expect: "killed",
+    css: "#plate{width:60% !important}",
+    note: "plate shrinks below 80-90% of the frame" },
+  { id: "W6", page: "work", category: "stacking", expect: "survives",
+    css: "#sold-ribbon{z-index:-1 !important}",
+    note: "ribbon paints under the frame; rectangles unchanged" },
+
+  // ── bar/index.html ───────────────────────────────────────────────────
+  { id: "B1", page: "bar", category: "count", expect: "killed",
+    css: "#skewer-2{display:none !important}",
+    note: "one menu item hides; visible and absent counts both break" },
+  { id: "B2", page: "bar", category: "count", expect: "killed",
+    action: "document.querySelector('#drink-5').remove()",
+    note: "one menu item leaves the DOM entirely; the any-count breaks" },
+  { id: "B3", page: "bar", category: "text-style", expect: "killed",
+    action: "document.querySelector('#board-title').textContent = 'Menu of the Day'",
+    note: "board title flips to English text" },
+  { id: "B4", page: "bar", category: "text-style", expect: "killed",
+    css: "#header{--ruby:#000000 !important}",
+    note: "ruby custom property changes" },
+  { id: "B5", page: "bar", category: "misaligned", expect: "killed",
+    css: "#status-dot{margin-top:10px !important}",
+    note: "status dot leaves the pill's vertical center" },
+  { id: "B6", page: "bar", category: "spacing", expect: "killed",
+    css: "#sidebar{margin-left:-40px !important}",
+    note: "sidebar collapses the 20-60px gutter next to the board" },
+  { id: "B7", page: "bar", category: "container", expect: "killed",
+    css: "#hero-caption{transform:translateY(60px) !important}",
+    note: "caption slips out of the hero band" },
+  { id: "B8", page: "bar", category: "size", expect: "killed",
+    css: "#hero{height:80px !important}",
+    note: "hero band drops below its 120px minimum" },
+  { id: "B9", page: "bar", category: "stacking", expect: "survives",
+    css: "#gem{z-index:-1 !important}",
+    note: "gem paints under the header; rectangles unchanged" },
+  { id: "B10", page: "bar", category: "misaligned", expect: "killed",
+    css: "#furigana-rt{position:relative !important; top:30px !important}",
+    note: "furigana drops below its kanji" },
+  { id: "B11", page: "bar", category: "size", expect: "killed",
+    css: "#limited-stamp{width:60px !important; height:60px !important}",
+    note: "the seal shrinks from its pinned 72px box" },
+
+  // ── studio/index.html ────────────────────────────────────────────────
+  { id: "S1", page: "studio", category: "misaligned", expect: "killed",
+    css: "#strip-2{margin-top:24px !important}",
+    note: "second channel strip sinks; the matched pair loses its shared edges" },
+  { id: "S2", page: "studio", category: "size", expect: "killed",
+    css: "#sidebar{width:120px !important}",
+    note: "rack collapses below its 220-260px resting width" },
+  { id: "S3", page: "studio", category: "size", expect: "killed",
+    css: "#sidebar{width:340px !important}",
+    note: "rack grows past its hard 320px ceiling" },
+  { id: "S4", page: "studio", category: "count", expect: "killed",
+    action: "document.querySelector('#pad-5').classList.add('lit')",
+    note: "a fifth pad lights; the four-on-the-floor count breaks" },
+  { id: "S5", page: "studio", category: "count", expect: "killed",
+    action: "document.querySelector('#preset-2').classList.add('active')",
+    note: "a second preset activates; exactly-one breaks" },
+  { id: "S6", page: "studio", category: "spacing", expect: "killed",
+    css: "#preset-3{margin-top:14px !important}",
+    note: "one preset drifts; the equal-gap chain breaks" },
+  { id: "S7", page: "studio", category: "spacing", expect: "killed",
+    css: "#playhead{transform:translateX(40px) !important}",
+    note: "playhead leaves the cue's pocket" },
+  { id: "S8", page: "studio", category: "misaligned", expect: "killed",
+    css: "#fader-cap-2{transform:translateY(14px) !important}",
+    note: "second fader cap drops; the caps lose their shared top edge" },
+  { id: "S9", page: "studio", category: "size", expect: "killed",
+    css: "#master{width:200px !important}",
+    note: "master bus narrows below the strip width" },
+  { id: "S10", page: "studio", category: "misaligned", expect: "killed",
+    css: "#transport-mark{margin-left:30px !important}",
+    note: "transport mark leaves the center of its housing" },
+  { id: "S11", page: "studio", category: "text-style", expect: "killed",
+    css: "#transport-badge{text-transform:none !important}",
+    note: "badge loses its uppercase transform" },
+  { id: "S12", page: "studio", category: "count", expect: "killed",
+    action: "document.querySelector('#clip-light').classList.remove('is-hidden')",
+    note: "overload light appears while no fader is in the red" },
+  { id: "S13", page: "studio", category: "stacking", expect: "survives",
+    css: "#pads{position:relative !important; z-index:3 !important}",
+    note: "pad grid paints above its neighbors; rectangles unchanged" },
+  { id: "S14", page: "studio", category: "spacing", expect: "killed",
+    css: "#page-head{margin-top:400px !important}",
+    note: "page head sinks past its 320px distance-from-top window" },
+];
