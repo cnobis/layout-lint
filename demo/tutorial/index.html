@@ -43,7 +43,7 @@
           <h2 id="headline">Hi</h2>
           <span id="badge">NEW</span>
         </div>
-        <p id="subhead">Declarative layout checks for DOM UIs.</p>
+        <p id="subhead">A small language for testing layout in the browser.</p>
 
         <nav id="nav">
           <a href="#docs">Docs</a>
@@ -60,12 +60,12 @@
           <article id="card-b" class="card">
             <div class="card-img" id="card-b-image"></div>
             <h3>Live feedback</h3>
-            <p>The widget tracks every change.</p>
+            <p>The layout-lint monitor tracks every change.</p>
           </article>
           <article id="card-c" class="card">
             <div class="card-img" id="card-c-image"></div>
-            <h3>CI-ready</h3>
-            <p>Verify layouts in Playwright or Cypress.</p>
+            <h3>Browser-native</h3>
+            <p>Runs in the page itself, no build step.</p>
           </article>
         </div>
 
@@ -93,17 +93,17 @@
       },
       {
         title: "Alignment",
-        prose: "Use relations like `aligned-top` to compare shared edges. No distance, just matching geometry.",
+        prose: "`aligned-top` compares shared edges. Alignment rules take no distance.",
         rule: "card-a aligned-top card-b;",
       },
       {
         title: "Containment",
-        prose: "Geometry isn't only about distance. `inside` checks that one element's box sits fully within another.",
+        prose: "`inside` checks that one element's box sits fully within another.",
         rule: "badge inside page;",
       },
       {
-        title: "Defines: name your selectors",
-        prose: "Give a CSS selector a friendly name with `define`. The wildcard pattern `.card` binds every match, so one rule covers them all.",
+        title: "define: name a selector",
+        prose: "`define` binds a selector to a name. `.card` matches all three cards, so one rule covers them.",
         rule: 'define cards as ".card";\ncards inside page;',
         highlight: ".card",
       },
@@ -114,12 +114,12 @@
       },
       {
         title: "Counting visible elements",
-        prose: "Use `count` for matching elements, optionally filtered to `visible` ones only. The wildcard expands the same way `define` does.",
+        prose: "`count` tallies matching elements, here narrowed to `visible` ones. The wildcard `card-*` expands like a define.",
         rule: "count visible card-* is >= 3;",
       },
       {
         title: "Text and CSS",
-        prose: "Assert against `text` content and computed `css` too, not just geometry.",
+        prose: "Rules can also target `text` content and computed `css` values.",
         rule: 'headline text starts "Welcome";\nheadline css font-weight is "700";',
         apply: () => {
           document.getElementById("headline").textContent = "Welcome to layout-lint";
@@ -170,6 +170,38 @@
       return escapeHtml(text).replace(/`([^`]+)`/g, "<code>$1</code>");
     }
 
+    // the rule card renders as a fragment of the spec editor: the gutter
+    // shows the line the rule lands on in the growing spec
+    const RULE_KEYWORDS = new Set([
+      "define", "as", "count", "visible", "is", "not", "inside",
+      "left-of", "aligned-top", "width", "of", "text", "starts", "css",
+    ]);
+
+    function ruleStartLine(idx) {
+      let line = 2;
+      for (let i = 0; i < idx; i++) line += lessons[i].rule.split("\n").length;
+      return line;
+    }
+
+    function highlightRuleLine(line) {
+      const tokens = line.match(/"[^"]*"|\d+(?:\.\d+)?(?:px|%)?|[A-Za-z][\w*/-]*|\s+|./g) ?? [];
+      return tokens.map((tok) => {
+        if (/^\s+$/.test(tok)) return tok;
+        if (tok.startsWith("\"")) return `<span class="tok-str">${escapeHtml(tok)}</span>`;
+        if (/^\d/.test(tok)) return `<span class="tok-num">${escapeHtml(tok)}</span>`;
+        if (RULE_KEYWORDS.has(tok)) return `<span class="tok-kw">${escapeHtml(tok)}</span>`;
+        if (/^[A-Za-z]/.test(tok)) return escapeHtml(tok);
+        return `<span class="tok-punc">${escapeHtml(tok)}</span>`;
+      }).join("");
+    }
+
+    function renderRuleCard(rule, startLine) {
+      const rows = rule.split("\n").map((line, i) =>
+        `<span class="rl-line"><span class="rl-no">${String(startLine + i).padStart(2, "0")}</span><span class="rl-code">${highlightRuleLine(line)}</span></span>`
+      ).join("");
+      return `<span class="rl-head"><span>spec</span></span><span class="rl-body">${rows}</span>`;
+    }
+
     createLayoutLintWidget(monitor, {
       initialPosition: {
         x: Math.max(16, window.innerWidth - 360 - 24),
@@ -215,7 +247,7 @@
       lessonStepLabel.textContent = `Step ${idx + 1} of ${lessons.length}`;
       lessonTitle.textContent = lesson.title;
       lessonProse.innerHTML = renderInlineCode(lesson.prose);
-      lessonRule.textContent = lesson.rule;
+      lessonRule.innerHTML = renderRuleCard(lesson.rule, ruleStartLine(idx));
       lessonRule.classList.remove("empty");
 
       const isCurrent = idx === completed;
@@ -236,7 +268,7 @@
     function renderFinale() {
       lessonBody.classList.add("finale");
       lessonTitle.textContent = "Congratulations, you completed the tutorial!";
-      lessonProse.innerHTML = `Things to try in the widget on your own:
+      lessonProse.innerHTML = `Here are some things to try in the widget on your own:
         <ul class="finale-recap">
           <li><strong>Hover</strong><span>Hover a constraint row to outline the elements it links on the page.</span></li>
           <li><strong>Pin</strong><span>Pin a rule to keep it docked at the top while you scroll.</span></li>

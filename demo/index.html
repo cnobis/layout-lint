@@ -9,32 +9,30 @@
 </head>
 <body>
   <main>
-    <div class="brand-banner">
-      <picture>
-        <source media="(max-width: 640px)" srcset="./images/logo-compact.svg" />
-        <source media="(max-width: 960px)" srcset="./images/logo-wide.svg" />
-        <img src="./images/logo-very-wide.svg" alt="layout-lint" />
-      </picture>
+    <div class="brand-banner" role="img" aria-label="layout-lint">
+      <span class="brand-mark brand-mark-word"></span>
+      <span class="brand-mark brand-mark-shapes"></span>
     </div>
-    <p>Welcome to the <strong>layout-lint playground</strong>! The demos let you explore the DSL hands-on. The learn section shows how the parser works and documents every rule.</p>
+    <p class="intro">Welcome to the <strong>layout-lint playground</strong>!</p>
 
     <div class="section-label">Demos</div>
     <div class="grid">
       <a class="card card-lead" href="./tutorial/index.html">
         <div class="name"><span class="step">0</span> Tutorial <span class="step-hint">Start here</span></div>
-        <div>A guided walkthrough of eight rules that shows each change directly on the page.</div>
+        <div>A guided walkthrough.</div>
       </a>
-      <a class="card" href="./gallery/index.html">
+      <div class="grid-sep" aria-hidden="true"><span>◆</span></div>
+      <a class="card card-portal" href="./gallery/index.html" style="--preview: url('./images/previews/gallery.jpg')">
         <div class="name"><span class="step">1</span> Gallery</div>
         <div>Use <code>inside</code> offsets, <code>partially inside</code>, percent-of sizing, wildcards, and groups. Drag the badge to break and restore constraints.</div>
       </a>
-      <a class="card" href="./bar/index.html">
+      <a class="card card-portal" href="./bar/index.html" style="--preview: url('./images/previews/bar.jpg'); --scrim-top: 0.72; --scrim-bot: 0.5">
         <div class="name"><span class="step">2</span> Bar</div>
         <div>Validate text and CSS rules, <code>visible</code>/<code>absent</code>, and wildcard counts. Switch language or filter categories to test behavior.</div>
       </a>
-      <a class="card" href="./studio/index.html">
+      <a class="card card-portal" href="./studio/index.html" style="--preview: url('./images/previews/studio.jpg'); --scrim-top: 0.26; --scrim-bot: 0.58">
         <div class="name"><span class="step">3</span> Studio</div>
-        <div>Combine <code>aligned</code>, <code>centered</code>, <code>equal-gap</code>, <code>near</code>, and percent-of rules. Move faders, channels, and the playhead.</div>
+        <div>Combine <code>aligned</code>, <code>centered</code>, <code>equal-gap</code>, <code>near</code>, and percent-of rules on a live console. Every control moves something a rule measures.</div>
       </a>
     </div>
 
@@ -42,11 +40,11 @@
     <div class="grid grid-2">
       <a class="card" href="./internals/index.html">
         <div class="name">Live Parse Tree <img class="card-ts-logo" src="./images/tree-sitter-small.png" alt="tree-sitter" /></div>
-        <div>Watch tree-sitter parse a spec live. Every node type and field comes straight from the grammar.</div>
+        <div>Watch Tree-sitter parse a spec live.</div>
       </a>
       <a class="card" href="./internals/grammar.html">
         <div class="name">Language Reference</div>
-        <div>Every grammar rule, explained with a railroad diagram.</div>
+        <div>Every grammar rule explained with syntax diagrams.</div>
       </a>
     </div>
 
