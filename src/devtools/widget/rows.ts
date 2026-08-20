@@ -57,8 +57,8 @@ const isAlignmentRelation = (relation: string) =>
 const isEqualGapRelation = (relation: string) => relation === "equal-gap-x" || relation === "equal-gap-y";
 const isCountRelation = (relation: string) => relation.startsWith("count-");
 const isPresenceRelation = (relation: string) => relation === "visible" || relation === "absent";
-const isTextRelation = (relation: string) => ["text-starts", "text-ends", "text-equals", "matches"].includes(relation);
-const isCssRelation = (relation: string) => relation === "css";
+const isTextRelation = (relation: string) => relation.startsWith("text-");
+const isCssRelation = (relation: string) => relation.startsWith("css-");
 
 const formatCountExpected = (item: { countExpected?: number; countMin?: number; countMax?: number; comparator?: string }): string => {
   if (item.comparator && item.countExpected != null) {
@@ -151,6 +151,11 @@ const buildHeadline = (item: RuleResult) => {
   return `${item.pass ? "✓" : "✗"} ${item.element} ${item.negated ? "not " : ""}${item.relation}${item.target ? ` ${item.target}` : ""}${item.target2 ? ` ${item.target2}` : ""}`;
 };
 
+// Rect math yields sub-pixel noise (e.g. 113.99993896484375); show at most
+// two decimals so the metadata reads as a measurement, not a float dump.
+const formatPx = (value: unknown) =>
+  typeof value === "number" ? Number(value.toFixed(2)) : value ?? "n/a";
+
 const buildMeta = (item: RuleResult) => {
   const hasPercentDistance = item.distancePct != null || item.distanceMinPct != null || item.distanceMaxPct != null;
 
@@ -187,12 +192,12 @@ const buildMeta = (item: RuleResult) => {
   }
 
   if (isAlignmentRelation(item.relation)) {
-    return `actual offset: ${item.actual ?? "n/a"} | expected: <= 1px`;
+    return `actual offset: ${formatPx(item.actual)} | expected: <= 1px`;
   }
 
   if (isEqualGapRelation(item.relation)) {
     const tolerance = item.distancePx ?? 1;
-    return `actual gap delta: ${item.actual ?? "n/a"} | expected: <= ${tolerance}px`;
+    return `actual gap delta: ${formatPx(item.actual)} | expected: <= ${tolerance}px`;
   }
 
   if (isPresenceRelation(item.relation)) {
@@ -207,7 +212,7 @@ const buildMeta = (item: RuleResult) => {
     return item.actual != null ? `actual value: ${item.actual}` : "";
   }
 
-  return `actual distance: ${item.actual ?? "n/a"}${item.distancePx != null ? ` | expected: >= ${item.distancePx}px` : ""}`;
+  return `actual distance: ${formatPx(item.actual)}${item.distancePx != null ? ` | expected: >= ${item.distancePx}px` : ""}`;
 };
 
 export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {

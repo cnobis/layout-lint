@@ -1,0 +1,123 @@
+# Galen translation of demo/bar/index.html's layout-lint spec (51
+# constraints), for the cross-runner comparison. Same mechanical
+# policy as gallery.gspec (directional minimum-gap forms get `> -2px`,
+# exact equalities get `~` at the configured 2px approximation, ranges and
+# strict comparators translate one to one), with one extension: layout-lint's
+# non-strict comparators (`>= n`, `<= n`) become Galen's strict form moved
+# 2px outward (`> n-2`, `< n+2`), because Galen has no non-strict form and
+# integer rectangles sit exactly on the bound on this page (the vertical
+# title's pinned 72px width).
+#
+# Not translatable (recorded for the expressiveness delta):
+#   - `header css --ruby is "#c0392b"`: Galen's css spec reads a custom
+#     property as the empty string (probe-verified), so the shop-color
+#     contract has no working Galen form. Its mutant is the predicted
+#     divergence.
+
+@objects
+    header        #header
+    hero          #hero
+    tabs          #tabs
+    main          #main
+    footer        #footer
+    gem           #gem
+    board         #board
+    sidebar       #sidebar
+    hero-img      #hero-img
+    hero-caption  #hero-caption
+    menu-item-*   .menu-item
+    skewer-*      [id^='skewer-']
+    drink-*       [id^='drink-']
+    board-title   #board-title
+    board-body    #board-body
+    price-note    #price-note
+    status-pill   #status-pill
+    status-dot    #status-dot
+    furigana-rt   #furigana-rt
+    furigana-base #furigana-base
+    limited-stamp #limited-stamp
+    special       #special
+    welcome       #welcome
+    staff-note    #staff-note
+
+= Shopfront =
+    hero:
+        below header > -2px
+        width ~ 100% of header/width
+        height > 118px
+
+    tabs:
+        below hero > -2px
+
+    main:
+        below tabs > -2px
+
+    footer:
+        below main > -2px
+
+    gem:
+        inside header
+
+    board:
+        left-of sidebar
+
+    sidebar:
+        right-of board 20 to 60px
+
+    hero-img:
+        inside hero
+
+    hero-caption:
+        inside hero
+
+= Counts =
+    board:
+        count any menu-item-* is 17
+        count visible menu-item-* is 17
+        count visible menu-item-* is 12 to 17
+        count absent menu-item-* is 0
+        count any skewer-* is 5
+        count visible skewer-* is 5
+        count any drink-* is 5
+
+= Visibility =
+    staff-note:
+        absent
+
+= Board title =
+    board-title:
+        text is "本日のお品書き"
+        text ends "品書き"
+        css font-family contains "Mincho"
+        left-of board-body 6 to 40px
+        height > 138px
+        width < 74px
+
+= House note =
+    welcome:
+        text lowercase starts "good sake"
+        text singleline lowercase matches "good sake, good mood\. let's drink slowly tonight\. master is waiting you!"
+
+= Price note =
+    price-note:
+        below board-title > -2px
+        text contains "税込"
+
+= Status pill =
+    status-pill:
+        inside header
+
+    status-dot:
+        inside status-pill
+        centered vertically inside status-pill
+
+= Furigana =
+    furigana-rt:
+        above furigana-base > -2px
+
+= Seal =
+    limited-stamp:
+        inside special
+        visible
+        width ~ 72px
+        height ~ 72px

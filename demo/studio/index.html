@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Studio</title>
+  <title>ROULÉ — Studio</title>
   <link rel="stylesheet" href="../shared.css" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
@@ -16,11 +16,11 @@
     </button>
     <div id="brand">
       <span id="logo">◐</span>
-      <span class="brand-word">Studio</span>
+      <span class="brand-word">Roulé</span>
     </div>
     <input id="patch-name" value="homework · 01" aria-label="Patch name" />
     <div class="topbar-right">
-      <span id="transport-badge">123 BPM</span>
+      <span id="transport-badge"><input id="bpm-input" value="123" maxlength="3" inputmode="numeric" aria-label="Tempo in beats per minute" /><span class="bpm-unit">BPM</span></span>
       <button id="transport" type="button" aria-label="Play / pause">
         <span id="transport-mark">▶</span>
       </button>
@@ -32,23 +32,33 @@
       <nav id="preset-rack" aria-label="Presets">
         <p class="rack-label">Presets</p>
         <button class="preset active" id="preset-1" type="button"
-                data-patch="Init" data-bpm="123" data-levels="60,60,72" data-trims="-58,22" data-pads="101000101">Init</button>
+                data-patch="Init" data-bpm="123" data-levels="60,60,72" data-trims="-58,22" data-pads="101000101"><span class="preset-no">01</span><span class="preset-name">Init</span></button>
         <button class="preset" id="preset-2" type="button"
-                data-patch="909 Kit" data-bpm="124" data-levels="88,46,70" data-trims="40,-30" data-pads="010101010">909 Kit</button>
+                data-patch="Revolution 909" data-bpm="126" data-levels="88,46,70" data-trims="40,-30" data-pads="010101010"><span class="preset-no">02</span><span class="preset-name">Revolution 909</span></button>
         <button class="preset" id="preset-3" type="button"
-                data-patch="Filter Keys" data-bpm="120" data-levels="54,62,68" data-trims="-110,60" data-pads="110100100">Filter Keys</button>
+                data-patch="Filter Keys" data-bpm="120" data-levels="54,62,68" data-trims="-110,60" data-pads="110100100"><span class="preset-no">03</span><span class="preset-name">Filter Keys</span></button>
         <button class="preset" id="preset-4" type="button"
-                data-patch="Vocoder Bells" data-bpm="116" data-levels="48,58,66" data-trims="80,-70" data-pads="001010011">Vocoder Bells</button>
+                data-patch="Vocoder Bells" data-bpm="116" data-levels="48,58,66" data-trims="80,-70" data-pads="001010011"><span class="preset-no">04</span><span class="preset-name">Vocoder Bells</span></button>
         <button class="preset" id="preset-5" type="button"
-                data-patch="Riser" data-bpm="128" data-levels="40,50,74" data-trims="-20,110" data-pads="100011010">Riser</button>
+                data-patch="Riser" data-bpm="128" data-levels="40,50,74" data-trims="-20,110" data-pads="100011010"><span class="preset-no">05</span><span class="preset-name">Riser</span></button>
       </nav>
+
+      <div id="machine-rack" aria-label="Machine patchbay">
+        <p class="rack-label">Machines</p>
+        <ul id="machine-list">
+          <li><span class="mk-led" aria-hidden="true"></span><span class="mk-name">TR-909</span><span class="mk-role">rhythm</span></li>
+          <li><span class="mk-led" aria-hidden="true"></span><span class="mk-name">TB-303</span><span class="mk-role">bass</span></li>
+          <li><span class="mk-led" aria-hidden="true"></span><span class="mk-name">VP-330</span><span class="mk-role">vocoder</span></li>
+          <li><span class="mk-led" aria-hidden="true"></span><span class="mk-name">JUNO-106</span><span class="mk-role">poly</span></li>
+        </ul>
+      </div>
     </aside>
 
     <main id="content">
       <div id="page-head">
-        <div>
-          <h1 id="page-title">Studio Session</h1>
-          <p id="page-sub">8 voices · 123 BPM · 4/4</p>
+        <div id="session-readout">
+          <p id="position-readout">001.1.1</p>
+          <p id="session-meta">44.1 kHz · 24-bit · 4/4</p>
         </div>
         <div id="transport-zone">
           <div id="timeline" aria-label="Transport timeline">
@@ -63,11 +73,21 @@
         </div>
       </div>
 
+      <section class="channel master" id="master" aria-label="Master bus">
+        <div class="strip-handle">MAIN</div>
+        <div class="knob" data-knob data-gain id="master-gain" data-angle="66"><div class="knob-dial" style="--angle:66deg"><span class="knob-pointer"></span></div></div>
+        <div class="master-meta"><span class="master-cap">gain</span><span class="ch-label" id="master-db">−14</span></div>
+        <div class="master-bar" id="master-bar">
+          <div class="master-bar-fill" id="master-bar-fill" style="width:72%"></div>
+        </div>
+      </section>
+
       <div id="mixer-row">
         <section id="desk">
           <div class="channel strip" id="strip-1">
             <div class="strip-handle" data-handle><span class="ch-led" aria-hidden="true"></span>KICK</div>
             <div class="knob" data-knob data-angle="-58"><div class="knob-dial" style="--angle:-58deg"><span class="knob-pointer"></span></div></div>
+            <span class="knob-cap">trim</span>
             <div class="fader">
               <div class="fader-rail" id="fader-rail-1" data-fader>
                 <div class="fader-fill" id="fader-fill-1" style="height:60%"></div>
@@ -80,6 +100,7 @@
           <div class="channel strip" id="strip-2">
             <div class="strip-handle" data-handle><span class="ch-led" aria-hidden="true"></span>SNARE</div>
             <div class="knob" data-knob data-angle="22"><div class="knob-dial" style="--angle:22deg"><span class="knob-pointer"></span></div></div>
+            <span class="knob-cap">trim</span>
             <div class="fader">
               <div class="fader-rail" id="fader-rail-2" data-fader>
                 <div class="fader-fill" id="fader-fill-2" style="height:60%"></div>
@@ -91,109 +112,104 @@
         </section>
 
         <section id="pads" aria-label="Drum pads">
-          <div class="pad lit" id="pad-1"></div>
-          <div class="pad" id="pad-2"></div>
-          <div class="pad lit" id="pad-3"></div>
-          <div class="pad" id="pad-4"></div>
-          <div class="pad" id="pad-5"></div>
-          <div class="pad" id="pad-6"></div>
-          <div class="pad lit" id="pad-7"></div>
-          <div class="pad" id="pad-8"></div>
-          <div class="pad lit" id="pad-9"></div>
+          <div class="pad lit" id="pad-1" aria-label="Pad BD"><span class="pad-key" aria-hidden="true">BD</span></div>
+          <div class="pad" id="pad-2" aria-label="Pad SD"><span class="pad-key" aria-hidden="true">SD</span></div>
+          <div class="pad lit" id="pad-3" aria-label="Pad LT"><span class="pad-key" aria-hidden="true">LT</span></div>
+          <div class="pad" id="pad-4" aria-label="Pad MT"><span class="pad-key" aria-hidden="true">MT</span></div>
+          <div class="pad" id="pad-5" aria-label="Pad HT"><span class="pad-key" aria-hidden="true">HT</span></div>
+          <div class="pad" id="pad-6" aria-label="Pad RS"><span class="pad-key" aria-hidden="true">RS</span></div>
+          <div class="pad lit" id="pad-7" aria-label="Pad CP"><span class="pad-key" aria-hidden="true">CP</span></div>
+          <div class="pad" id="pad-8" aria-label="Pad CH"><span class="pad-key" aria-hidden="true">CH</span></div>
+          <div class="pad lit" id="pad-9" aria-label="Pad OH"><span class="pad-key" aria-hidden="true">OH</span></div>
+        </section>
+
+        <section id="fx-rack" aria-label="Effects">
+          <p class="fx-label">FX Send</p>
+          <div class="fx-knobs">
+            <div class="fx-knob"><div class="knob mini" data-knob data-angle="35"><div class="knob-dial" style="--angle:35deg"><span class="knob-pointer"></span></div></div><span class="knob-cap">cutoff</span></div>
+            <div class="fx-knob"><div class="knob mini" data-knob data-angle="-70"><div class="knob-dial" style="--angle:-70deg"><span class="knob-pointer"></span></div></div><span class="knob-cap">res</span></div>
+          </div>
+          <button class="fx on" type="button"><span class="fx-led" aria-hidden="true"></span>VOCODER</button>
+          <button class="fx" type="button"><span class="fx-led" aria-hidden="true"></span>PHASE</button>
+          <button class="fx on" type="button"><span class="fx-led" aria-hidden="true"></span>LPF</button>
         </section>
       </div>
 
-      <section class="channel master" id="master" aria-label="Master bus">
-        <div class="strip-handle">MAIN</div>
-        <div class="knob" data-knob data-gain id="master-gain" data-angle="66"><div class="knob-dial" style="--angle:66deg"><span class="knob-pointer"></span></div></div>
-        <div class="master-meta"><span class="master-cap">gain</span><span class="ch-label" id="master-db">−14</span></div>
-        <div class="master-bar" id="master-bar">
-          <div class="master-bar-fill" id="master-bar-fill" style="width:72%"></div>
-        </div>
-      </section>
     </main>
   </div>
 
   <div id="clip-light" class="is-hidden">clip</div>
 
   <script type="layout-lint">
+    # one rule list serves every width: the language has no viewport
+    # binding, so past the stack point (~850px) desk left-of pads fails
     define preset as ".preset";
+    # an alias can bind a class combo: a state, not an id
     define active-preset as ".preset.active";
     define strip as ".strip";
     define pad as ".pad";
     define lit-pad as ".pad.lit";
 
-    group desk as topbar, sidebar, content;
-    @desk visible;
+    # a group names several elements at once
+    group shell as topbar, sidebar, content;
+    @shell visible;
 
-    # shell geometry
+    # the shell, top to bottom
     topbar distance-from-top 0 to 4px;
     page-head distance-from-top 40 to 320px;
     sidebar below topbar 0px;
-    content below topbar 0px;
     content right-of sidebar 0px;
-    sidebar left-of content;
-    # the rack's resting design width. collapsing it trips this contract live
+    # collapsing the rack trips the resting width live
     sidebar width 220 to 260px;
-    # hard ceiling that must hold whether the rack is open or collapsed
     sidebar width <320px;
 
-    # transport bar
+    # the transport bar, left to right
     brand left-of patch-name;
     transport-badge left-of transport;
     brand aligned horizontally centered transport-badge;
     transport-mark centered all inside transport;
-    transport-mark centered horizontally inside transport;
-    transport-mark centered vertically inside transport;
     transport-badge css text-transform is "uppercase";
 
-    # preset rack
+    # the preset rack: exactly one patch loaded, evenly racked
     count any preset is 5;
-    # exactly one patch is loaded at a time. clicking the rack keeps this true
     count any active-preset is 1;
     preset-1 inside sidebar;
     preset-1 equal-gap-y [preset-2 preset-3 preset-4 preset-5] 2px;
-    preset-1 aligned-left preset-2;
+
+    # the output meter keeps its readout centred
     meter-label centered all inside meter;
 
-    # channel strips, a matched pair
+    # the position readout keeps its bars.beats.sixteenths format
+    position-readout text matches "\d{3}\.\d\.\d";
+
+    # channel strips: a matched pair
     count any strip is 2;
-    count visible strip is 2;
     strip-1 same-width strip-2;
-    strip-1 same-height strip-2;
     strip-1 aligned horizontally all strip-2;
-    strip-1 aligned-top strip-2;
     strip-1 left-of strip-2;
-    strip-2 right-of strip-1;
     strip-1 width 30 to 55% of desk/width;
 
-    # pads sit beside the strips. the master bus takes the row below
+    # console order: the master rail on top
+    master above desk 0px;
     desk left-of pads;
-    desk above master 0px;
-    pads above master 0px;
     master wider-than strip-1;
 
-    # faders + master gain bar
+    # levels as percentages of their rails
     fader-fill-1 height 55 to 65% of fader-rail-1/height;
     fader-cap-1 aligned-top fader-cap-2;
     master-bar-fill width 40 to 90% of master-bar/width;
 
-    # pad grid
+    # nine pads, four on the floor
     count any pad is 9;
-    # four on the floor: the pattern must keep exactly four hits lit
     count any lit-pad is 4;
     pad-1 equal-gap-x [pad-2 pad-3] 2px;
-    pad-1 equal-gap-y [pad-4 pad-7] 2px;
 
-    # transport timeline: park the playhead in the cue's pocket
+    # the playhead parks in the cue's pocket
     playhead near cue 2 to 18px right;
-    playhead near cue 2 to 18px top;
     playhead near cue 2 to 18px right, 2 to 18px top;
 
-    # overload light hidden until a fader is pushed into the red
+    # the overload light waits for a fader in the red
     clip-light absent;
-
-    page-title text starts "Studio";
   </script>
   <script type="module" src="../../dist/auto.bundle.js"></script>
 
@@ -283,8 +299,30 @@
     const stripKnobs = Array.from(document.querySelectorAll(".strip .knob[data-knob]"));
     const padEls = Array.from(document.querySelectorAll(".pad"));
     const patchName = document.getElementById("patch-name");
-    const transportBadge = document.getElementById("transport-badge");
-    const pageSub = document.getElementById("page-sub");
+    const bpmInput = document.getElementById("bpm-input");
+    const positionReadout = document.getElementById("position-readout");
+
+    // bars.beats.sixteenths, zero-padded like a hardware sequencer readout
+    let songBar = 1, songBeat = 1;
+    function renderPosition() {
+      positionReadout.textContent = String(songBar).padStart(3, "0") + "." + songBeat + ".1";
+    }
+    function tickPosition() {
+      songBeat += 1;
+      if (songBeat > 4) { songBeat = 1; songBar = Math.min(songBar + 1, 999); }
+      renderPosition();
+    }
+
+    // the tempo field is honest hardware: settable, clamped, display-only
+    bpmInput.addEventListener("input", () => {
+      const bpm = bpmInput.value.replace(/[^0-9]/g, "").slice(0, 3);
+      bpmInput.value = bpm;
+    });
+
+    // fx toggles only flip their led; the send is set dressing
+    document.querySelectorAll(".fx").forEach((b) => {
+      b.addEventListener("click", () => b.classList.toggle("on"));
+    });
 
     // recall a channel's trim knob to its stored angle (independent of the fader)
     function setKnobAngle(knob, angle) {
@@ -311,10 +349,12 @@
         const mask = btn.dataset.pads || "";
         padEls.forEach((pad, i) => pad.classList.toggle("lit", mask[i] === "1"));
 
-        // tempo + the loaded slot name in the topbar
+        // tempo + the loaded slot name in the topbar; position rewinds
         const bpm = btn.dataset.bpm || "123";
-        transportBadge.textContent = bpm + " BPM";
-        pageSub.textContent = "8 voices · " + bpm + " BPM · 4/4";
+        bpmInput.value = bpm;
+        songBar = 1;
+        songBeat = 1;
+        renderPosition();
         patchName.value = "homework · 0" + (idx + 1);
       });
     });
@@ -353,8 +393,8 @@
       handle.addEventListener("pointercancel", end);
     });
 
-    // ---- channel trim knobs: independent rotaries; they only turn
-    document.querySelectorAll(".strip .knob[data-knob]").forEach((knob) => {
+    // ---- trim and fx knobs: independent rotaries; they only turn
+    document.querySelectorAll(".knob[data-knob]:not([data-gain])").forEach((knob) => {
       const dial = knob.querySelector(".knob-dial");
       let startY = 0, startAngle = 0, turning = false;
       knob.addEventListener("pointerdown", (e) => {
@@ -418,6 +458,7 @@
         if (x > 224) x = 24;
         playhead.style.left = x + "px";
         playhead.style.top = HOME.top + "px";
+        tickPosition();
       }, 150);
       mark.textContent = "\u23F8";
     }
@@ -460,6 +501,9 @@
       stopTransport();
       playhead.style.left = HOME.left + "px";
       playhead.style.top = HOME.top + "px";
+      songBar = 1;
+      songBeat = 1;
+      renderPosition();
     });
 
     // ---- pads: tap to toggle a hit; the spec wants exactly four on the floor

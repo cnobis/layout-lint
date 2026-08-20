@@ -649,7 +649,13 @@ export function createLayoutLintWidget(
     latestDefinitions = result.definitions ?? new Map();
     latestDiagnosticsSummary = summarizeDiagnostics(result.diagnostics);
     state.applyResults(latestResults);
-    if (specEditor?.isOpen()) return;
+    if (specEditor?.isOpen()) {
+      // The open editor normally blocks result-driven rerenders so typing is
+      // never interrupted. A clean draft may still follow spec changes made
+      // through the monitor API (e.g. the tutorial growing the spec).
+      if (specEditor.syncExternalSpec()) renderBodyWithObserverPaused(latestResults);
+      return;
+    }
     renderBodyWithObserverPaused(latestResults);
   });
 

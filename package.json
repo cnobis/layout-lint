@@ -58,9 +58,11 @@
     "web-tree-sitter": "^0.25.8"
   },
   "devDependencies": {
+    "backstopjs": "^6.3.25",
     "ebnf2railroad": "^1.14.2",
     "esbuild": "^0.28.0",
     "http-server": "^14.1.1",
+    "playwright": "^1.62.1",
     "prebuildify": "^6.0.1",
     "tree-sitter-cli": "^0.25.8",
     "typescript": "^5.9.2"

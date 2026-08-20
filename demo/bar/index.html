@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>赤提灯 — Akachōchin</title>
+  <meta name="generator" content="IBM ホームページ・ビルダー V6.5" />
+  <title>RUBY — 大衆酒場ルビー</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" />
@@ -16,13 +17,13 @@
   <div id="page">
 
     <header id="header">
-      <div id="lantern" aria-hidden="true">酒</div>
+      <div id="gem" aria-hidden="true">酒</div>
       <div id="shop-block">
-        <h1 id="shop-name">赤提灯</h1>
-        <p id="shop-sub">Akachōchin · Izakaya · Since 1974</p>
+        <h1 id="shop-name">RUBY</h1>
+        <p id="shop-sub">大衆酒場ルビー ・ 炭火やきとり ・ SINCE 1998</p>
       </div>
-      <div id="status-pill"><span id="status-dot" aria-hidden="true"></span>営業中</div>
-      <button id="lang-btn" type="button">English</button>
+      <div id="status-pill"><span id="status-dot" aria-hidden="true"></span><span id="status-text">営業中</span></div>
+      <button id="lang-btn" type="button"><span class="lang-opt active" data-lang="ja">日本語</span><span class="lang-sep">｜</span><span class="lang-opt" data-lang="en">English</span></button>
     </header>
 
     <!-- the backlit bottle shelf behind the counter, with a caption laid over it -->
@@ -101,7 +102,7 @@
               <p class="menu-price">¥520</p>
             </li>
             <li class="menu-item" data-cat="drink" id="drink-2">
-              <div><p class="menu-jp">角ハイボール</p><p class="menu-en">Kaku Highball</p></div>
+              <div><p class="menu-jp">角ハイボール<span class="osusume">★おすすめ★</span></p><p class="menu-en">Kaku Highball</p></div>
               <p class="menu-price">¥470</p>
             </li>
             <li class="menu-item" data-cat="drink" id="drink-3">
@@ -127,7 +128,7 @@
               <p class="menu-price">¥260</p>
             </li>
             <li class="menu-item" data-cat="finish" id="finish-2">
-              <div><p class="menu-jp">鶏そぼろ丼</p><p class="menu-en">Chicken Soboro Bowl</p></div>
+              <div><p class="menu-jp">鶏そぼろ丼<span class="soldout">本日売切</span></p><p class="menu-en">Chicken Soboro Bowl</p></div>
               <p class="menu-price">¥580</p>
             </li>
             <li class="menu-item" data-cat="finish" id="finish-3">
@@ -143,7 +144,7 @@
 
       <aside id="sidebar">
         <div id="special" class="card">
-          <h3 class="card-title">本日のおすすめ · Today's Special</h3>
+          <h3 class="card-title">本日のおすすめ</h3>
           <div id="special-row">
             <div id="special-text">
               <p class="special-name">鶏白湯ラーメン</p>
@@ -156,28 +157,78 @@
         </div>
 
         <div id="hours-card" class="card">
-          <h3 class="card-title">営業時間 · Hours</h3>
+          <h3 class="card-title">営業時間・アクセス</h3>
           <table class="hours-table">
             <tr><th>月 – 木</th><td>17:00 – 24:00</td></tr>
             <tr><th>金 · 土</th><td>17:00 – 26:00</td></tr>
             <tr><th>日</th><td>定休</td></tr>
+            <tr><th>アクセス</th><td>新宿三丁目駅 徒歩4分</td></tr>
           </table>
+          <p class="tel-note">ご予約はお電話にて ・ 貸切可</p>
         </div>
 
-        <div class="card">
-          <h3 class="card-title">店主より · From the Owner</h3>
-          <p id="welcome">Pull up a stool,
-stay a while,
-the lantern is lit.</p>
+        <!-- the sponsored-links block every JP portal carries, plus the weather -->
+        <div id="pr-box">
+          <p id="pr-head"><span class="pr-tag">PR</span>注目情報</p>
+          <ul id="pr-list">
+            <li class="pr-item">
+              <img class="pr-thumb" src="../images/bar/pr-neko.jpg" alt="" />
+              <div class="pr-body">
+                <p class="pr-title">ねこと暮らす、しあわせ時間</p>
+                <p class="pr-desc">ねこびより通信は、猫とくらす毎日を送る、すべての人を応援しています</p>
+              </div>
+              <span class="pr-icons" aria-hidden="true"><span class="pr-ad">▷</span><span class="pr-dots">⋮</span></span>
+            </li>
+            <li class="pr-item">
+              <span class="pr-thumb pr-thumb-logo" aria-hidden="true"><span class="pr-logo-re">Re<span>酒場</span></span><span class="pr-logo-sub">PROJECT</span></span>
+              <div class="pr-body">
+                <p class="pr-title">昭和酒場が好きな人の情報サイト</p>
+                <p class="pr-desc">今夜の一軒がきっと見つかる。無料会員登録で店主企画に参加できます</p>
+              </div>
+              <span class="pr-icons" aria-hidden="true"><span class="pr-ad">▷</span><span class="pr-dots">⋮</span></span>
+            </li>
+            <li class="pr-item">
+              <span class="pr-thumb pr-thumb-mag" aria-hidden="true">呑<span class="pr-mag-sub">酒場好きの、暮らしの雑誌。</span></span>
+              <div class="pr-body">
+                <p class="pr-title">晩酌に、ちょっとずつ彩りを</p>
+                <p class="pr-desc">酒場好きのライフスタイルマガジン『呑（どん）』はこちらから</p>
+              </div>
+              <span class="pr-icons" aria-hidden="true"><span class="pr-ad">▷</span><span class="pr-dots">⋮</span></span>
+            </li>
+          </ul>
+          <div id="pr-weather">
+            <p class="wx-head"><span>8月21日（金）　の天気</span><a class="wx-set" href="#weather">地域を設定</a></p>
+            <div class="wx-row">
+              <span class="wx-city">東京</span>
+              <svg class="wx-icon" viewBox="0 0 34 30" aria-hidden="true"><path d="M9 20a6 6 0 1 1 1.6-11.8A7.5 7.5 0 0 1 25 10a5.5 5.5 0 0 1 .6 10z" fill="#9aa0a6"/><path d="M12 23l-2 4M19 23l-2 4M26 23l-2 4" stroke="#4a90d9" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+              <span class="wx-hi">31°C</span><span class="wx-slash">／</span><span class="wx-lo">24°C</span>
+              <span class="wx-pop">40%</span>
+            </div>
+          </div>
         </div>
+
+        <p id="welcome">GOOD SAKE, GOOD MOOD.
+Let's drink slowly tonight.
+Master is waiting you!</p>
+
+        <ul id="notices">
+          <li><span class="notice-date">2025.11.01</span><span class="notice-tag">【メニュー】</span><a class="notice-link" href="#notices">冬の熱燗はじめました</a><span class="new-badge">NEW!</span></li>
+          <li><span class="notice-date">2025.06.14</span><span class="notice-tag">【お知らせ】</span><a class="notice-link" href="#notices">ホームページできました</a></li>
+        </ul>
+
+        <p id="recruit"><a href="#recruit">スタッフ募集中！</a><span>（ホール・キッチン ／ 週2日〜）</span></p>
+
+        <p id="page-top"><a href="#page">▲ページのトップへ</a></p>
 
         <div id="staff-note">Staff only · 賄いは21時</div>
       </aside>
     </div>
 
     <footer id="footer">
-      <span class="foot-jp">赤提灯 · 新宿ゴールデン街 · 現金のみ</span>
-      <span class="foot-en">Akachōchin · Shinjuku Golden Gai, Tokyo · Cash only · Open from 17:00</span>
+      <span class="foot-jp">大衆酒場ルビー ・ 新宿ゴールデン街 ・ 現金のみ</span>
+      <span class="foot-en">RUBY · Shinjuku Golden Gai, Tokyo · Cash only · No card, sorry!</span>
+      <span id="hit-counter">あなたは <span class="counter-digits">048213</span> 人目のお客様です</span>
+      <span id="link-free">当サイトはリンクフリーです</span>
     </footer>
 
   </div>
@@ -193,81 +244,71 @@ the lantern is lit.</p>
     # menu items share a class, everything else resolves by id
     define menu-item as ".menu-item";
 
-    # structure of the shopfront
+    # the shopfront, top to bottom
     hero below header 0px;
     tabs below hero 0px;
     main below tabs 0px;
     footer below main 0px;
-    lantern inside header;
-    lang-btn inside header;
-    board left-of sidebar;
-    sidebar right-of board 20 to 60px;
 
-    # hero photo: full-width band, caption stays inside the frame
+    # the hero band keeps its size and its caption
     hero same-width header;
     hero height >= 120px;
     hero-img inside hero;
     hero-caption inside hero;
 
-    # menu counts
-    count any menu-item is 17;
-    count visible menu-item is 17;
-    count visible menu-item is >= 12;
-    count visible menu-item is <= 17;
-    count visible menu-item is 12 to 17;
-    count absent menu-item is 0;
-    count any skewer-* is 5;
-    count any drink-* is 5;
-    count any plate-* is 4;
-    count any finish-* is 3;
-    count visible skewer-* is 5;
+    # menu board and sidebar share the row (below ~820px they stack and these fail)
+    board left-of sidebar;
+    sidebar right-of board 20 to 60px;
 
-    # visibility
-    skewer-1 visible;
-    staff-note absent;
-
-    # board title text, flips with the language switch
-    board-title text is "本日のお品書き";
-    board-title text starts "本日";
-    board-title text ends "品書き";
-    board-title text contains "お品書";
-
-    # title font, swapped by the language switch
-    board-title css font-family contains "Mincho";
-    # custom property
-    header css --lantern is "#c0392b";
-
-    # text modifiers on the house note
-    welcome text lowercase starts "pull up";
-    welcome text uppercase contains "LANTERN";
-    welcome text singleline lowercase contains "stay a while";
-    welcome text singleline lowercase matches "pull up a stool, stay a while, the lantern is lit\.";
-
-    # the vertical title turns horizontal in English, so these go red
+    # the vertical title: position, height, and width in one contract each
     board-title left-of board-body 6 to 40px;
     board-title height >= 140px;
     board-title width <= 72px;
 
-    # price footnote under the board title
-    price-note below board-title 0px;
-    price-note visible;
-    price-note text contains "税込";
-    price-note text contains "お通し";
+    # counts: exact, ranged, and the absence check
+    count any menu-item is 17;
+    count visible menu-item is 17;
+    count visible menu-item is 12 to 17;
+    count absent menu-item is 0;
+    count any skewer-* is 5;
+    count visible skewer-* is 5;
+    count any drink-* is 5;
 
-    # open-now pill and its status dot
+    # the board title text, flipped live by the language switch
+    board-title text is "本日のお品書き";
+    board-title text ends "品書き";
+    board-title css font-family contains "Mincho";
+
+    # the ruby red lives in a custom property
+    header css --ruby is "#c0392b";
+
+    # text modifiers on the taped-up note
+    welcome text lowercase starts "good sake";
+    welcome text singleline lowercase matches "good sake, good mood\. let's drink slowly tonight\. master is waiting you!";
+
+    # the price footnote stays under the title
+    price-note below board-title 0px;
+    price-note text contains "税込";
+
+    # the open sign and its dot
     status-pill inside header;
-    status-pill left-of lang-btn 0px;
     status-dot inside status-pill;
     status-dot centered vertically inside status-pill;
 
     # furigana sits above its kanji
     furigana-rt above furigana-base;
 
-    # the seal is an image, not text, so pin its box instead
+    # the ruby gem stays in the shopfront
+    gem inside header;
+
+    # the seal is an image with a pinned box
     limited-stamp inside special;
     limited-stamp visible;
     limited-stamp width 72px;
     limited-stamp height 72px;
+
+    # the staff note is for staff only
+    staff-note absent;
   </script>
   <script type="module" src="../../dist/auto.bundle.js"></script>
 
@@ -276,13 +317,17 @@ the lantern is lit.</p>
     const body = document.body;
     const langBtn = document.getElementById("lang-btn");
     const boardTitle = document.getElementById("board-title");
+    const statusText = document.getElementById("status-text");
     let english = false;
 
     langBtn.addEventListener("click", () => {
       english = !english;
       body.classList.toggle("lang-en", english);
       boardTitle.textContent = english ? "Today's Specials" : "本日のお品書き";
-      langBtn.textContent = english ? "日本語" : "English";
+      langBtn.querySelectorAll(".lang-opt").forEach(function (opt) {
+        opt.classList.toggle("active", (opt.dataset.lang === "en") === english);
+      });
+      statusText.textContent = english ? "OPEN NOW" : "営業中";
     });
 
     const tabs = Array.from(document.querySelectorAll(".tab"));
@@ -304,11 +349,11 @@ the lantern is lit.</p>
   </script>
 
   <script>
-    // Render the 酒 lantern glyph and the 限定 seal as tiny bitmaps, then let
-    // CSS upscale them with nearest-neighbour (image-rendering: pixelated). It
-    // mimics the chunky, slightly sloppy look older Japanese sites get from
-    // baking kanji into small GIFs instead of trusting a web font. Boxes are
-    // untouched, so the layout-lint constraints still measure the same.
+    // Bake the identity pieces into tiny bitmaps and let CSS upscale them with
+    // nearest-neighbour (image-rendering: pixelated). It mimics sites whose
+    // logo and nav labels were GIFs out of a homepage builder, not live text.
+    // Every canvas gets an explicit display size, so the boxes the layout-lint
+    // constraints measure stay the same before and after the bake.
     (function () {
       const MINCHO =
         '"Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", "Songti SC", serif';
@@ -321,24 +366,42 @@ the lantern is lit.</p>
         ctx.fillText(ch, cx, cy);
       }
 
-      // 酒 in the lantern: rendered a little under its display size, then
-      // upscaled with nearest-neighbour for a subtle pixel shimmer.
-      const lantern = document.getElementById("lantern");
-      if (lantern) {
-        const res = 40;
+      // The ruby itself, hand-mapped: one array cell per screen chunk.
+      const GEM = [
+        "..OOOOOOO..",
+        ".OLWLRRRDO.",
+        "OLWWLRRRRDO",
+        "OLLLRRRRDDO",
+        ".ORRRRRDDO.",
+        "..ORRRDDO..",
+        "...ORRDO...",
+        "....ORO....",
+        ".....O.....",
+      ];
+      const GEM_INK = { O: "#52141b", D: "#8e1b2c", R: "#c0392b", L: "#e26877", W: "#ffe9ec" };
+      const gem = document.getElementById("gem");
+      if (gem) {
         const c = document.createElement("canvas");
-        c.width = res;
-        c.height = res;
+        c.width = GEM[0].length;
+        c.height = GEM.length;
         c.className = "pixel-glyph";
-        c.style.width = "46px";
-        c.style.height = "46px";
+        c.style.width = "66px";
+        c.style.height = "54px";
         c.setAttribute("aria-hidden", "true");
-        drawGlyph(c.getContext("2d"), "酒", res / 2, res / 2 + 1, res * 0.82, "#fbe9c8");
-        lantern.textContent = "";
-        lantern.appendChild(c);
+        const ctx = c.getContext("2d");
+        GEM.forEach(function (row, y) {
+          row.split("").forEach(function (ch, x) {
+            if (GEM_INK[ch]) {
+              ctx.fillStyle = GEM_INK[ch];
+              ctx.fillRect(x, y, 1, 1);
+            }
+          });
+        });
+        gem.textContent = "";
+        gem.appendChild(c);
       }
 
-      // 限定 seal: redraw the rotated double-ring stamp slightly under size.
+      // 限定 seal: the rotated double-ring stamp in the shop red.
       const stamp = document.getElementById("limited-stamp");
       if (stamp) {
         const res = 64;
@@ -364,9 +427,86 @@ the lantern is lit.</p>
         try {
           stamp.src = c.toDataURL("image/png");
         } catch (err) {
-          /* keep the original SVG if the canvas can't be exported */
+          /* keep the SVG fallback if the canvas can't be exported */
         }
       }
+
+      // The wordmark and the tab labels depend on DotGothic16; bake them only
+      // once the webfont is really there, otherwise the live text stays.
+      document.fonts.ready.then(function () {
+        if (!document.fonts.check('12px "DotGothic16"')) return;
+
+        const shopName = document.getElementById("shop-name");
+        if (shopName) {
+          const px = 38;
+          const track = 9;
+          const pad = 2;
+          const shadow = 2;
+          const probe = document.createElement("canvas").getContext("2d");
+          probe.font = px + 'px "DotGothic16"';
+          // size the canvas from the measured ink box, so nothing crops
+          const metrics = probe.measureText("RUBY");
+          const ascent = Math.ceil(metrics.actualBoundingBoxAscent);
+          const descent = Math.ceil(metrics.actualBoundingBoxDescent);
+          const chars = "RUBY".split("");
+          const widths = chars.map(function (ch) { return probe.measureText(ch).width; });
+          const w = Math.ceil(widths.reduce(function (a, b) { return a + b; }, 0) + track * (chars.length - 1)) + pad * 2 + shadow;
+          const c = document.createElement("canvas");
+          c.width = w;
+          c.height = pad + ascent + descent + shadow + pad;
+          const ctx = c.getContext("2d");
+          ctx.font = px + 'px "DotGothic16"';
+          ctx.textBaseline = "alphabetic";
+          const baseline = pad + ascent;
+          let x = pad;
+          for (let i = 0; i < chars.length; i++) {
+            ctx.fillStyle = "#7a1216";
+            ctx.fillText(chars[i], x + shadow, baseline + shadow);
+            ctx.fillStyle = "#c0392b";
+            ctx.fillText(chars[i], x, baseline);
+            x += widths[i] + track;
+          }
+          c.className = "pixel-glyph";
+          c.style.width = c.width + "px";
+          c.style.height = c.height + "px";
+          shopName.setAttribute("aria-label", "RUBY");
+          shopName.textContent = "";
+          shopName.appendChild(c);
+        }
+
+        document.querySelectorAll(".tab").forEach(function (tab) {
+          const en = tab.querySelector(".tab-en");
+          const jp = tab.querySelector(".tab-jp");
+          if (!en || !jp) return;
+          const enText = en.textContent;
+          const jpText = jp.textContent;
+          const probe = document.createElement("canvas").getContext("2d");
+          probe.font = '13px "DotGothic16"';
+          const wEn = probe.measureText(enText).width;
+          probe.font = '11px "DotGothic16"';
+          const wJp = probe.measureText(jpText).width;
+          const w = Math.ceil(Math.max(wEn, wJp)) + 4;
+          const h = 30;
+          const c = document.createElement("canvas");
+          c.width = w;
+          c.height = h;
+          const ctx = c.getContext("2d");
+          ctx.textAlign = "center";
+          ctx.textBaseline = "top";
+          ctx.font = '13px "DotGothic16"';
+          ctx.fillStyle = "#f3ead3";
+          ctx.fillText(enText, w / 2, 1);
+          ctx.font = '11px "DotGothic16"';
+          ctx.fillStyle = "#d9caa6";
+          ctx.fillText(jpText, w / 2, 17);
+          c.className = "pixel-glyph";
+          c.style.width = w + "px";
+          c.style.height = h + "px";
+          tab.setAttribute("aria-label", enText + " · " + jpText);
+          tab.textContent = "";
+          tab.appendChild(c);
+        });
+      });
     })();
   </script>
 </body>

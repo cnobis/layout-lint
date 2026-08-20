@@ -8,26 +8,26 @@
 import { mountAstViewer } from "./ast-view.js";
 
 const PRESETS: Record<string, string> = {
-  "Spatial": `# Spatial relationships
+  "Spatial": `# spatial relationships
 card-a left-of card-b 14px;
 badge inside page -8px top right;
 hero near logo 20px left, 12px top bottom;
 `,
-  "Count & visibility": `# Counts, visibility, negation
+  "Counts": `# counts, visibility, negation
 count visible card-* is >= 3;
 count any tag-* is 2 to 5;
 
 banner visible;
 popover not inside footer;
 `,
-  "Text, CSS & size": `# Text, CSS and sizing rules
+  "Text & CSS": `# text, css and sizing rules
 headline text starts "Welcome";
 headline css font-weight is "700";
 
 thumb width 100% of card/width;
 sidebar width <= 320px;
 `,
-  "Alignment & groups": `# Alignment, centering, groups
+  "Groups": `# alignment, centering, groups
 group rail as header, main, footer;
 @rail visible;
 

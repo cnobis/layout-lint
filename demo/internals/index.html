@@ -11,12 +11,9 @@
   <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT DEMO</a>
 
   <main>
-    <div class="brand-banner">
-      <picture>
-        <source media="(max-width: 640px)" srcset="../images/logo-compact.svg" />
-        <source media="(max-width: 960px)" srcset="../images/logo-wide.svg" />
-        <img src="../images/logo-very-wide.svg" alt="layout-lint" />
-      </picture>
+    <div class="brand-banner" role="img" aria-label="layout-lint">
+      <span class="brand-mark brand-mark-word"></span>
+      <span class="brand-mark brand-mark-shapes"></span>
     </div>
 
     <header class="page-head">
@@ -36,18 +33,19 @@
     </header>
 
     <section aria-labelledby="ast-heading">
-      <div class="ast-toolbar">
-        <span class="presets-label">Sample specs</span>
-        <div id="ast-presets"></div>
-        <div id="ast-toolbar"></div>
-      </div>
       <div class="explorer">
-        <div class="pane">
+        <div class="pane-head">
           <div class="pane-label">Source</div>
+          <div id="ast-presets"></div>
+        </div>
+        <div class="pane-head">
+          <div class="pane-label">Syntax tree</div>
+          <div id="ast-toolbar"></div>
+        </div>
+        <div class="pane">
           <div id="ast-editor"></div>
         </div>
         <div class="pane">
-          <div class="pane-label">Syntax tree</div>
           <div class="tree-wrap">
             <div id="ast-tree"></div>
           </div>

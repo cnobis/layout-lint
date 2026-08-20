@@ -1,9 +1,7 @@
-/* Internals demo — "Under the Hood". Matches the playground selection screen
-   (demo/index.css) so the whole demo suite feels like one product. */
+/* internals skin: matches the playground palette so the suite reads as one product */
 
 :root {
-  /* Re-map the shared design tokens to the playground palette so the live
-     AST viewer (which reads --ll-* vars) matches this page automatically. */
+  /* re-map the shared tokens so the live AST viewer picks up this palette */
   --ll-bg: #0b1020;
   --ll-surface: #111827;
   --ll-surface-2: #1f2937;
@@ -30,22 +28,39 @@ main {
   padding: 0 16px;
 }
 
+/* same construction as the playground banner: two edge-anchored crops
+   of one lockup, only the purple middle stretches */
 .brand-banner {
+  --brand-h: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: calc(var(--brand-h) + 20px);
   border: 1px solid #7a81ff;
   border-radius: 14px;
   background: #7a81ff;
-  padding: 8px 10px;
+  padding: 0 10px;
 }
-.brand-banner img { width: 100%; height: auto; display: block; }
+.brand-mark {
+  height: var(--brand-h);
+  background: url("../images/logo-compact.svg") no-repeat;
+  background-size: auto 100%;
+}
+.brand-mark-word { width: calc(var(--brand-h) * 2.02); background-position: left center; }
+.brand-mark-shapes { width: calc(var(--brand-h) * 1.4); background-position: right center; }
+@media (max-width: 640px) {
+  .brand-banner { --brand-h: 96px; }
+}
 
-.page-head { margin-top: 20px; }
-.page-head h1 { margin: 0; font-size: 26px; font-weight: 700; }
+.page-head { margin-top: 24px; text-align: center; }
+.page-head h1 { margin: 0; font-size: 22px; font-weight: 700; }
 .page-head .lede {
   color: #dde3ff;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.6;
   margin: 8px 0 0;
-  max-width: 72ch;
+  max-width: 100ch;
+  text-align: left;
 }
 .page-head .lede strong { color: #b9c0ff; }
 
@@ -70,7 +85,7 @@ main {
 }
 .pipeline .arrow { color: #3a4575; }
 
-section { margin-top: 32px; }
+section { margin-top: 36px; }
 section h2 {
   margin: 0;
   font-size: 19px;
@@ -104,25 +119,69 @@ section .hint {
 .ts-badge img { width: 16px; height: 16px; display: block; }
 .ts-badge:hover { border-color: #7a81ff; color: #b9c0ff; }
 
-/* ── Live AST explorer ─────────────────────────────────────────────── */
+/* ── live AST explorer ─────────────────────────────────────────────── */
 
-.ast-toolbar {
+/* both heads share one grid row, so the pane labels always line up */
+.pane-head {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px 16px;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 12px;
+  gap: 10px;
+  min-height: 24px;
 }
-.presets-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #6b76a8; white-space: nowrap; }
-#ast-presets { display: flex; flex-wrap: wrap; gap: 8px; }
-.ast-preset {
-  padding: 6px 12px;
+.pane-head .pane-label { margin-bottom: 0; }
+
+/* the anonymous-nodes toggle matches the preset pills, with a real switch */
+.ll-ast-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px 4px 6px;
   border-radius: 999px;
   border: 1px solid #374151;
   background: #111827;
   color: #aeb5e9;
-  font: 600 12px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font: 600 11px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.ll-ast-toggle:hover { color: #b9c0ff; border-color: #4b5563; }
+.ll-ast-toggle:has(input:checked) { color: #b9c0ff; border-color: #7a81ff; }
+.ll-ast-toggle input {
+  appearance: none;
+  margin: 0;
+  width: 26px;
+  height: 15px;
+  border-radius: 999px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.ll-ast-toggle input::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #7a86b4;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.ll-ast-toggle input:checked { background: #2b2f66; border-color: #7a81ff; }
+.ll-ast-toggle input:checked::before { transform: translateX(11px); background: #7a81ff; }
+#ast-presets { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.ast-preset {
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid #374151;
+  background: #111827;
+  color: #aeb5e9;
+  font: 600 11px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
@@ -137,8 +196,8 @@ section .hint {
 .explorer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 16px;
-  height: 460px;
+  grid-template-rows: auto 460px;
+  gap: 8px 16px;
 }
 .explorer .pane { display: flex; flex-direction: column; min-height: 0; }
 .explorer .pane-label {
@@ -161,11 +220,15 @@ section .hint {
 #ast-editor { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
 
 @media (max-width: 860px) {
-  .explorer { grid-template-columns: 1fr; height: auto; }
+  .explorer { grid-template-columns: 1fr; grid-template-rows: auto; }
   .explorer .pane { height: 320px; }
+  .explorer > :nth-child(1) { order: 1; }
+  .explorer > :nth-child(3) { order: 2; }
+  .explorer > :nth-child(2) { order: 3; }
+  .explorer > :nth-child(4) { order: 4; }
 }
 
-/* ── Grammar reference ─────────────────────────────────────────────── */
+/* ── grammar reference ─────────────────────────────────────────────── */
 
 .diagram-grid {
   display: grid;
@@ -202,7 +265,7 @@ section .hint {
 }
 .reference-cta:hover { filter: brightness(1.08); }
 
-/* ── Footer (matches playground impressum) ─────────────────────────── */
+/* ── footer, matches the playground impressum ─────────────────────────── */
 
 .impressum {
   margin-top: 56px;

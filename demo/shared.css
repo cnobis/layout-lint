@@ -1,13 +1,8 @@
-/*
-  Shared design tokens for the demo suite.
-
-  Every demo links this file first, then overrides these custom properties in
-  its own stylesheet to get a distinct skin while keeping spacing, radii, the
-  type scale, and the exit chip consistent across the set.
-*/
+/* shared design tokens: every demo links this first, then overrides
+   the custom properties for its own skin */
 
 :root {
-  /* Surfaces and ink */
+  /* surfaces and ink */
   --ll-bg: #0f1117;
   --ll-surface: #171a22;
   --ll-surface-2: #1f232e;
@@ -15,20 +10,20 @@
   --ll-text: #eceeff;
   --ll-muted: #9aa3b8;
 
-  /* Accents */
+  /* accents */
   --ll-accent: #7a81ff;
   --ll-accent-ink: #0f1117;
   --ll-positive: #5cffaa;
   --ll-warn: #ffcc66;
   --ll-danger: #ff6b81;
 
-  /* Radius scale */
+  /* radius scale */
   --ll-radius-sm: 6px;
   --ll-radius-md: 10px;
   --ll-radius-lg: 16px;
   --ll-radius-pill: 999px;
 
-  /* Spacing scale */
+  /* spacing scale */
   --ll-space-1: 4px;
   --ll-space-2: 8px;
   --ll-space-3: 12px;
@@ -36,7 +31,7 @@
   --ll-space-5: 24px;
   --ll-space-6: 32px;
 
-  /* Type */
+  /* type */
   --ll-font-sans: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
   --ll-font-mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
   --ll-font-serif: "Georgia", "Times New Roman", serif;
@@ -48,7 +43,7 @@
 
   --ll-shadow: 0 18px 40px rgba(0, 0, 0, 0.38);
 
-  /* Exit chip accent (kept constant across skins) */
+  /* exit chip accent, constant across skins */
   --ll-exit-accent: 122, 129, 255;
 }
 

@@ -1,8 +1,4 @@
-/* ============================================================
-   Galerie Blanche — bright, editorial, Frédéric Malle minimalism.
-   A calm warm-white room: fine serif, hairline rules, one sparse
-   red accent, and a great deal of negative space.
-   ============================================================ */
+/* galerie hallé skin: warm white, fine serif, hairline rules, sparse red */
 
 :root {
   --paper: #f6f3ee;
@@ -34,7 +30,6 @@ body {
 #gallery-tagline,
 #nav a,
 .artwork-artist,
-#featured-heading,
 #work-medium,
 #work-dims,
 #footer,
@@ -45,33 +40,44 @@ body {
   font-size: 10.5px;
 }
 
-/* ---------- exit corner ----------
-   The exit chip itself is left exactly as every other demo renders it
-   (styled only by shared.css). To anchor it we turn up the top-right
-   corner of the sheet, like a dog-eared page. The fold shows the warm
-   back of the paper (a shade deeper than the page) with a soft crease
-   shadow, so it belongs to this warm-white room instead of sitting on
-   top of it. */
+/* the black canvas above the sheet: overscroll shows ink, not paper */
+html {
+  background: #17130d;
+}
+
+/* the matching band below: bottom overscroll reveals ink as well */
+body::before {
+  content: "";
+  position: fixed;
+  bottom: -600px;
+  left: 0;
+  right: 0;
+  height: 612px;
+  z-index: 950;
+  pointer-events: none;
+  background: #17130d;
+}
+
+/* a slim black band frames the very top of the sheet, Malle-label style */
 body::after {
   content: "";
   position: fixed;
-  top: 0;
+  top: -600px;
+  left: 0;
   right: 0;
-  width: 168px;
-  height: 168px;
-  z-index: 1;
+  height: 608px;
+  z-index: 950;
   pointer-events: none;
-  background: radial-gradient(125% 125% at 100% 0%, #d8ccb6 0%, #efe8db 80%);
-  clip-path: polygon(100% 0, 0 0, 100% 100%);
-  filter: drop-shadow(-2px 2px 3px rgba(23, 20, 15, 0.12));
+  background: #17130d;
 }
 
 /* ---------- header ---------- */
 #header {
   position: relative;
   text-align: center;
-  padding: 64px 48px 32px;
+  padding: 36px 48px 22px;
   background:
+    url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='30'%20height='30'%3E%3Cpath%20d='M0%2015%20L15%200%20L30%2015%20L15%2030%20Z'%20fill='none'%20stroke='%239a1b12'%20stroke-width='0.8'%20opacity='.09'/%3E%3Ccircle%20cx='15'%20cy='15'%20r='1.1'%20fill='%239a1b12'%20opacity='.15'/%3E%3C/svg%3E") repeat top left / 30px 30px,
     radial-gradient(120% 140% at 50% -10%, #fdf4ec 0%, rgba(253, 244, 236, 0) 62%),
     linear-gradient(180deg, #fbf5ec 0%, var(--paper) 100%);
   border-bottom: 1px solid var(--line);
@@ -95,7 +101,7 @@ body::after {
   letter-spacing: 0.34em;
   font-size: 10px;
   color: var(--accent);
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 #gallery-name {
@@ -111,12 +117,12 @@ body::after {
   display: block;
   width: 40px;
   height: 2px;
-  margin: 16px auto 0;
+  margin: 12px auto 0;
   background: var(--accent);
 }
 
 #gallery-tagline {
-  margin-top: 14px;
+  margin-top: 10px;
   color: var(--muted);
 }
 
@@ -174,7 +180,7 @@ body::after {
   gap: 56px;
   max-width: 1180px;
   margin: 0 auto;
-  padding: 72px 48px 40px;
+  padding: 52px 48px 40px;
 }
 
 @media (max-width: 860px) {
@@ -237,7 +243,7 @@ body::after {
 #viewing {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 80px 48px 40px;
+  padding: 44px 48px 40px;
   display: flex;
   flex-wrap: wrap;
   gap: 72px;
@@ -245,15 +251,8 @@ body::after {
   align-items: flex-start;
 }
 
-#featured-heading {
-  width: 100%;
-  text-align: center;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
-
-/* The frame carries no border, so #plate's 32px inset is the exact
-   gap layout-lint measures: a generous white museum mat. */
+/* the frame has no border, so #plate's 32px inset is the exact
+   gap the spec measures: a generous white museum mat */
 #frame {
   position: relative;
   width: 380px;
@@ -352,6 +351,7 @@ body::after {
   padding: 56px 48px 64px;
   margin-top: 40px;
   border-top: 1px solid var(--line);
+  border-bottom: 12px solid #17130d;
   font-size: 9.5px;
 }
 
@@ -359,7 +359,7 @@ body::after {
 #featured-badge {
   position: fixed;
   top: 326px;
-  left: 50%;
+  left: calc(50% + 20px);
   width: 184px;
   background: var(--paper-2);
   border: 1px solid var(--line-strong);
@@ -392,4 +392,31 @@ body::after {
 #featured-badge .badge-content strong {
   font-weight: 400;
   font-style: italic;
+}
+
+#colophon {
+  display: block;
+  margin-top: 6px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  opacity: 0.55;
+}
+
+#nav a.active {
+  color: #9c2b23;
+}
+
+#legal-link {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  color: inherit;
+  opacity: 0.55;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+
+#legal-link:hover {
+  opacity: 0.85;
 }
