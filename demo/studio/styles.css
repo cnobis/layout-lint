@@ -1,9 +1,4 @@
-/* ============================================================
-   Studio — a small web synth / mixing desk.
-   Teenage-Engineering-ish: charcoal panel, cream legends, one
-   warm accent. Every control is a real affordance: faders slide,
-   strips drag, knobs turn, the playhead scrubs.
-   ============================================================ */
+/* studio skin: charcoal desk, cream legends, one warm accent */
 
 :root {
   --panel: #1b1c21;
@@ -61,7 +56,7 @@ body {
   flex: none;
   width: 30px;
   height: 30px;
-  border-radius: 6px;
+  border-radius: 4px;
   border: 1px solid var(--line);
   background: var(--panel-3);
   color: var(--muted);
@@ -92,8 +87,12 @@ body {
 .brand-word {
   font-family: var(--mono);
   font-size: 15px;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
+  background: linear-gradient(180deg, #f4f4f2 0%, #b9bcc6 45%, #7e838f 55%, #d8dade 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 #patch-name {
@@ -102,7 +101,7 @@ body {
   padding: 7px 12px;
   background: var(--rail);
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 4px;
   color: var(--ink);
   font-family: var(--mono);
   font-size: 12px;
@@ -122,6 +121,9 @@ body {
 }
 
 #transport-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
   font-family: var(--mono);
   font-size: 11px;
   letter-spacing: 0.12em;
@@ -130,6 +132,30 @@ body {
   border: 1px solid var(--line);
   border-radius: 4px;
   padding: 4px 8px;
+}
+
+#transport-badge:focus-within {
+  border-color: var(--teal);
+}
+
+#bpm-input {
+  /* 3 digits plus the badge's inherited 0.12em letter-spacing */
+  width: calc(3ch + 0.45em);
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: right;
+}
+
+#bpm-input:focus {
+  outline: none;
+}
+
+.bpm-unit {
+  color: var(--muted);
 }
 
 #transport {
@@ -181,11 +207,17 @@ body {
 }
 
 #sidebar.collapsed .preset {
-  padding-left: 10px;
-  padding-right: 10px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+#sidebar.collapsed .preset-name {
+  display: none;
+}
+
+#sidebar.collapsed .preset-no {
+  opacity: 1;
 }
 
 #preset-rack {
@@ -204,11 +236,13 @@ body {
 }
 
 .preset {
-  display: block;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
   width: 100%;
   text-align: left;
   padding: 9px 12px;
-  border-radius: 6px;
+  border-radius: 3px;
   background: var(--panel-2);
   border: 1px solid var(--line-soft);
   color: var(--muted);
@@ -226,6 +260,13 @@ body {
   border-color: var(--line);
 }
 
+/* numbered rack slots, collapsed to the bare number */
+.preset-no {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  opacity: 0.6;
+}
+
 .preset.active {
   color: var(--accent);
   border-color: var(--accent);
@@ -237,7 +278,7 @@ body {
   flex: none;
   width: 44px;
   height: 120px;
-  border-radius: 8px;
+  border-radius: 4px;
   background: var(--rail);
   border: 1px solid var(--line);
   overflow: hidden;
@@ -282,42 +323,53 @@ body {
 
 /* ---------- main desk ---------- */
 #content {
-  flex: 1;
-  min-width: 0;
-  padding: 22px;
+  flex: 1 1 auto;
+  min-width: 384px;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 20px 22px;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 20px;
 }
 
 #page-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 24px;
+  gap: 20px;
+  padding: 14px 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
 }
 
-#page-title {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-#page-sub {
-  margin-top: 4px;
-  color: var(--muted);
+/* the session readout: position counter and format line, DAW-style */
+#position-readout {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--cream);
+  font-variant-numeric: tabular-nums;
+}
+
+#session-meta {
+  margin-top: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 /* transport timeline: a fixed cue and a draggable playhead */
 #transport-zone {
-  flex: 0 1 auto;
-  min-width: 0;
+  flex: none;
+  margin-left: auto;
   display: flex;
-  align-items: flex-start;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 12px;
 }
 
@@ -326,8 +378,10 @@ body {
   flex: none;
   width: 248px;
   height: 120px;
-  border-radius: 8px;
-  background: var(--panel);
+  border-radius: 4px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 30px, var(--line-soft) 30px 31px),
+    var(--panel);
   border: 1px solid var(--line);
   overflow: hidden;
 }
@@ -390,45 +444,45 @@ body {
   z-index: 4;
 }
 
-/* ---------- mixer row: two channel strips beside the pads ---------- */
+/* ---------- mixer row ---------- */
 #mixer-row {
   display: flex;
   align-items: flex-start;
+  justify-content: space-between;
   gap: 18px;
-  flex-wrap: wrap;
 }
 
 #desk {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  flex: 0 0 auto;
-  width: 280px;
-  max-width: 100%;
+  flex: 1 1 280px;
+  min-width: 240px;
+  max-width: 430px;
 }
 
 .channel {
   flex: 1 1 0;
   min-width: 0;
-  min-height: 248px;
+  height: 300px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
   padding: 12px 10px 14px;
-  border-radius: 10px;
+  border-radius: 4px;
   background: var(--panel);
   border: 1px solid var(--line);
 }
 
-/* master bus: its own full-width row beneath the mixer */
+/* master bus: the sum rail, prominent above the mixer */
 .channel.master {
   flex: none;
   flex-direction: row;
   align-items: center;
   gap: 18px;
+  height: auto;
   min-height: 0;
-  margin-top: 16px;
   padding: 14px 18px;
   background: var(--panel-2);
   border-color: var(--line);
@@ -449,8 +503,18 @@ body {
   flex: none;
 }
 
+.channel.master .knob {
+  border-color: #c9a24f;
+  box-shadow: inset 0 0 0 1px rgba(201, 162, 79, 0.45);
+}
+
 #master-gain .knob-pointer {
-  background: var(--accent);
+  background: #e4c069;
+}
+
+.strip .knob {
+  border-color: #6f7480;
+  box-shadow: inset 0 0 0 1px rgba(160, 166, 178, 0.28);
 }
 
 .master-meta {
@@ -473,7 +537,7 @@ body {
   position: relative;
   flex: 1 1 auto;
   height: 14px;
-  border-radius: 7px;
+  border-radius: 3px;
   background: var(--rail);
   border: 1px solid var(--line);
   overflow: hidden;
@@ -484,7 +548,7 @@ body {
   left: 0;
   top: 0;
   bottom: 0;
-  border-radius: 7px 0 0 7px;
+  border-radius: 3px 0 0 3px;
   background: linear-gradient(90deg, rgba(232, 119, 46, 0.3), var(--accent));
 }
 
@@ -503,8 +567,7 @@ body {
   user-select: none;
 }
 
-/* per-channel identity: a colour LED on the handle and a matching knob
-   pointer, so the four strips read as distinct channels rather than copies */
+/* per-channel identity: led and knob pointer share a colour */
 .ch-led {
   display: inline-block;
   width: 6px;
@@ -581,7 +644,7 @@ body {
 .fader-rail {
   position: relative;
   width: 12px;
-  border-radius: 7px;
+  border-radius: 3px;
   background: var(--rail);
   border: 1px solid var(--line);
   touch-action: none;
@@ -593,7 +656,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  border-radius: 0 0 7px 7px;
+  border-radius: 0 0 3px 3px;
   background: linear-gradient(180deg, var(--accent), rgba(232, 119, 46, 0.25));
 }
 
@@ -616,22 +679,56 @@ body {
   color: var(--muted);
 }
 
-/* ---------- pad grid (sits beside the strips) ---------- */
+/* ---------- pad grid ---------- */
 #pads {
-  flex: 1 1 320px;
+  flex: none;
+  width: 300px;
+  height: 300px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  max-width: 520px;
+  grid-template-rows: auto repeat(3, 1fr);
+  gap: 10px;
+  padding: 12px;
+  border-radius: 4px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+/* silk-screen bank strip inside the pad module */
+#pads::before {
+  content: "pattern · bank a";
+  grid-column: 1 / -1;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--line-soft);
 }
 
 .pad {
-  aspect-ratio: 1 / 1;
-  border-radius: 8px;
+  position: relative;
+  border-radius: 3px;
   background: var(--panel-2);
   border: 1px solid var(--line);
   cursor: pointer;
   transition: background 0.08s ease, border-color 0.08s ease;
+}
+
+.pad-key {
+  position: absolute;
+  left: 7px;
+  bottom: 5px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.pad.lit .pad-key {
+  color: rgba(15, 16, 20, 0.75);
 }
 
 .pad:hover {
@@ -654,8 +751,9 @@ body {
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #1b1c21;
-  background: var(--yellow);
+  color: #fff2ef;
+  background: #d3352b;
+  box-shadow: 0 0 12px rgba(211, 53, 43, 0.6);
   padding: 5px 10px;
   border-radius: 4px;
 }
@@ -664,6 +762,193 @@ body {
   display: none;
 }
 
-@media (max-width: 720px) {
-  #timeline { width: 200px; }
+
+
+/* ---------- silk-screen labels under the rotaries ---------- */
+.knob-cap {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- machine patchbay ---------- */
+#machine-rack {
+  border-top: 1px solid var(--line-soft);
+  padding-top: 14px;
+}
+
+#machine-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#machine-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 3px;
+  background: var(--panel-2);
+  border: 1px solid var(--line-soft);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+
+.mk-led {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 5px rgba(70, 198, 176, 0.6);
+}
+
+#machine-list li:nth-child(2) .mk-led {
+  background: var(--accent);
+  box-shadow: 0 0 5px rgba(232, 119, 46, 0.6);
+}
+
+.mk-role {
+  margin-left: auto;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+#sidebar.collapsed .mk-role,
+#sidebar.collapsed .mk-name {
+  display: none;
+}
+
+#sidebar.collapsed #machine-list li {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* ---------- fx send ---------- */
+#fx-rack {
+  flex: 1 1 280px;
+  min-width: 230px;
+  max-width: 360px;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px 14px;
+  border-radius: 4px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.fx-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.fx {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 3px;
+  background: var(--panel-2);
+  border: 1px solid var(--line-soft);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  cursor: pointer;
+}
+
+.fx-led {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--line);
+}
+
+.fx.on {
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.fx.on .fx-led {
+  background: #d3352b;
+  box-shadow: 0 0 5px rgba(211, 53, 43, 0.7);
+}
+
+.fx-knobs {
+  display: flex;
+  justify-content: space-around;
+  padding: 6px 0 4px;
+}
+
+.fx-knob {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.knob.mini {
+  width: 34px;
+}
+
+/* ---------- responsive: fx bar below 1090px, full stack below 842px ---------- */
+@media (max-width: 1089px) {
+  #mixer-row {
+    flex-wrap: wrap;
+  }
+
+  /* wrap fits lines by basis, so the basis must equal the desk minimum */
+  #desk {
+    flex-basis: 240px;
+  }
+
+  #fx-rack {
+    flex: 1 1 100%;
+    min-width: 0;
+    max-width: none;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+  }
+
+  #fx-rack .fx-label {
+    border-bottom: none;
+    padding-bottom: 0;
+    flex: none;
+  }
+
+  #fx-rack .fx-knobs {
+    flex: none;
+    gap: 16px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 841px) {
+  #desk {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+
+  #pads {
+    margin: 0 auto;
+  }
 }

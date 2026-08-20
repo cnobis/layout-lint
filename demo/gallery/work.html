@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="google" content="notranslate" />
-  <title>Galerie Blanche — Luminescence</title>
+  <title>Galerie Hallé — Luminescence</title>
   <link rel="stylesheet" href="../shared.css" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
@@ -12,20 +12,19 @@
   <a id="demo-exit" href="../index.html" aria-label="Exit to playground">EXIT DEMO</a>
 
   <header id="header">
-    <h1 id="gallery-name">Galerie Blanche</h1>
+    <p id="gallery-kicker">Rive Gauche · Paris</p>
+    <h1 id="gallery-name">Galerie Hallé</h1>
     <p id="gallery-tagline">Éditions Contemporaines</p>
   </header>
 
   <nav id="nav">
     <a href="./index.html">Room I</a>
     <a href="./room.html">Room II</a>
-    <a href="./work.html">On View</a>
+    <a class="active" href="./work.html">On View</a>
     <input id="search-box" type="text" placeholder="Search the collection">
   </nav>
 
   <section id="viewing">
-    <h2 id="featured-heading">On view</h2>
-
     <div id="frame">
       <div id="plate">
         <img src="../images/gallery/bluewithred.jpeg" alt="Luminescence by James Whitfield">
@@ -44,7 +43,9 @@
   </section>
 
   <footer id="footer">
-    Galerie Blanche · Rue de Sèvres · By appointment
+    Galerie Hallé · Rue de Sèvres · By appointment
+    <span id="colophon">Images: public domain — The Metropolitan Museum of Art (Open Access) · Wikimedia Commons</span>
+    <a id="legal-link" href="#footer">Mentions légales</a>
   </footer>
 
   <!--
@@ -88,40 +89,46 @@
     // and we swap in that piece's plate, caption, and ribbon. Defaults to
     // Luminescence so the "On View" nav link keeps its featured piece.
     const works = {
-      "luminescence": {
-        title: "Luminescence", artist: "James Whitfield", year: "2024",
-        medium: "Oil on linen", dims: "120 \u00d7 90 cm", price: "\u20ac12,000",
-        img: "../images/gallery/bluewithred.jpeg", ribbon: "Acquired"
+      "robe-rouge": {
+        title: "La Robe Rouge", artist: "F\u00e9lix Vallotton", year: "1903",
+        medium: "Oil on canvas", dims: "100 \u00d7 78 cm", price: "\u20ac9,400",
+        img: "../images/gallery/vallotton-interieur.jpeg", ribbon: "Available",
+        back: "./index.html", room: "Room I"
       },
-      "coupe-severe": {
-        title: "Coupe S\u00e9v\u00e8re", artist: "Marie C\u00f4t\u00e9", year: "2023",
-        medium: "Gelatin silver print", dims: "60 \u00d7 45 cm", price: "\u20ac8,500",
-        img: "../images/gallery/barbershop.jpeg", ribbon: "Available"
+      "capucines": {
+        title: "Capucines", artist: "F\u00e9lix Vallotton", year: "1923",
+        medium: "Oil on canvas", dims: "61 \u00d7 75 cm", price: "\u20ac7,200",
+        img: "../images/gallery/vallotton-capucines.jpeg", ribbon: "On hold",
+        back: "./index.html", room: "Room I"
       },
-      "apnee": {
-        title: "Apn\u00e9e", artist: "Sophie Laurent", year: "2022",
-        medium: "Archival pigment print", dims: "90 \u00d7 90 cm", price: "\u20ac6,800",
-        img: "../images/gallery/swimmer.jpeg", ribbon: "Available"
+      "maree-du-soir": {
+        title: "Mar\u00e9e du Soir", artist: "F\u00e9lix Vallotton", year: "1913",
+        medium: "Oil on canvas", dims: "55 \u00d7 98 cm", price: "\u20ac11,000",
+        img: "../images/gallery/vallotton-sunset.jpeg", ribbon: "Acquired",
+        back: "./index.html", room: "Room I"
       },
-      "bassin-3": {
-        title: "Bassin, No. 3", artist: "Sophie Laurent", year: "2023",
-        medium: "Archival pigment print", dims: "80 \u00d7 100 cm", price: "\u20ac7,200",
-        img: "../images/gallery/swimmer.jpeg", ribbon: "Available"
+      "concours-oiseaux": {
+        title: "Le Concours des Oiseaux", artist: "Habiballah de Sava", year: "c. 1600",
+        medium: "Ink, watercolor, and gold on paper", dims: "25 \u00d7 11 cm", price: "\u20ac5,200",
+        img: "../images/gallery/oiseaux.jpeg", ribbon: "Available",
+        back: "./room.html", room: "Room II"
       },
-      "interieur": {
-        title: "Int\u00e9rieur au Fauteuil", artist: "Marie C\u00f4t\u00e9", year: "2024",
-        medium: "Oil on linen", dims: "100 \u00d7 80 cm", price: "\u20ac9,400",
-        img: "../images/gallery/barbershop.jpeg", ribbon: "Available"
+      "tughra": {
+        title: "Tughra de Soliman", artist: "Atelier ottoman, Istanbul", year: "c. 1555",
+        medium: "Ink and gold on paper", dims: "52 \u00d7 64 cm", price: "\u20ac4,400",
+        img: "../images/gallery/tughra.jpeg", ribbon: "Acquired",
+        back: "./room.html", room: "Room II"
       },
-      "champ-rouge": {
-        title: "Champ Rouge", artist: "James Whitfield", year: "2023",
-        medium: "Acrylic on canvas", dims: "130 \u00d7 110 cm", price: "\u20ac11,000",
-        img: "../images/gallery/bluewithred.jpeg", ribbon: "Acquired"
+      "iznik": {
+        title: "Carreau d'Iznik", artist: "Iznik, Anatolie", year: "c. 1560",
+        medium: "Stonepaste, polychrome underglaze", dims: "27 \u00d7 25 cm", price: "\u20ac3,800",
+        img: "../images/gallery/iznik.jpeg", ribbon: "Available",
+        back: "./room.html", room: "Room II"
       }
     };
 
     const slug = new URLSearchParams(window.location.search).get("work");
-    const work = works[slug] || works["luminescence"];
+    const work = works[slug] || works["robe-rouge"];
 
     const plate = document.querySelector("#plate img");
     plate.src = work.img;
@@ -132,7 +139,10 @@
     document.getElementById("work-dims").textContent = work.dims;
     document.getElementById("work-price").textContent = work.price;
     document.getElementById("sold-ribbon").textContent = work.ribbon;
-    document.title = `Galerie Blanche \u2014 ${work.title}`;
+    const backLink = document.getElementById("back-link");
+    backLink.href = work.back;
+    backLink.textContent = `Return to ${work.room}`;
+    document.title = `Galerie Hallé \u2014 ${work.title}`;
 
     // No wall on the detail page, so the search box takes you back to the
     // rooms to browse the full collection.

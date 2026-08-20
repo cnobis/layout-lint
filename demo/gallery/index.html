@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="google" content="notranslate" />
-  <title>Galerie Blanche — Éditions Contemporaines</title>
+  <title>Galerie Hallé — Éditions Contemporaines</title>
   <link rel="stylesheet" href="../shared.css" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
@@ -13,48 +13,48 @@
 
   <header id="header">
     <p id="gallery-kicker">Rive Gauche · Paris</p>
-    <h1 id="gallery-name">Galerie Blanche</h1>
+    <h1 id="gallery-name">Galerie Hallé</h1>
     <p id="gallery-tagline">Éditions Contemporaines</p>
   </header>
 
   <nav id="nav">
-    <a href="./index.html">Room I</a>
+    <a class="active" href="./index.html">Room I</a>
     <a href="./room.html">Room II</a>
     <a href="./work.html">On View</a>
     <input id="search-box" type="text" placeholder="Search the collection">
   </nav>
 
   <section id="gallery">
-    <a id="artwork-1" class="artwork" href="./work.html?work=coupe-severe">
+    <a id="artwork-1" class="artwork" href="./work.html?work=robe-rouge">
       <div id="artwork-1-image" class="artwork-image">
-        <img src="../images/gallery/barbershop.jpeg" alt="Coupe Sévère">
+        <img src="../images/gallery/vallotton-interieur.jpeg" alt="La Robe Rouge">
       </div>
       <div id="artwork-1-info" class="artwork-info">
-        <div class="artwork-title">Coupe Sévère</div>
-        <div class="artwork-artist">Marie Côté</div>
-        <div id="artwork-1-price" class="artwork-price">€8,500</div>
+        <div class="artwork-title">La Robe Rouge</div>
+        <div class="artwork-artist">Félix Vallotton</div>
+        <div id="artwork-1-price" class="artwork-price">€9,400</div>
       </div>
     </a>
 
-    <a id="artwork-2" class="artwork" href="./work.html?work=luminescence">
+    <a id="artwork-2" class="artwork" href="./work.html?work=maree-du-soir">
       <div id="artwork-2-image" class="artwork-image">
-        <img src="../images/gallery/bluewithred.jpeg" alt="Luminescence">
+        <img src="../images/gallery/vallotton-sunset.jpeg" alt="Marée du Soir">
       </div>
       <div id="artwork-2-info" class="artwork-info">
-        <div class="artwork-title">Luminescence</div>
-        <div class="artwork-artist">James Whitfield</div>
-        <div id="artwork-2-price" class="artwork-price">€12,000</div>
+        <div class="artwork-title">Marée du Soir</div>
+        <div class="artwork-artist">Félix Vallotton</div>
+        <div id="artwork-2-price" class="artwork-price">€11,000</div>
       </div>
     </a>
 
-    <a id="artwork-3" class="artwork" href="./work.html?work=apnee">
+    <a id="artwork-3" class="artwork" href="./work.html?work=capucines">
       <div id="artwork-3-image" class="artwork-image">
-        <img src="../images/gallery/swimmer.jpeg" alt="Apnée">
+        <img src="../images/gallery/vallotton-capucines.jpeg" alt="Capucines">
       </div>
       <div id="artwork-3-info" class="artwork-info">
-        <div class="artwork-title">Apnée</div>
-        <div class="artwork-artist">Sophie Laurent</div>
-        <div id="artwork-3-price" class="artwork-price">€6,800</div>
+        <div class="artwork-title">Capucines</div>
+        <div class="artwork-artist">Félix Vallotton</div>
+        <div id="artwork-3-price" class="artwork-price">€7,200</div>
       </div>
     </a>
   </section>
@@ -62,14 +62,16 @@
   <div id="featured-badge">
     <div class="badge-title">Editor's Pick</div>
     <div class="badge-content">
-      <strong>Luminescence</strong><br>
-      James Whitfield<br>
-      €12,000
+      <strong>Marée du Soir</strong><br>
+      Félix Vallotton<br>
+      €11,000
     </div>
   </div>
 
   <footer id="footer">
-    Galerie Blanche · Rue de Sèvres · By appointment
+    Galerie Hallé · Rue de Sèvres · By appointment
+    <span id="colophon">Images: public domain — The Metropolitan Museum of Art (Open Access) · Wikimedia Commons</span>
+    <a id="legal-link" href="#footer">Mentions légales</a>
   </footer>
 
   <!--
@@ -80,20 +82,20 @@
     MutationObserver picks up its inline-style changes.
   -->
   <script type="layout-lint">
-    # names for the page elements
+    # define binds a name to a selector; card-* indexes every match
     define card-* as ".artwork";
     define badge as "#featured-badge";
     define searchbox as "#search-box";
 
-    # the page skeleton as one group
+    # a group names several elements at once
     group room as header, nav, gallery, footer;
 
-    # vertical order of the page
+    # reading order, stated as minimum gaps
     header above nav 0px;
     gallery below nav 0px;
     footer below gallery 0px;
 
-    # the wall is a three-column grid of equal width
+    # the wall: three equal columns, gutters as range contracts
     card-1 inside gallery;
     card-2 inside gallery;
     card-3 inside gallery;
@@ -103,12 +105,13 @@
     card-2 right-of card-1 40 to 80px;
     card-3 right-of card-2 40 to 80px;
 
-    # each plate fills its column. the label sits just under it
+    # percentages tie a child to its parent's box
     artwork-1-image taller-than artwork-1-info;
     artwork-1-image width 100% of artwork-1/width;
     artwork-1-info width 95 to 100% of artwork-1/width;
 
-    # the draggable Editor's Pick card must stay within the wall
+    # the badge sandbox: containment, negation, exact and compared sizes
+    # drag the Editor's Pick card and watch these fail
     badge inside gallery;
     badge not inside header;
     badge partially inside gallery;
@@ -117,9 +120,10 @@
     badge height > 60px;
     badge height < 240px;
 
+    # the search field stays in the nav bar
     searchbox inside nav;
 
-    # the whole skeleton stays visible
+    # @ broadcasts over the group: four visibility checks in one line
     @room visible;
   </script>
   <script type="module" src="../../dist/auto.bundle.js"></script>
