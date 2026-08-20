@@ -45,6 +45,12 @@ export interface SpecEditorController {
   cancel(): void;
   apply(): Promise<void>;
   renderPanel(args: RenderSpecEditorPanelArgs): void;
+  /**
+   * Pull in a spec change made through the monitor API while the editor is
+   * open. Returns true when the draft was resynced; a dirty draft (unsaved
+   * user edits) is never overwritten.
+   */
+  syncExternalSpec(): boolean;
 }
 
 const delay = (ms: number) =>
@@ -55,6 +61,10 @@ const delay = (ms: number) =>
 export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorController {
   let isOpen = false;
   let draft = args.monitor.getSpecText();
+  // The spec text the draft was last seeded from. While draft === draftBase
+  // the user has no unsaved edits, so external setSpecText calls (e.g. the
+  // tutorial growing the spec) may resync the editor on rerender.
+  let draftBase = draft;
   let error: string | null = null;
   let diagnostics: LayoutLintDiagnostic[] = [];
   let closeAfterSuccessTimer: number | null = null;
@@ -87,6 +97,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
   const open = () => {
     isOpen = true;
     draft = args.monitor.getSpecText();
+    draftBase = draft;
     error = null;
     expandedRelatedDiagnosticKeys.clear();
 
@@ -103,6 +114,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
 
   const cancel = () => {
     draft = args.monitor.getSpecText();
+    draftBase = draft;
     close();
     args.requestRerender();
   };
@@ -154,6 +166,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
       }
       diagnostics = [];
       expandedRelatedDiagnosticKeys.clear();
+      draftBase = nextSpec;
       args.flashFooterStatusDone();
       closeAfterSuccessTimer = window.setTimeout(() => {
         close();
@@ -188,6 +201,13 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     editorLineNumbers,
     scheduleClampWidgetIntoViewport,
   }: RenderSpecEditorPanelArgs) => {
+    // Pick up spec changes made through the monitor API while the editor is
+    // open, as long as the user has no unsaved edits of their own.
+    const monitorSpec = args.monitor.getSpecText();
+    if (draft === draftBase && monitorSpec !== draftBase) {
+      draft = monitorSpec;
+      draftBase = monitorSpec;
+    }
     body.innerHTML = "";
     body.style.display = "flex";
     body.style.flexDirection = "column";
@@ -564,6 +584,14 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     scheduleClampWidgetIntoViewport();
   };
 
+  const syncExternalSpec = () => {
+    const monitorSpec = args.monitor.getSpecText();
+    if (draft !== draftBase || monitorSpec === draftBase) return false;
+    draft = monitorSpec;
+    draftBase = monitorSpec;
+    return true;
+  };
+
   return {
     isOpen: () => isOpen,
     open,
@@ -571,5 +599,6 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
     cancel,
     apply,
     renderPanel,
+    syncExternalSpec,
   };
 }
