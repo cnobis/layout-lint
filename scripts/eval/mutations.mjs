@@ -1,22 +1,8 @@
-// Mutation catalog for the fault-injection study.
-//
-// Each mutant injects exactly one layout fault into an otherwise passing demo
-// page, either as a CSS override (`css`, applied with !important via
-// page.addStyleTag) or as a DOM action (`action`, run via page.evaluate).
-//
-// `category` maps to the reported operator families:
-//   misaligned   — an element leaves a shared edge/center           (Hallé: misaligned)
-//   overlap      — two elements collide or invert their order       (Hallé: overlapping)
-//   container    — an element leaves or protrudes from its container (Hallé: outside container)
-//   stacking     — paint order changes, rectangles do not           (Hallé: incorrectly stacked;
-//                                                                    EXPECTED TO SURVIVE by design)
-//   size         — width/height/proportion changes
-//   spacing      — gaps and proximity changes
-//   count        — an element set gains/loses members or visibility
-//   text-style   — rendered text or computed style changes
-//
-// `expect` documents the hypothesis: "killed" (some rule should fail) or
-// "survives" (a deliberate blind-spot or spec-gap probe).
+// mutation catalog for the fault-injection study. each mutant injects one
+// layout fault into an otherwise passing demo page, either a css override
+// (applied with !important) or a dom action (run via page.evaluate).
+// `category` names the fault family, `expect` states the hypothesis:
+// "killed" means some rule should fail, "survives" marks a designed control.
 
 export const PAGES = {
   gallery: "/demo/gallery/index.html",
@@ -26,7 +12,7 @@ export const PAGES = {
 };
 
 export const MUTANTS = [
-  // ── gallery/index.html ────────────────────────────────────────────────
+  // ---------- gallery/index.html ----------
   { id: "G1", page: "gallery", category: "misaligned", expect: "survives",
     css: "#search-box{margin-left:0 !important}",
     note: "search box slides left inside the nav; the spec only constrains containment, not alignment (spec-gap probe)" },
@@ -58,7 +44,7 @@ export const MUTANTS = [
     css: "#featured-badge{z-index:-1 !important}",
     note: "badge paints under the cards; every rectangle stays identical" },
 
-  // ── gallery/work.html ────────────────────────────────────────────────
+  // ---------- gallery/work.html ----------
   { id: "W1", page: "work", category: "container", expect: "killed",
     css: "#plate{top:20px !important}",
     note: "museum mat shrinks from 32px on top; the per-side offsets fail" },
@@ -78,7 +64,7 @@ export const MUTANTS = [
     css: "#sold-ribbon{z-index:-1 !important}",
     note: "ribbon paints under the frame; rectangles unchanged" },
 
-  // ── bar/index.html ───────────────────────────────────────────────────
+  // ---------- bar/index.html ----------
   { id: "B1", page: "bar", category: "count", expect: "killed",
     css: "#skewer-2{display:none !important}",
     note: "one menu item hides; visible and absent counts both break" },
@@ -113,7 +99,7 @@ export const MUTANTS = [
     css: "#limited-stamp{width:60px !important; height:60px !important}",
     note: "the seal shrinks from its pinned 72px box" },
 
-  // ── studio/index.html ────────────────────────────────────────────────
+  // ---------- studio/index.html ----------
   { id: "S1", page: "studio", category: "misaligned", expect: "killed",
     css: "#strip-2{margin-top:24px !important}",
     note: "second channel strip sinks; the matched pair loses its shared edges" },
