@@ -5,7 +5,6 @@ this order: run-mutations creates results.json and the others merge their
 section into it.
 
     node scripts/eval/run-mutations.mjs     # targeted catalog
-    node scripts/eval/systematic.mjs        # generated pool
     node scripts/eval/run-backstop.mjs      # pixel-oracle comparison
     GALEN_BIN=<galen launcher> node scripts/eval/galen-run.mjs   # cross-runner
     node scripts/eval/capture-figure.mjs <out.png>   # fault-detection figure shot
