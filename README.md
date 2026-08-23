@@ -18,7 +18,7 @@ count visible card-* is >= 3;
 
 ![The widget open on a demo page, with a pinned rule outlining its two elements](demo/images/widget.jpg)
 
-Selecting a rule draws its target and source on the page. The live site carries the demos, a parse-tree explorer, and the grammar reference with a syntax diagram per rule.
+Selecting a rule draws its target and source on the page. Interactive demos, a parse-tree explorer, and the grammar reference with a syntax diagram per rule are on the [live site](https://cnobis.github.io/layout-lint/), or run them locally with `npm run serve`.
 
 ## Install
 
@@ -72,15 +72,7 @@ if (diagnostics.length) console.error(lint.formatDiagnostics(diagnostics));
 if (results.some((r) => !r.pass)) process.exit(1);
 ```
 
-The grammar and the tree-sitter runtime are inlined, so no `wasmUrl` or `locateFile` is needed. For a synthetic DOM, pass `dom: window.document`. jsdom runs no layout engine, so spatial rules need a real browser through Playwright or Cypress.
-
-## Demos
-
-Four pages under [demo/](demo/): a guided tutorial, then a gallery, a bar, and a studio.
-
-```bash
-npm run serve   # opens http://127.0.0.1:8080/demo/
-```
+The grammar and the Tree-sitter runtime are inlined, so no `wasmUrl` or `locateFile` is needed. For a synthetic DOM, pass `dom: window.document`. jsdom runs no layout engine, so spatial rules need a real browser.
 
 ## External WASM
 
