@@ -87,8 +87,7 @@ import { formatDiagnostic } from 'layout-lint/diagnostics';
 Four pages under [demo/](demo/): a guided tutorial, then a gallery, a bar, and a studio covering containment, text and count rules, and alignment.
 
 ```bash
-npm run serve
-# http://127.0.0.1:8080/demo/
+npm run serve   # opens http://127.0.0.1:8080/demo/
 ```
 
 ## External WASM

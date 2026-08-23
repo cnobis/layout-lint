@@ -15,6 +15,5 @@ The three drop-in demos ship the same two tags a production page would, a `<scri
 
 ```bash
 npm run build:ts
-npm run serve
-# http://127.0.0.1:8080/demo/
+npm run serve   # opens http://127.0.0.1:8080/demo/
 ```
