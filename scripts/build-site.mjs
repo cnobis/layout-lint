@@ -30,10 +30,15 @@ rmSync(siteDir, { recursive: true, force: true });
 mkdirSync(siteDir, { recursive: true });
 
 // 2. demo/* -> site/ (playground index.html lands at the site root). Skip the
-// developer-facing demo README; the deployed site is for end users.
+// developer-facing README and the README screenshot; the deployed site is for
+// end users and no page links either one.
+const repoOnly = new Set([
+  join(demoDir, "README.md"),
+  join(demoDir, "images", "widget.jpg"),
+]);
 cpSync(demoDir, siteDir, {
   recursive: true,
-  filter: (src) => src !== join(demoDir, "README.md"),
+  filter: (src) => !repoOnly.has(src),
 });
 
 // 3. The built bundles -> site/dist/. The grammar + runtime WASM are base64
