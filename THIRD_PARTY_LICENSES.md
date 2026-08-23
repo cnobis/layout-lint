@@ -49,8 +49,6 @@ public-domain 2D works carry no new copyright.
   Access (CC0), via Wikimedia Commons (MET DP234753)
 - *Iznik Tile* (Turkey, c. 1560), `demo/images/gallery/iznik.jpeg`, public
   domain, via Wikimedia Commons (Google Art Project scan)
-- `demo/images/gallery/bluewithred.jpeg`, National Gallery of Art,
-  Washington, Open Access; shown on the gallery demo's work page.
 - *assorted bottle on table* by Sérgio Alves Santos,
   `demo/images/bar/catclub.jpg`, Unsplash License, via Unsplash
   (https://unsplash.com/photos/assorted-bottle-on-table-PeDrafNlY2Y); hero
