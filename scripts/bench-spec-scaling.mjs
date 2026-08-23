@@ -17,9 +17,6 @@
 //   full_ms    runLayoutLint() end to end (re-parses; sanity check, should
 //              track parse_ms + extract_ms + eval_ms)
 //
-// Feeds Table 8 of the thesis ("Median parse, extraction and evaluation
-// times ...").
-//
 // Run: npm run build:ts && node scripts/bench-spec-scaling.mjs
 import { runLayoutLint, evaluateParsedSpec } from '../dist/index.js';
 import { getParser } from '../dist/core/parser.js';

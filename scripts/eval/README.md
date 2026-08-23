@@ -7,7 +7,7 @@ section into it.
     node scripts/eval/run-mutations.mjs     # targeted catalog
     node scripts/eval/run-backstop.mjs      # pixel-oracle comparison
     GALEN_BIN=<galen launcher> node scripts/eval/galen-run.mjs   # cross-runner
-    node scripts/eval/capture-figure.mjs <out.png>   # fault-detection figure shot
+    node scripts/eval/capture-figure.mjs <out.png>   # screenshot a detected fault
 
 preconditions: `npx playwright install chromium` once, and for the
 cross-runner galen 2.4.4 plus a chromedriver matching the installed chrome

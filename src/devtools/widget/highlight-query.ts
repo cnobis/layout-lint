@@ -1,6 +1,6 @@
-// Inlined highlight query — source of truth is queries/highlights.scm
+// inlined highlight query, source of truth is queries/highlights.scm
 export const HIGHLIGHTS_SCM = `
-; highlights.scm — tree-sitter highlight query for the layout-lint DSL
+; highlights.scm, tree-sitter highlight query for the layout-lint DSL
 
 ; ─── Comments ─────────────────────────────────────────────────────────
 (comment) @comment

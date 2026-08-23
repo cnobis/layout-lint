@@ -9,7 +9,7 @@
  * The demo pages load the library as `../../dist/<x>.bundle.js`, which assumes
  * dist is a sibling of demo (the repo layout). In the assembled site the demo
  * contents sit at the root, so every bundle-loading page is one level shallower;
- * we rewrite `../../dist/` -> `../dist/` to match. The grammar WASM is base64
+ * so `../../dist/` is rewritten to `../dist/` to match. The grammar WASM is base64
  * inlined into the bundles, so no separate .wasm file is needed.
  *
  * Run with:  npm run build:site   (which builds dist + railroad first)

@@ -1,7 +1,6 @@
-// capture for the fault-detection figure: the bar page under the seal
-// mutant, widget on the failing view, panel dragged clear of the sidebar,
-// width rule pinned. crop (500, 790, 2365, 1760) of the 2x shot becomes the
-// fault-seal-shrink figure.
+// screenshots a detected fault: the bar page under the stamp mutant, the
+// widget on its failing view, the panel dragged clear of the sidebar and the
+// width rule pinned.
 //
 // run: node scripts/eval/capture-figure.mjs <out.png>
 import { chromium } from "playwright";
@@ -37,4 +36,4 @@ await page.waitForTimeout(300);
 await page.screenshot({ path: process.argv[2] ?? "capture-figure-full.png" });
 await browser.close();
 server.kill();
-console.log("captured (crop to (500, 790, 2365, 1760) for the figure)");
+console.log("captured");

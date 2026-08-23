@@ -8,7 +8,7 @@
 // @ts-check
 
 // ── Helper functions ────────────────────────────────────────────────
-// Pure JS conveniences — produce the exact same grammar tree.
+// pure JS conveniences, producing the exact same grammar tree.
 
 /** element [not] prefix shared by all non-count rules
  * @param {any} $
@@ -230,7 +230,7 @@ module.exports = grammar({
 
     object_pattern: $ => token(/[a-zA-Z_][a-zA-Z0-9_.#*-]*/),
 
-    // NOTE: identifier must not match trailing * — handled by wildcard_name
+    // identifier must not match a trailing *, wildcard_name handles that
     identifier: $ => /[a-zA-Z_][a-zA-Z0-9_-]*/,
 
     number: $ => /\d+/,

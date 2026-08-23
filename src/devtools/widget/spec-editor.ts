@@ -264,7 +264,7 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
       editorView.setDiagnosticRanges(ranges);
     }
 
-    // Async tree-sitter highlighter init — non-blocking, falls back to naive on failure
+    // async tree-sitter highlighter init, non-blocking, falls back to naive on failure
     if (editorView.setHighlighter) {
       const ev = editorView;
       void initHighlighter(args.wasmUrl, args.locateFile)
@@ -410,7 +410,11 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
       topRow.appendChild(code);
       item.appendChild(topRow);
 
-      const suggestion = diagnostic.suggestion ? ` Did you mean \u201C${diagnostic.suggestion}\u201D?` : "";
+      // the hint row below already spells the suggestion out, so only fall back to
+      // the inline form when a diagnostic carries no hint
+      const suggestion = !diagnostic.hint && diagnostic.suggestion
+        ? ` Did you mean \u201C${diagnostic.suggestion}\u201D?`
+        : "";
       const desc = document.createElement("div");
       desc.textContent = `${diagnostic.message}${suggestion}`;
       desc.style.color = "#6b7280";
