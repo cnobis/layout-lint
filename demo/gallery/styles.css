@@ -24,6 +24,12 @@ body {
   color: var(--ink);
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  /* header, nav, content, footer: the content row absorbs the slack so the
+     footer band closes the sheet at the bottom of the viewport. Without this a
+     short page on a tall screen leaves the ink canvas exposed below the footer. */
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
 }
 
 /* small tracked sans labels, the editorial connective tissue */
@@ -127,11 +133,15 @@ body::after {
 }
 
 /* ---------- nav (hairline rules) ---------- */
+/* the width: 100% here and on #gallery/#viewing is load-bearing: as grid items
+   these sections would otherwise shrink to their content instead of centering
+   inside the 1180px measure */
 #nav {
   display: flex;
   align-items: center;
   gap: 32px;
   padding: 16px 48px;
+  width: 100%;
   max-width: 1180px;
   margin: 0 auto;
   border-top: 1px solid var(--line);
@@ -178,6 +188,7 @@ body::after {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 56px;
+  width: 100%;
   max-width: 1180px;
   margin: 0 auto;
   padding: 52px 48px 40px;
@@ -241,6 +252,7 @@ body::after {
 
 /* ---------- detail / viewing room ---------- */
 #viewing {
+  width: 100%;
   max-width: 1180px;
   margin: 0 auto;
   padding: 44px 48px 40px;
