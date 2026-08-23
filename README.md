@@ -1,6 +1,6 @@
 # layout-lint
 
-![layout-lint](demo/images/logo-wide.svg)
+<a href="https://cnobis.github.io/layout-lint/"><img src="demo/images/logo-wide.svg" alt="layout-lint"></a>
 
 **[Try it live →](https://cnobis.github.io/layout-lint/)**
 
@@ -16,9 +16,9 @@ card-1 same-width card-2;
 count visible card-* is >= 3;
 ```
 
-![The widget open on a demo page, with a pinned rule outlining its two elements](demo/images/widget.jpg)
+<a href="https://cnobis.github.io/layout-lint/"><img src="demo/images/widget.jpg" alt="The widget open on a demo page, with a pinned rule outlining its two elements"></a>
 
-Selecting a rule draws its target and source on the page. Interactive demos, a parse-tree explorer, and the grammar reference with a syntax diagram per rule are on the [live site](https://cnobis.github.io/layout-lint/), or run them locally with `npm run serve`.
+Selecting a rule draws its target and source on the page. Interactive demos, a parse-tree explorer, and the grammar reference with a syntax diagram per rule are on the live site, or run them locally with `npm run serve`.
 
 ## Install
 
