@@ -16,7 +16,7 @@ card-1 same-width card-2;
 count visible card-* is >= 3;
 ```
 
-<a href="https://cnobis.github.io/layout-lint/"><img src="demo/images/widget.jpg" alt="The widget open on a demo page, with a pinned rule outlining its two elements"></a>
+<a href="https://cnobis.github.io/layout-lint/gallery/"><img src="demo/images/widget.jpg" alt="The widget open on a demo page, with a pinned rule outlining its two elements"></a>
 
 Selecting a rule draws its target and source on the page. Interactive demos, a parse-tree explorer, and the grammar reference with a syntax diagram per rule are on the live site, or run them locally with `npm run serve`.
 

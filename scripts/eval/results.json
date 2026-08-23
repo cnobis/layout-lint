@@ -1052,8 +1052,8 @@
         "expect": "killed",
         "galenDetected": true,
         "failingChecks": [
-          "text is \"\u672c\u65e5\u306e\u304a\u54c1\u66f8\u304d\": \"board-title\" text is \"Menu of the Day\" but should be \"\u672c\u65e5\u306e\u304a\u54c1\u66f8\u304d\"",
-          "text ends \"\u54c1\u66f8\u304d\": \"board-title\" text is \"Menu of the Day\" but should end with \"\u54c1\u66f8\u304d\""
+          "text is \"本日のお品書き\": \"board-title\" text is \"Menu of the Day\" but should be \"本日のお品書き\"",
+          "text ends \"品書き\": \"board-title\" text is \"Menu of the Day\" but should end with \"品書き\""
         ],
         "layoutLintDetected": true
       },
@@ -1144,5 +1144,11 @@
         "layoutLintDetected": true
       }
     ]
+  },
+  "layoutLint": {
+    "version": "1.1.0",
+    "commit": "1382dc8ffa19c7b18dc7f395efb2fa7581bcba28",
+    "tag": null,
+    "dirty": false
   }
 }

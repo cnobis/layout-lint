@@ -6,6 +6,7 @@
 // run: node scripts/eval/run-backstop.mjs   (merges into results.json)
 import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync, rmSync } from "node:fs";
+import { stamp } from "./version.mjs";
 import { MUTANTS, PAGES } from "./mutations.mjs";
 import { serve, REPO_ROOT } from "./helpers.mjs";
 
@@ -90,6 +91,7 @@ for (const t of tests) {
   });
 }
 results.backstop = { scenarios: rows };
+results.layoutLint = stamp();
 writeFileSync(resultsUrl, JSON.stringify(results, null, 2));
 
 console.log("\nid     category      layout-lint  backstop   mismatch%");
