@@ -1,4 +1,4 @@
-# evaluation harness
+# evaluation scripts
 
 four studies over the demo pages. each driver is standalone, run them in
 this order: run-mutations creates results.json and the others merge their
