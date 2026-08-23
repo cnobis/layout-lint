@@ -1,5 +1,7 @@
 # layout-lint
 
+[![npm](https://img.shields.io/npm/v/layout-lint)](https://www.npmjs.com/package/layout-lint)
+
 <a href="https://cnobis.github.io/layout-lint/"><img src="demo/images/logo-wide.svg" alt="layout-lint"></a>
 
 **[Try it live →](https://cnobis.github.io/layout-lint/)**
