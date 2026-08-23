@@ -9,6 +9,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync, rmSync, readdirSync } from "node:fs";
 import { MUTANTS, PAGES } from "./mutations.mjs";
 import { serve, REPO_ROOT } from "./helpers.mjs";
+import { stamp } from "./version.mjs";
 
 const GALEN = process.env.GALEN_BIN ?? "galen";
 const DIR = new URL("./galen/", import.meta.url).pathname;
@@ -93,6 +94,7 @@ const layoutLintDetected = new Map();
 for (const m of results.mutants) layoutLintDetected.set(m.id, m.detected);
 for (const m of report.mutants) m.layoutLintDetected = layoutLintDetected.get(m.id) ?? null;
 results.galen = report;
+results.layoutLint = stamp();
 writeFileSync(resultsUrl, JSON.stringify(results, null, 2));
 
 console.log("\nid   category    layout-lint  galen");

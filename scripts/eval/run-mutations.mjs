@@ -1,10 +1,14 @@
 // targeted fault-injection study: inject each catalog mutant into its demo
 // page and check whether a rule that passed at baseline fails afterwards.
 //
+// run this first: run-backstop.mjs and galen-run.mjs read the mutants section
+// it writes, then merge their own sections alongside it.
+//
 // run: node scripts/eval/run-mutations.mjs   (writes results.json)
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { PAGES, MUTANTS } from "./mutations.mjs";
 import { serve, launchBrowser, openPage, verdicts, newlyFailing } from "./helpers.mjs";
+import { stamp } from "./version.mjs";
 
 const PORT = 8123;
 const BASE = `http://127.0.0.1:${PORT}`;
@@ -71,5 +75,15 @@ try {
   server.kill();
 }
 
-writeFileSync(new URL("./results.json", import.meta.url), JSON.stringify(report, null, 2));
+// merge rather than overwrite: the backstop and galen sections are written by
+// their own scripts and must survive a re-run of this one
+const resultsUrl = new URL("./results.json", import.meta.url);
+let existing = {};
+try {
+  existing = JSON.parse(readFileSync(resultsUrl, "utf8"));
+} catch {
+  // first run, or the file was removed on purpose
+}
+const merged = { ...existing, ...report, layoutLint: stamp() };
+writeFileSync(resultsUrl, JSON.stringify(merged, null, 2));
 console.log("written: scripts/eval/results.json");
