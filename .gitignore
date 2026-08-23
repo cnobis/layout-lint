@@ -1,33 +1,28 @@
-# Thesis and notes are kept local for privacy and agent support.
-# Never tracked or pushed to the main repo.
+# local working directories and notes, never tracked
 thesis/
 notes/
-
-# Exam prep materials (private, never tracked)
 exam/
-
-# Claude Code workspace instructions (local AI tooling, not part of the repo)
-CLAUDE.md
-.claude/
 *.tex
 *.bib
-THESIS_LOG.md
+*_LOG.md
 library-improvements.md
+.claude/
 .github/instructions/
-
-# Internal project docs (kept local, not published)
-/ARCHITECTURE.md
-/docs/BRAND.md
-
-# Local tree-sitter build artifacts
-/build/
-/parser.dylib
 /.github/copilot-instructions.md
+CLAUDE.md
+
+# internal docs, kept local
+/ARCHITECTURE.md
 /DEVELOPMENT.md
 /BUGS.md
 /CHANGELOG.md
 /PROJECT_STATE.md
 /TODO.md
+/docs/BRAND.md
+
+# local tree-sitter build artifacts
+/build/
+/parser.dylib
 *.bak
 # Logs
 logs
@@ -178,8 +173,6 @@ literature/
 # Evaluation study artifacts: regenerable outputs and the pinned
 # chromedriver binary stay local; results.json is the tracked evidence.
 scripts/eval/backstop/data/
-scripts/eval/backstop/data-survivors/
 scripts/eval/backstop/scenarios.json
-scripts/eval/backstop/scenarios-survivors.json
 scripts/eval/galen/rep-*/
 scripts/eval/galen/chromedriver

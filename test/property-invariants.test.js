@@ -2,24 +2,12 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { evaluateRules } from '../dist/core/evaluator.js';
 
-// Property-based invariant checks over the evaluator.
-//
-// A layout rule is a property in the QuickCheck sense: a claim over rendered
-// geometry that should hold for every rendering. These tests turn that around
-// and check claims about the EVALUATOR itself over randomly generated
-// rectangle configurations. The invariants are chosen because none of them
-// hold by construction: `below`/`above` are two independent measure
-// expressions, negation is a separate final step, and `inside`/`partially
-// inside` are two separate predicates.
-//
-// The generator is a seeded PRNG (mulberry32), so every run sees the same
-// 200 configurations per invariant and failures are reproducible.
-//
-// Each biconditional also asserts a lower bound on how often its premise or
-// left side was satisfied: an equivalence between two verdicts that are
-// false in every generated configuration would hold vacuously. The size
-// tests bias half their pairs toward near-equal dimensions for the same
-// reason (uniform sizes almost never match within tolerance).
+// property-based invariant checks over the evaluator: claims between two
+// verdicts, checked over seeded random rectangle configurations. none of
+// the invariants hold by construction, below/above are independent measure
+// expressions and inside/partially inside are separate predicates. every
+// check also asserts a lower bound on how often its left side fired, so an
+// equivalence cannot hold vacuously.
 
 const mulberry32 = (seed) => () => {
   seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
@@ -124,7 +112,7 @@ describe('Property invariants: negation', () => {
     assert.ok(passes >= 20 && passes <= 180, `both verdicts exercised (${passes} passes)`);
   });
 
-  // FINDING (documented current behavior): when an element does not resolve,
+  // finding (documented current behavior): when an element does not resolve,
   // the evaluator returns a failure before the negation step runs, so `not`
   // does not invert the element-not-found outcome. A rule like
   // `ghost not inside footer` fails rather than passing vacuously.
@@ -164,7 +152,7 @@ describe('Property invariants: containment implication', () => {
     assert.ok(insideCount > 20, `premise fired ${insideCount} times`);
   });
 
-  // FINDING (documented current behavior): full containment is inclusive
+  // finding (documented current behavior): full containment is inclusive
   // while overlap is strict, so a degenerate box (zero width) sitting flush
   // on the container's edge passes `inside` but fails `partially inside`.
   // An interior degenerate box keeps the implication (verified above).
@@ -178,7 +166,7 @@ describe('Property invariants: containment implication', () => {
       false, 'current behavior: strict overlap check rejects a boundary-flush degenerate box');
   });
 
-  // FINDING (documented current behavior): with per-side offsets, the
+  // finding (documented current behavior): with per-side offsets, the
   // partially-inside path checks only the named side offsets and never any
   // overlap, so an element wholly outside its container passes when the one
   // named offset happens to match.

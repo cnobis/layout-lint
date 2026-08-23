@@ -1,196 +1,99 @@
-// Pixel-oracle comparison: the targeted catalog run through
-// BackstopJS at default settings, plus three benign-change probes (verified
-// green in layout-lint first) and two already-hidden equivalent probes.
-// `backstop reference` captures each page unmutated, `backstop test` with
-// the fault applied (onReady.cjs keys on isReference); detected = mismatch
-// above the default threshold. Results land in results.json under
-// `backstop`.
+// pixel-oracle comparison: the targeted catalog and five probes run through
+// backstopjs at default settings. the reference run captures each page
+// clean, the test run captures it with the fault applied, and detected
+// means the mismatch crossed backstop's default threshold.
 //
-// Run: node scripts/eval/run-backstop.mjs [--survivors]
+// run: node scripts/eval/run-backstop.mjs   (merges into results.json)
 import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync, rmSync } from "node:fs";
 import { MUTANTS, PAGES } from "./mutations.mjs";
-import { OPERATORS, pageHelpers } from "./systematic.mjs";
+import { serve, REPO_ROOT } from "./helpers.mjs";
 
 const PORT = 8127;
 const BASE = `http://127.0.0.1:${PORT}`;
 const DIR = new URL("./backstop/", import.meta.url).pathname;
-const ROOT = new URL("../..", import.meta.url).pathname;
 
-export const PROBES = [
+// probes join the catalog: three benign changes no rule constrains (verified
+// green in layout-lint beforehand) and two already-hidden elements, so both
+// oracles are also measured on changes that are not faults
+const PROBES = [
   { id: "BP1", page: "gallery", category: "benign", expect: "backstop-only",
     action: `(() => { const a = document.querySelector("#artwork-1 img"), b = document.querySelector("#artwork-2 img"); const s = a.src; a.src = b.src; b.src = s; })()`,
-    note: "artworks 1 and 2 swap images; same 3:4 boxes, no geometric change" },
+    note: "artworks 1 and 2 swap images inside their fixed frames" },
   { id: "BP2", page: "gallery", category: "benign", expect: "backstop-only",
-    action: `document.querySelector("#footer").textContent = "Ouvert du mardi au samedi, 11h00 - 19h00"`,
-    note: "footer line changes wording; the spec states no text rule on the gallery page" },
+    action: `document.querySelector("#gallery-name").textContent = "Galerie Vallée"`,
+    note: "headline wording changes; no text rule binds it" },
   { id: "BP3", page: "bar", category: "benign", expect: "backstop-only",
     css: "#board{background:#4a3728 !important}",
-    note: "board wood tone changes; no rule constrains the board's background" },
+    note: "board wood tone changes; no rule constrains it" },
   { id: "EQ1", page: "bar", category: "equivalent", expect: "neither",
     css: "#staff-note{display:none !important}",
-    note: "hides an element that is already display:none (systematic-pool equivalent)" },
+    note: "hides an element that is already hidden" },
   { id: "EQ2", page: "studio", category: "equivalent", expect: "neither",
     css: "#clip-light{display:none !important}",
-    note: "hides the hidden overload light (systematic-pool equivalent)" },
+    note: "hides the hidden overload light" },
 ];
 
-const buildScenarios = () => {
-  const all = [...MUTANTS, ...PROBES];
-  return all.map((m) => ({
+// one backstop scenario per mutant and probe; onReady.cjs applies the
+// mutation on the test run only
+const scenarios = [];
+for (const m of [...MUTANTS, ...PROBES]) {
+  scenarios.push({
     label: m.id,
     url: BASE + PAGES[m.page],
     mutation: { css: m.css ?? null, action: m.action ?? null },
     delay: 400,
     onReadyScript: "onReady.cjs",
-  }));
-};
+  });
+}
+writeFileSync(`${DIR}scenarios.json`, JSON.stringify(scenarios, null, 2));
+rmSync(`${DIR}data`, { recursive: true, force: true });
 
-const runBackstop = (cmd, env = {}) =>
+// backstop test exits non-zero when scenarios mismatch, and a mismatch is
+// the measurement here, so the exit code is informational only
+const runBackstop = (cmd) =>
   new Promise((resolve) => {
     const proc = spawn("npx", ["backstop", cmd, `--config=${DIR}backstop.config.cjs`], {
-      cwd: ROOT, stdio: "inherit", env: { ...process.env, ...env },
+      cwd: REPO_ROOT,
+      stdio: "inherit",
     });
-    // `backstop test` exits non-zero when scenarios mismatch; a mismatch IS
-    // the measurement here, so the exit code is informational only.
     proc.on("exit", (code) => resolve(code));
   });
 
-const main = async () => {
-  writeFileSync(`${DIR}scenarios.json`, JSON.stringify(buildScenarios(), null, 2));
-  rmSync(`${DIR}data`, { recursive: true, force: true });
-
-  const server = spawn("npx", ["http-server", "-c-1", "-p", String(PORT), "--silent"], {
-    cwd: ROOT, stdio: "ignore",
-  });
-  await new Promise((r) => setTimeout(r, 1200));
-
-  try {
-    console.log("── backstop reference (mutations OFF) ──");
-    const refCode = await runBackstop("reference");
-    if (refCode !== 0) throw new Error("reference run failed");
-    console.log("── backstop test (mutations ON) ──");
-    await runBackstop("test");
-  } finally {
-    server.kill();
-  }
-
-  const reportPath = `${DIR}data/json_report/jsonReport.json`;
-  const report = JSON.parse(readFileSync(reportPath, "utf8"));
-  const catalog = new Map([...MUTANTS, ...PROBES].map((m) => [m.id, m]));
-  const rows = report.tests.map((t) => {
-    const m = catalog.get(t.pair.label);
-    return {
-      id: t.pair.label, page: m.page, category: m.category, expect: m.expect,
-      backstopDetected: t.status === "fail",
-      mismatchPercent: t.pair.diff?.misMatchPercentage ?? "0",
-    };
-  });
-
-  const results = JSON.parse(readFileSync(new URL("./results.json", import.meta.url), "utf8"));
-  const llVerdicts = new Map(results.mutants.map((m) => [m.id, m.detected]));
-  const merged = rows.map((r) => ({
-    ...r,
-    layoutLintDetected: llVerdicts.get(r.id) ?? false,
-  }));
-  results.backstop = { scenarios: merged };
-  writeFileSync(new URL("./results.json", import.meta.url), JSON.stringify(results, null, 2));
-
-  console.log("\nid     category      layout-lint  backstop   mismatch%");
-  for (const r of merged) {
-    console.log(`${r.id.padEnd(6)} ${r.category.padEnd(13)} ${String(r.layoutLintDetected).padEnd(12)} ${String(r.backstopDetected).padEnd(10)} ${r.mismatchPercent}`);
-  }
-  console.log("\nwritten: scripts/eval/results.json (backstop section)");
-};
-
-// ── survivor cross-check (--survivors) ──────────────────────────────────
-// Every systematic survivor re-runs as a Backstop scenario, so the pixel
-// oracle independently checks each class (a flagged equivalent would
-// falsify the classification). Writes results.json systematic.pixelCheck.
-
-const survivorAction = (m) => {
-  const o = OPERATORS.find((x) => x.op === m.op);
-  const lines = o.props
-    .map(([p, v]) => `el.style.setProperty(${JSON.stringify(p)}, ${JSON.stringify(v)}, "important");`)
-    .join("\n    ");
-  return `(async () => {
-    const r = await window.layoutLintAuto.monitor.evaluateNow();
-    const defs = r.definitions;
-    ${pageHelpers}
-    const el = resolveName(defs, ${JSON.stringify(m.target)});
-    if (!el) return;
-    ${o.relativeIfStatic ? 'if (getComputedStyle(el).position === "static") el.style.setProperty("position", "relative", "important");' : ""}
-    ${lines}
-  })()`;
-};
-
-const survivorsMain = async () => {
-  const resultsUrl = new URL("./results.json", import.meta.url);
-  const results = JSON.parse(readFileSync(resultsUrl, "utf8"));
-  const survivors = results.systematic.mutants.filter((m) => !m.status && !m.detected);
-  console.log(`survivor cross-check: ${survivors.length} scenarios`);
-
-  const scenarios = survivors.map((m) => ({
-    label: m.id.replace(/[^a-zA-Z0-9_-]/g, "_"),
-    url: BASE + PAGES[m.page],
-    mutation: { css: null, action: survivorAction(m) },
-    delay: 400,
-    onReadyScript: "onReady.cjs",
-  }));
-  writeFileSync(`${DIR}scenarios-survivors.json`, JSON.stringify(scenarios, null, 2));
-  rmSync(`${DIR}data-survivors`, { recursive: true, force: true });
-
-  const env = { LL_BS_SCENARIOS: "./scenarios-survivors.json", LL_BS_DATA: "data-survivors" };
-  const server = spawn("npx", ["http-server", "-c-1", "-p", String(PORT), "--silent"], {
-    cwd: ROOT, stdio: "ignore",
-  });
-  await new Promise((r) => setTimeout(r, 1200));
-  try {
-    console.log("── backstop reference (survivors, mutations OFF) ──");
-    const refCode = await runBackstop("reference", env);
-    if (refCode !== 0) throw new Error("reference run failed");
-    console.log("── backstop test (survivors, mutations ON) ──");
-    await runBackstop("test", env);
-  } finally {
-    server.kill();
-  }
-
-  const report = JSON.parse(readFileSync(`${DIR}data-survivors/json_report/jsonReport.json`, "utf8"));
-  const byLabel = new Map(report.tests.map((t) => [t.pair.label, t]));
-  const rows = survivors.map((m) => {
-    const t = byLabel.get(m.id.replace(/[^a-zA-Z0-9_-]/g, "_"));
-    return {
-      id: m.id, class: m.class,
-      flagged: t ? t.status === "fail" : null,
-      mismatchPercent: t?.pair.diff?.misMatchPercentage ?? "0",
-    };
-  });
-  const perClass = {};
-  for (const r of rows) {
-    perClass[r.class] ??= { scenarios: 0, flagged: 0, maxMismatch: 0 };
-    perClass[r.class].scenarios += 1;
-    if (r.flagged) perClass[r.class].flagged += 1;
-    perClass[r.class].maxMismatch = Math.max(perClass[r.class].maxMismatch, Number(r.mismatchPercent));
-  }
-  results.systematic.pixelCheck = {
-    perClass,
-    flagged: rows.filter((r) => r.flagged).map((r) => ({ id: r.id, class: r.class, mismatchPercent: r.mismatchPercent })),
-    scenarios: rows,
-  };
-  writeFileSync(resultsUrl, JSON.stringify(results, null, 2));
-
-  console.log("\nclass       scenarios  flagged  max mismatch%");
-  for (const [c, s] of Object.entries(perClass)) {
-    console.log(`${c.padEnd(11)} ${String(s.scenarios).padStart(9)} ${String(s.flagged).padStart(8)}  ${s.maxMismatch}`);
-  }
-  console.log("written: scripts/eval/results.json (systematic.pixelCheck)");
-};
-
-// Only run when invoked directly; verify scripts import PROBES from here.
-if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split("/").pop())) {
-  if (process.argv.includes("--survivors")) {
-    await survivorsMain();
-  } else {
-    await main();
-  }
+const server = await serve(PORT);
+try {
+  console.log("-- backstop reference (mutations off) --");
+  if (await runBackstop("reference") !== 0) throw new Error("reference run failed");
+  console.log("-- backstop test (mutations on) --");
+  await runBackstop("test");
+} finally {
+  server.kill();
 }
+
+// merge the pixel verdicts with layout-lint's from the targeted study
+const tests = JSON.parse(readFileSync(`${DIR}data/json_report/jsonReport.json`, "utf8")).tests;
+const resultsUrl = new URL("./results.json", import.meta.url);
+const results = JSON.parse(readFileSync(resultsUrl, "utf8"));
+const layoutLintDetected = new Map();
+for (const m of results.mutants) layoutLintDetected.set(m.id, m.detected);
+const byId = new Map();
+for (const m of [...MUTANTS, ...PROBES]) byId.set(m.id, m);
+
+const rows = [];
+for (const t of tests) {
+  const m = byId.get(t.pair.label);
+  rows.push({
+    id: m.id, page: m.page, category: m.category, expect: m.expect,
+    layoutLintDetected: layoutLintDetected.get(m.id) ?? false,
+    backstopDetected: t.status === "fail",
+    mismatchPercent: t.pair.diff?.misMatchPercentage ?? "0",
+  });
+}
+results.backstop = { scenarios: rows };
+writeFileSync(resultsUrl, JSON.stringify(results, null, 2));
+
+console.log("\nid     category      layout-lint  backstop   mismatch%");
+for (const r of rows) {
+  console.log(`${r.id.padEnd(6)} ${r.category.padEnd(13)} ${String(r.layoutLintDetected).padEnd(12)} ${String(r.backstopDetected).padEnd(10)} ${r.mismatchPercent}`);
+}
+console.log("\nwritten: scripts/eval/results.json (backstop section)");

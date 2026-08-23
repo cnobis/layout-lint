@@ -75,11 +75,11 @@ async function main(): Promise<void> {
 }
 
 /**
- * Inline the railroad SVGs into their cards. We fetch + inject rather than use
- * <img src> because <img>-loaded SVGs render in "static secure" mode where the
- * inlined CSS custom properties don't reliably cascade, leaving the diagrams
- * blank. Injecting the markup inline applies the SVG's own <style> the same way
- * the full grammar reference does.
+ * Inline the railroad SVGs into their cards. An <img src> is avoided because
+ * SVGs loaded that way render in "static secure" mode, where the inlined CSS
+ * custom properties do not reliably cascade and the diagrams come out blank.
+ * Inlined markup applies the SVG's own <style> the way the full grammar
+ * reference does.
  */
 async function injectDiagrams(): Promise<void> {
   const cards = document.querySelectorAll<HTMLElement>(".diagram-card[data-rule]");

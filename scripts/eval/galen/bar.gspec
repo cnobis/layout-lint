@@ -1,4 +1,4 @@
-# Galen translation of demo/bar/index.html's layout-lint spec (51
+# Galen translation of demo/bar/index.html's layout-lint spec (38
 # constraints), for the cross-runner comparison. Same mechanical
 # policy as gallery.gspec (directional minimum-gap forms get `> -2px`,
 # exact equalities get `~` at the configured 2px approximation, ranges and
