@@ -16,7 +16,7 @@ card-1 same-width card-2;
 count visible card-* is >= 3;
 ```
 
-The live site has four interactive demos, a parse-tree explorer, and the grammar reference. Language documentation: [docs/LANGUAGE.md](docs/LANGUAGE.md).
+The live site carries the demos, a parse-tree explorer, and the grammar reference with a syntax diagram per rule.
 
 ## Install
 
@@ -46,7 +46,7 @@ The same is available as a custom element through `layout-lint/web-component`. T
 
 ## Bundler apps
 
-Import the devtools entry behind a dev-mode guard so the widget never ships to production. The widget mounts in a Shadow DOM root on `document.body`, so host page styles cannot deform it.
+Import the devtools entry behind a dev-mode guard so the widget never ships to production. The widget mounts in a shadow root on `document.body`, so host page styles cannot deform it.
 
 ```typescript
 // Vite shown. Elsewhere: process.env.NODE_ENV !== 'production'
@@ -57,7 +57,7 @@ if (import.meta.env.DEV) {
 }
 ```
 
-The widget's spec button opens an inline editor with syntax highlighting and live diagnostics. Apply with `Cmd/Ctrl+Enter`. Size, position, pagination, and persistence are set through the options object of `createLayoutLintWidget`.
+The widget's spec button opens an inline editor with syntax highlighting and live diagnostics. Apply with `Cmd/Ctrl+Enter`.
 
 ## CI and Node
 
@@ -71,11 +71,11 @@ if (diagnostics.length) console.error(lint.formatDiagnostics(diagnostics));
 if (results.some((r) => !r.pass)) process.exit(1);
 ```
 
-No `wasmUrl`, no `locateFile`. The grammar and the tree-sitter runtime are inlined into the bundle. For a synthetic DOM, pass `dom: window.document`. Note that jsdom runs no layout engine, so spatial rules need a real browser harness such as Playwright or Cypress.
+The grammar and the tree-sitter runtime are inlined, so no `wasmUrl` or `locateFile` is needed. For a synthetic DOM, pass `dom: window.document`. jsdom runs no layout engine, so spatial rules need a real browser through Playwright or Cypress.
 
 ## Diagnostics
 
-Every diagnostic carries a stable `code`, a `message`, and a source `range`, plus an optional snippet, labels, and a hint. The formatter renders Rust-style frames with a source caret. Both are exported standalone:
+Every diagnostic carries a stable `code`, a `message`, and a source `range`, plus an optional snippet, labels, and a hint. The formatter renders frames with a source caret. Both are exported standalone:
 
 ```typescript
 import { explainCode } from 'layout-lint/diagnostic-codes';
@@ -84,12 +84,7 @@ import { formatDiagnostic } from 'layout-lint/diagnostics';
 
 ## Demos
 
-| Demo | What it shows |
-| --- | --- |
-| [tutorial](demo/tutorial/) | A guided tour of the DSL. Start here. |
-| [gallery](demo/gallery/) | Containment and sizing: `inside` with offsets, wildcards, groups. |
-| [bar](demo/bar/) | Text, CSS, visibility, and count rules. |
-| [studio](demo/studio/) | Alignment, centering, `equal-gap`, `near`. |
+Four pages under [demo/](demo/): a guided tutorial, then a gallery, a bar, and a studio covering containment, text and count rules, and alignment.
 
 ```bash
 npm run serve

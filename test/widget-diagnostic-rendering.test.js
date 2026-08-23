@@ -102,9 +102,9 @@ const renderArgs = {
   scheduleClampWidgetIntoViewport: () => {},
 };
 
-const makeEditor = (diagnostics) =>
+const makeEditor = (diagnostics, monitorOverrides = {}) =>
   createSpecEditor({
-    monitor: makeMonitor(diagnostics).controller,
+    monitor: { ...makeMonitor(diagnostics).controller, ...monitorOverrides },
     isStatusTransitionDelayEnabled: () => false,
     fakeLoadingDurationMs: 0,
     specUpdateStatusLabel: 'parsing spec...',
@@ -148,6 +148,55 @@ describe('spec editor diagnostic rendering', () => {
     editor.renderPanel({ ...renderArgs, body, status: new FakeElement('span') });
     const text = collectText(body);
     assert.ok(text.includes('hint: check the element id'), 'hint row should appear');
+  });
+
+  // a parse typo carries both fields: `suggestion` holds the bare keyword and `hint`
+  // the whole sentence. only the hint row should spell it out.
+  it('states a keyword suggestion once when the diagnostic carries hint and suggestion', async () => {
+    const typo = {
+      code: 'LL-PARSE-SYNTAX',
+      severity: 'error',
+      message: 'Invalid spec syntax near this segment.',
+      range: { startIndex: 4, endIndex: 9, start: { line: 1, column: 4 }, end: { line: 1, column: 9 } },
+      suggestion: 'above',
+      hint: 'did you mean `above`?',
+    };
+    // parse diagnostics reach the list through the apply path, since open() seeds
+    // only the semantic ones from the last evaluation. apply() bails out when the
+    // draft matches the monitor's spec, so let the two drift apart first.
+    let specText = 'nav abav header';
+    const editor = makeEditor([typo], { getSpecText: () => specText });
+    specText = 'nav above header';
+    await editor.apply();
+    const body = new FakeElement('div');
+    editor.renderPanel({ ...renderArgs, body, status: new FakeElement('span') });
+    const text = collectText(body);
+    assert.strictEqual(
+      text.toLowerCase().split('did you mean').length - 1,
+      1,
+      'the suggestion should be stated once, not on the message line and in the hint row',
+    );
+    assert.ok(text.includes('hint: did you mean `above`?'), 'the hint row carries the suggestion');
+    assert.ok(text.includes('Invalid spec syntax near this segment.'), 'message text should still appear');
+  });
+
+  it('falls back to the inline suggestion when the diagnostic carries no hint', async () => {
+    const legacy = {
+      code: 'LL-PARSE-SYNTAX',
+      severity: 'error',
+      message: 'Invalid spec syntax near this segment.',
+      range: { startIndex: 4, endIndex: 9, start: { line: 1, column: 4 }, end: { line: 1, column: 9 } },
+      suggestion: 'above',
+    };
+    let specText = 'nav abav header';
+    const editor = makeEditor([legacy], { getSpecText: () => specText });
+    specText = 'nav above header';
+    await editor.apply();
+    const body = new FakeElement('div');
+    editor.renderPanel({ ...renderArgs, body, status: new FakeElement('span') });
+    const text = collectText(body);
+    assert.ok(text.includes('Did you mean'), 'the inline suggestion survives without a hint');
+    assert.ok(!text.includes('hint:'), 'no hint row when the diagnostic carries no hint');
   });
 
   it('omits the hint row when no hint is present', () => {

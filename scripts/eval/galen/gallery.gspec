@@ -20,7 +20,7 @@
 # The group broadcast `@room visible` expands to its four members'
 # `visible` checks below, mirroring the rule extractor's own expansion.
 # Not translatable (recorded for the expressiveness delta):
-# `badge not inside header` — Galen's parser rejects `not` as an unknown
+# `badge not inside header`: Galen's parser rejects `not` as an unknown
 # spec and the language has no general negation of a spatial relation
 # (absence of an element, via `absent`, is its one negative form).
 

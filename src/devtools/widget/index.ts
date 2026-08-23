@@ -94,7 +94,7 @@ export function createLayoutLintWidget(
 
   // Shadow-DOM isolation: every consumer page has different global CSS
   // (button { ... }, header { ... }, Tailwind preflight, etc.). To make the
-  // widget look identical regardless of host page, we mount it inside a
+  // widget look identical regardless of host page, it mounts inside a
   // closed-style shadow root. The host element itself carries no styles
   // beyond positioning, so page selectors can't reach in.
   const host = document.createElement("div");

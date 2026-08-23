@@ -135,7 +135,7 @@ const makeMonitor = (initialSpec, diagnostics = []) => {
   };
 };
 
-/** Simulate text input — finds the textarea inside a wrapper if needed. */
+/** Simulate text input, finding the textarea inside a wrapper if needed. */
 function simulateInput(element, text) {
   const target = element.children.find(c => c.tagName?.toLowerCase() === 'textarea') ?? element;
   target.value = text;

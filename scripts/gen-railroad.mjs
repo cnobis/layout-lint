@@ -5,7 +5,7 @@
  * Outputs:
  *   - demo/internals/grammar.html        full navigable grammar reference page
  *   - demo/internals/railroad/<rule>.svg one SVG per production (served by demo)
- *   - docs/railroad/<rule>.svg           same SVGs, for use as thesis figures
+ *   - docs/railroad/<rule>.svg           same SVGs, standalone for documents
  *
  * Run with:  npm run build:railroad
  *
@@ -106,10 +106,10 @@ writeFileSync(join(demoDir, "grammar.html"), html, "utf8");
 const fullStyle = documentStyle();
 const rootVars = (fullStyle.match(/:root\s*{[^}]*}/) || [""])[0];
 const svgRules = fullStyle.slice(fullStyle.indexOf("svg.railroad-diagram {"));
-// The brand palette from grammar-theme.css applies to standalone SVGs as
+// the brand palette from grammar-theme.css applies to standalone SVGs as
 // well, with every var() resolved to its literal value at generation time.
-// librsvg (used to turn these SVGs into thesis figure PDFs) does not resolve
-// CSS custom properties, so the standalone files must not depend on them.
+// renderers like librsvg do not resolve CSS custom properties, so the
+// standalone files must not depend on them.
 const varsOf = (block) =>
   Object.fromEntries(
     [...block.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]),
