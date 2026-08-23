@@ -48,6 +48,9 @@
     "dsl",
     "constraints"
   ],
+  "engines": {
+    "node": ">=22"
+  },
   "files": [
     "dist/**",
     "layout_lint.wasm",
