@@ -49,11 +49,12 @@ public-domain 2D works carry no new copyright.
   Access (CC0), via Wikimedia Commons (MET DP234753)
 - *Iznik Tile* (Turkey, c. 1560), `demo/images/gallery/iznik.jpeg`, public
   domain, via Wikimedia Commons (Google Art Project scan)
-- `demo/images/gallery/barbershop.jpeg`, `bluewithred.jpeg`, `swimmer.jpeg`,
-  National Gallery of Art, Washington, Open Access; currently unused by the
-  demo pages.
-- `demo/images/bar/catclub.jpg`, author-provided; confirm source before
-  public distribution.
+- `demo/images/gallery/bluewithred.jpeg`, National Gallery of Art,
+  Washington, Open Access; shown on the gallery demo's work page.
+- *assorted bottle on table* by Sérgio Alves Santos,
+  `demo/images/bar/catclub.jpg`, Unsplash License, via Unsplash
+  (https://unsplash.com/photos/assorted-bottle-on-table-PeDrafNlY2Y); hero
+  image of the bar demo.
 - *Cat November 2010-1a* by Alvesgaspar, `demo/images/bar/pr-neko.jpg`,
   CC BY-SA 3.0, via Wikimedia Commons (File:Cat November 2010-1a.jpg);
   thumbnail in the bar demo's fictional sponsored-links block.
@@ -64,11 +65,3 @@ public-domain 2D works carry no new copyright.
 - Used via the Google Fonts CDN in `demo/bar/index.html`
 - License: SIL Open Font License 1.1
 - Copyright: The DotGothic16 Project Authors
-
-Checklist:
-
-- [ ] Inventory all demo images under `demo/images/` and page-specific assets.
-- [ ] Record original source URL/author for each image.
-- [ ] Record license type and attribution requirements (if any).
-- [ ] Add explicit attribution entries in this file for each third-party image.
-- [ ] Replace or remove any image with unknown source/license.
