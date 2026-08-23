@@ -1,6 +1,6 @@
 {
   "name": "layout-lint",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A declarative DSL for testing CSS layout constraints in the browser",
   "repository": "https://github.com/cnobis/layout-lint",
   "license": "MIT",

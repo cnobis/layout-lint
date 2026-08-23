@@ -20,9 +20,16 @@ const git = (...args) => {
 
 // A dirty tree means the commit alone does not describe what ran, so record it
 // rather than letting the stamp imply a clean build.
+// results.json is the file these runs write, so it is always modified while a
+// study is in progress and would make every stamp read dirty. What the flag is
+// meant to answer is whether the measured code was clean, so ignore it.
 const dirty = () => {
   const status = git("status", "--porcelain");
-  return status === null ? null : status.length > 0;
+  if (status === null) return null;
+  const changed = status
+    .split("\n")
+    .filter((line) => line.trim() && !line.endsWith("scripts/eval/results.json"));
+  return changed.length > 0;
 };
 
 export function stamp() {

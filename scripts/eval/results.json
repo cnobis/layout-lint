@@ -1146,9 +1146,9 @@
     ]
   },
   "layoutLint": {
-    "version": "1.1.0",
-    "commit": "1382dc8ffa19c7b18dc7f395efb2fa7581bcba28",
-    "tag": null,
+    "version": "1.2.0",
+    "commit": "911913d5f0ca4f7b4ef4ab7ac0211ed99015fe69",
+    "tag": "v1.2.0",
     "dirty": false
   }
 }
