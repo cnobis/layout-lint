@@ -297,8 +297,9 @@ export function createLayoutLintWidget(
       return byKeyIndex >= 0 ? byKeyIndex + 1 : null;
     };
 
+    const evaluationPending = statusController.getMode() === "loading";
     for (const rule of rulesToRender) {
-      const color = rule.pass ? "#059669" : "#dc2626";
+      const color = evaluationPending ? "#64748b" : rule.pass ? "#059669" : "#dc2626";
       const ruleNumber = getRuleNumber(rule);
       const rulePrefix = ruleNumber == null ? "?" : `${ruleNumber}`;
 
