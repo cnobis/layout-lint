@@ -410,6 +410,7 @@ export class HighlightedEditorView implements EditorView {
   }
   setBackground(color: string) {
     this.wrapper.style.background = color;
+    this.gutter.style.background = color;
     if (color === "#f5f7fe") {
       this.wrapper.dataset.editorTheme = "light";
     } else if (color === "#f3f3ed") {
