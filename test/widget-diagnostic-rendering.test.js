@@ -141,13 +141,13 @@ describe('spec editor diagnostic rendering', () => {
     assert.ok(text.includes('Element not found: nav'), 'message text should still appear');
   });
 
-  it('renders the hint on its own line prefixed with `hint:`', () => {
+  it('renders the hint on its own line prefixed with `Hint:`', () => {
     const editor = makeEditor([semanticDiag]);
     editor.open();
     const body = new FakeElement('div');
     editor.renderPanel({ ...renderArgs, body, status: new FakeElement('span') });
     const text = collectText(body);
-    assert.ok(text.includes('hint: check the element id'), 'hint row should appear');
+    assert.ok(text.includes('Hint: Check the element id'), 'hint row should appear');
   });
 
   // a parse typo carries both fields: `suggestion` holds the bare keyword and `hint`
@@ -176,7 +176,7 @@ describe('spec editor diagnostic rendering', () => {
       1,
       'the suggestion should be stated once, not on the message line and in the hint row',
     );
-    assert.ok(text.includes('hint: did you mean `above`?'), 'the hint row carries the suggestion');
+    assert.ok(text.includes('Hint: Did you mean `above`?'), 'the hint row carries the suggestion');
     assert.ok(text.includes('Invalid spec syntax near this segment.'), 'message text should still appear');
   });
 
@@ -196,7 +196,7 @@ describe('spec editor diagnostic rendering', () => {
     editor.renderPanel({ ...renderArgs, body, status: new FakeElement('span') });
     const text = collectText(body);
     assert.ok(text.includes('Did you mean'), 'the inline suggestion survives without a hint');
-    assert.ok(!text.includes('hint:'), 'no hint row when the diagnostic carries no hint');
+    assert.ok(!text.includes('Hint:'), 'no hint row when the diagnostic carries no hint');
   });
 
   it('omits the hint row when no hint is present', () => {
@@ -206,6 +206,6 @@ describe('spec editor diagnostic rendering', () => {
     const body = new FakeElement('div');
     editor.renderPanel({ ...renderArgs, body, status: new FakeElement('span') });
     const text = collectText(body);
-    assert.ok(!text.includes('hint:'), 'no hint row when the diagnostic carries no hint');
+    assert.ok(!text.includes('Hint:'), 'no hint row when the diagnostic carries no hint');
   });
 });

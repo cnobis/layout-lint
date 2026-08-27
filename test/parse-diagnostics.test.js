@@ -58,6 +58,58 @@ describe('parse diagnostics extraction', () => {
     assert.strictEqual(diagnostics[0].primaryLabel, 'unexpected token');
   });
 
+  it('labels a missing keyword token as an incomplete rule instead of naming the recovery token', () => {
+    const source = 'nav;';
+    const missingKeyword = makeNode({
+      type: 'visible',
+      text: '',
+      startIndex: 3,
+      endIndex: 3,
+      isMissing: true,
+    });
+    const rootNode = makeNode({
+      type: 'source_file',
+      text: source,
+      startIndex: 0,
+      endIndex: source.length,
+      children: [missingKeyword],
+      namedChildren: [],
+    });
+
+    const { diagnostics } = extractRules({ rootNode }, source);
+
+    assert.strictEqual(diagnostics.length, 1);
+    assert.strictEqual(diagnostics[0].code, 'LL-PARSE-MISSING');
+    assert.strictEqual(diagnostics[0].primaryLabel, 'incomplete rule');
+    assert.ok(diagnostics[0].message.includes('incomplete'));
+  });
+
+  it('keeps the named label for a missing semicolon', () => {
+    const source = 'nav visible';
+    const missingSemicolon = makeNode({
+      type: ';',
+      text: '',
+      startIndex: source.length,
+      endIndex: source.length,
+      isMissing: true,
+    });
+    const rootNode = makeNode({
+      type: 'source_file',
+      text: source,
+      startIndex: 0,
+      endIndex: source.length,
+      children: [missingSemicolon],
+      namedChildren: [],
+    });
+
+    const { diagnostics } = extractRules({ rootNode }, source);
+
+    assert.strictEqual(diagnostics.length, 1);
+    assert.strictEqual(diagnostics[0].code, 'LL-PARSE-MISSING');
+    assert.strictEqual(diagnostics[0].primaryLabel, 'missing semicolon');
+    assert.ok(diagnostics[0].message.includes('semicolon'));
+  });
+
   it('reports malformed rule diagnostics when required fields are missing', () => {
     const source = 'broken rule text';
     const malformedRule = makeNode({

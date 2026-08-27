@@ -425,7 +425,8 @@ export function createSpecEditor(args: CreateSpecEditorArgs): SpecEditorControll
 
       if (diagnostic.hint) {
         const hintRow = document.createElement("div");
-        hintRow.textContent = `hint: ${diagnostic.hint}`;
+        const hintText = diagnostic.hint.charAt(0).toUpperCase() + diagnostic.hint.slice(1);
+        hintRow.textContent = `Hint: ${hintText}`;
         hintRow.style.color = "#4b5563";
         hintRow.style.fontSize = "11px";
         hintRow.style.padding = "2px 0 0 22px";

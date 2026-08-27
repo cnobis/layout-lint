@@ -283,7 +283,9 @@ function collectSyntaxDiagnostics(node: NodeLike | null, source: string, diagnos
       range: getSourceRange(source, rangeStart, rangeEnd),
       snippet: snippet || undefined,
       primaryLabel: isMissingNode
-        ? node.type === ";" ? "missing semicolon" : `missing ${node.type}`
+        ? node.type === ";"
+          ? "missing semicolon"
+          : /^\w+$/.test(node.type) ? "incomplete rule" : `missing ${node.type}`
         : "unexpected token",
     });
   }

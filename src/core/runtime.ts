@@ -59,11 +59,11 @@ const semanticPrimaryLabel = (code: string): string | undefined => {
 const semanticHint = (code: string): string | undefined => {
   switch (code) {
     case "LL-SEMANTIC-ELEMENT-NOT-FOUND":
-      return "check the element id or the matching `define` declaration. the element may also be rendered conditionally.";
+      return "check the element id or the matching `define` declaration. The element may also be rendered conditionally.";
     case "LL-SEMANTIC-INVALID-PATTERN":
-      return "the value supplied to a matches rule must be a valid javascript regular expression body.";
+      return "the value supplied to a matches rule must be a valid JavaScript regular expression body.";
     case "LL-SEMANTIC-RULE-INCOMPLETE":
-      return "count rules need a pattern. css rules need a property name.";
+      return "count rules need a pattern. CSS rules need a property name.";
     case "LL-SEMANTIC-INVALID-TARGET":
       return "the referenced element resolves to a zero-width or zero-height box at evaluation time.";
     default:

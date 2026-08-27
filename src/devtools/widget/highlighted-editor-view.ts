@@ -235,6 +235,12 @@ export class HighlightedEditorView implements EditorView {
     } else {
       this.renderNaiveHighlight(text);
     }
+
+    if (text.endsWith("\n")) {
+      this.overlay.appendChild(document.createTextNode(" "));
+    }
+    this.overlay.scrollTop = this.textarea.scrollTop;
+    this.overlay.scrollLeft = this.textarea.scrollLeft;
   }
 
   private updateGutter(text: string) {
