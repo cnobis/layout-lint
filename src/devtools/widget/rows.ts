@@ -215,6 +215,198 @@ const buildMeta = (item: RuleResult) => {
   return `actual distance: ${formatPx(item.actual)}${item.distancePx != null ? ` | expected: >= ${item.distancePx}px` : ""}`;
 };
 
+// the footer outlives row rebuilds: replacing it under a resting cursor
+// makes chrome replay the hover transition on every evaluation
+const rowsFooterUpdaters = new WeakMap<HTMLElement, () => void>();
+
+const ROWS_FOOTER_SELECTOR = "[data-widget-rows-footer='true']";
+
+const ensureRowsFooter = (deps: RenderRowsDeps): HTMLDivElement => {
+  const { body, state } = deps;
+  const existing = body.querySelector<HTMLDivElement>(ROWS_FOOTER_SELECTOR);
+  const existingUpdate = existing ? rowsFooterUpdaters.get(existing) : undefined;
+  if (existing && existingUpdate) {
+    existingUpdate();
+    return existing;
+  }
+
+  const buttonContainer = createFooterStatusContainer();
+  buttonContainer.dataset.widgetRowsFooter = "true";
+
+  const footerRow = document.createElement("div");
+  footerRow.style.display = "grid";
+  footerRow.style.gridTemplateColumns = "minmax(0, 1fr) auto";
+  footerRow.style.alignItems = "center";
+  footerRow.style.columnGap = "8px";
+  footerRow.style.paddingLeft = "10px";
+  footerRow.style.paddingRight = "10px";
+  footerRow.style.paddingBottom = "0";
+  footerRow.style.background = "white";
+
+  const refreshWrap = document.createElement("div");
+  refreshWrap.style.display = "flex";
+  refreshWrap.style.alignItems = "center";
+  refreshWrap.style.width = "100%";
+
+  const actionButtons = document.createElement("div");
+  actionButtons.style.display = "flex";
+  actionButtons.style.alignItems = "center";
+  actionButtons.style.gap = "0";
+
+  const pinControlContainer = document.createElement("div");
+  pinControlContainer.style.display = "flex";
+  pinControlContainer.style.alignItems = "center";
+  pinControlContainer.style.gap = "0";
+  pinControlContainer.style.border = "1px solid #d1d5db";
+  pinControlContainer.style.borderRadius = "6px";
+  pinControlContainer.style.background = "#f3f4f6";
+  pinControlContainer.style.overflow = "hidden";
+
+  const statusSide = document.createElement("div");
+  statusSide.style.display = "flex";
+  statusSide.style.alignItems = "center";
+  statusSide.style.gap = "5px";
+  statusSide.style.padding = "6px 8px";
+  statusSide.style.cursor = "default";
+  statusSide.style.userSelect = "none";
+  statusSide.style.lineHeight = "1";
+
+  const pinIconWrap = document.createElement("span");
+  pinIconWrap.style.display = "inline-flex";
+  pinIconWrap.style.width = "12px";
+  pinIconWrap.style.height = "12px";
+  pinIconWrap.style.alignItems = "center";
+  pinIconWrap.style.justifyContent = "center";
+  pinIconWrap.style.flex = "0 0 auto";
+  pinIconWrap.appendChild(createPinIcon(12));
+  statusSide.appendChild(pinIconWrap);
+
+  const pinnedCountText = document.createElement("span");
+  pinnedCountText.style.display = "inline-flex";
+  pinnedCountText.style.alignItems = "center";
+  pinnedCountText.style.justifyContent = "center";
+  pinnedCountText.style.width = "12px";
+  pinnedCountText.style.flex = "0 0 auto";
+  pinnedCountText.style.transform = "translateY(-1px)";
+  pinnedCountText.style.fontSize = "11px";
+  pinnedCountText.style.fontWeight = "600";
+  pinnedCountText.style.lineHeight = "1";
+  statusSide.appendChild(pinnedCountText);
+
+  const divider = document.createElement("div");
+  divider.style.width = "1px";
+  divider.style.height = "20px";
+  divider.style.background = "#d1d5db";
+  divider.style.opacity = "0.3";
+
+  const unpinBtn = document.createElement("button");
+  unpinBtn.type = "button";
+  unpinBtn.textContent = "Unpin All";
+  unpinBtn.style.display = "flex";
+  unpinBtn.style.alignItems = "center";
+  unpinBtn.style.justifyContent = "center";
+  unpinBtn.style.padding = "6px 8px";
+  unpinBtn.style.fontSize = "11px";
+  unpinBtn.style.fontWeight = "600";
+  unpinBtn.style.border = "none";
+  unpinBtn.style.background = "transparent";
+  unpinBtn.style.color = "#374151";
+  unpinBtn.style.outline = "none";
+  unpinBtn.style.transition = "all 120ms ease";
+
+  pinControlContainer.appendChild(statusSide);
+  pinControlContainer.appendChild(divider);
+  pinControlContainer.appendChild(unpinBtn);
+
+  unpinBtn.addEventListener("pointerdown", (e) => e.stopPropagation());
+  unpinBtn.addEventListener("click", () => {
+    if (!state.hasPinnedRules()) return;
+    deps.onUnpinAll();
+  });
+  unpinBtn.addEventListener("focus", () => {
+    pinControlContainer.style.borderColor = "#6366f1";
+    pinControlContainer.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.22)";
+  });
+  unpinBtn.addEventListener("blur", () => {
+    pinControlContainer.style.borderColor = "#d1d5db";
+    pinControlContainer.style.boxShadow = "none";
+  });
+  unpinBtn.addEventListener("pointerenter", () => {
+    if (!state.hasPinnedRules()) return;
+    unpinBtn.style.background = "#e5e7eb";
+  });
+  unpinBtn.addEventListener("pointerleave", () => {
+    unpinBtn.style.background = "transparent";
+  });
+
+  const evaluateBtn = document.createElement("button");
+  evaluateBtn.type = "button";
+  evaluateBtn.style.display = "inline-flex";
+  evaluateBtn.style.alignItems = "center";
+  evaluateBtn.style.justifyContent = "center";
+  evaluateBtn.style.gap = "6px";
+  evaluateBtn.style.width = "100%";
+  evaluateBtn.style.padding = "6px 8px";
+  evaluateBtn.style.fontSize = "11px";
+  evaluateBtn.style.fontWeight = "600";
+  evaluateBtn.style.border = "1px solid #d1d5db";
+  evaluateBtn.style.borderRadius = "6px";
+  evaluateBtn.style.background = "#f3f4f6";
+  evaluateBtn.style.color = "#374151";
+  evaluateBtn.style.cursor = "pointer";
+  evaluateBtn.style.transition = "all 120ms ease";
+  evaluateBtn.style.outline = "none";
+
+  const refreshIcon = createRotateCcwIcon(13);
+  const refreshText = document.createElement("span");
+  refreshText.textContent = "Refresh Results";
+  evaluateBtn.appendChild(refreshIcon);
+  evaluateBtn.appendChild(refreshText);
+
+  evaluateBtn.addEventListener("pointerdown", (e) => e.stopPropagation());
+  evaluateBtn.addEventListener("click", () => {
+    void deps.onRefreshRequested();
+  });
+  evaluateBtn.addEventListener("focus", () => {
+    evaluateBtn.style.borderColor = "#6366f1";
+    evaluateBtn.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.22)";
+  });
+  evaluateBtn.addEventListener("blur", () => {
+    evaluateBtn.style.borderColor = "#d1d5db";
+    evaluateBtn.style.boxShadow = "none";
+  });
+  evaluateBtn.addEventListener("pointerenter", () => {
+    evaluateBtn.style.background = "#e5e7eb";
+    evaluateBtn.style.borderColor = "#9ca3af";
+  });
+  evaluateBtn.addEventListener("pointerleave", () => {
+    evaluateBtn.style.background = "#f3f4f6";
+    evaluateBtn.style.borderColor = "#d1d5db";
+  });
+
+  // state-dependent bits live here so a reused footer stays current
+  const update = () => {
+    const pinnedCount = state.getPinnedRuleCount();
+    const hasPinnedRules = pinnedCount > 0;
+    statusSide.style.color = hasPinnedRules ? "#1f2937" : "#6b7280";
+    statusSide.title = `${pinnedCount} pinned constraint${pinnedCount !== 1 ? "s" : ""}`;
+    pinnedCountText.textContent = `${pinnedCount}`;
+    unpinBtn.disabled = !hasPinnedRules;
+    unpinBtn.style.cursor = hasPinnedRules ? "pointer" : "not-allowed";
+    unpinBtn.style.opacity = hasPinnedRules ? "1" : "0.55";
+    if (!hasPinnedRules) unpinBtn.style.background = "transparent";
+  };
+  rowsFooterUpdaters.set(buttonContainer, update);
+  update();
+
+  refreshWrap.appendChild(evaluateBtn);
+  actionButtons.appendChild(pinControlContainer);
+  footerRow.appendChild(refreshWrap);
+  footerRow.appendChild(actionButtons);
+  buttonContainer.appendChild(footerRow);
+  return buttonContainer;
+};
+
 export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
   const {
     body,
@@ -235,7 +427,11 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
   const newRuleAppended = results.length > previousCount;
   body.dataset.widgetConstraintCount = String(results.length);
 
-  body.innerHTML = "";
+  // clear the rows, keep the footer
+  const persistentFooter = body.querySelector<HTMLDivElement>(ROWS_FOOTER_SELECTOR);
+  for (const child of Array.from(body.children)) {
+    if (child !== persistentFooter) child.remove();
+  }
   body.style.display = "flex";
   body.style.flexDirection = "column";
   body.style.overflow = "hidden";
@@ -340,7 +536,7 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
   categoryTabsRow.appendChild(createCategoryTab("passing", viewModel.counts.passing));
 
   tabContainer.appendChild(categoryTabsRow);
-  body.appendChild(tabContainer);
+  body.insertBefore(tabContainer, persistentFooter);
 
   const categoryTabs = categoryTabsRow;
 
@@ -372,7 +568,7 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
       pageTabs.appendChild(pageButton);
     }
 
-    body.appendChild(pageTabs);
+    body.insertBefore(pageTabs, persistentFooter);
   }
 
   const constraintsScroll = document.createElement("div");
@@ -385,7 +581,7 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
   constraintsScroll.style.paddingTop = "6px";
   constraintsScroll.style.paddingRight = "2px";
   constraintsScroll.style.paddingBottom = "2px";
-  body.appendChild(constraintsScroll);
+  body.insertBefore(constraintsScroll, persistentFooter);
 
   for (const [index, item] of viewModel.visibleResults.entries()) {
     const row = document.createElement("div");
@@ -467,191 +663,15 @@ export function renderWidgetRows(results: RuleResult[], deps: RenderRowsDeps) {
     constraintsScroll.appendChild(row);
   }
 
-  const buttonContainer = createFooterStatusContainer();
-
+  const footer = ensureRowsFooter(deps);
   styleFooterStatusBar(status);
-
-  const footerRow = document.createElement("div");
-  footerRow.style.display = "grid";
-  footerRow.style.gridTemplateColumns = "minmax(0, 1fr) auto";
-  footerRow.style.alignItems = "center";
-  footerRow.style.columnGap = "8px";
-  footerRow.style.paddingLeft = "10px";
-  footerRow.style.paddingRight = "10px";
-  footerRow.style.paddingBottom = "0";
-  footerRow.style.background = "white";
-
-  const refreshWrap = document.createElement("div");
-  refreshWrap.style.display = "flex";
-  refreshWrap.style.alignItems = "center";
-  refreshWrap.style.width = "100%";
-
-  const footerActions = document.createElement("div");
-  footerActions.style.display = "flex";
-  footerActions.style.alignItems = "center";
-  footerActions.style.justifyContent = "flex-end";
-  footerActions.style.gap = "0";
-  footerActions.style.fontSize = "11px";
-  footerActions.style.width = "100%";
-
-  const actionButtons = document.createElement("div");
-  actionButtons.style.display = "flex";
-  actionButtons.style.alignItems = "center";
-  actionButtons.style.gap = "0";
-
-  const pinnedCount = state.getPinnedRuleCount();
-  const hasPinnedRules = pinnedCount > 0;
-
-  const pinControlContainer = document.createElement("div");
-  pinControlContainer.style.display = "flex";
-  pinControlContainer.style.alignItems = "center";
-  pinControlContainer.style.gap = "0";
-  pinControlContainer.style.border = "1px solid #d1d5db";
-  pinControlContainer.style.borderRadius = "6px";
-  pinControlContainer.style.background = "#f3f4f6";
-  pinControlContainer.style.overflow = "hidden";
-
-  const statusSide = document.createElement("div");
-  statusSide.style.display = "flex";
-  statusSide.style.alignItems = "center";
-  statusSide.style.gap = "5px";
-  statusSide.style.padding = "6px 8px";
-  statusSide.style.color = hasPinnedRules ? "#1f2937" : "#6b7280";
-  statusSide.style.cursor = "default";
-  statusSide.style.userSelect = "none";
-  statusSide.style.lineHeight = "1";
-  statusSide.title = `${pinnedCount} pinned constraint${pinnedCount !== 1 ? 's' : ''}`;
-
-  const pinIconWrap = document.createElement("span");
-  pinIconWrap.style.display = "inline-flex";
-  pinIconWrap.style.width = "12px";
-  pinIconWrap.style.height = "12px";
-  pinIconWrap.style.alignItems = "center";
-  pinIconWrap.style.justifyContent = "center";
-  pinIconWrap.style.flex = "0 0 auto";
-  pinIconWrap.appendChild(createPinIcon(12));
-  statusSide.appendChild(pinIconWrap);
-
-  const pinnedCountText = document.createElement("span");
-  pinnedCountText.textContent = `${pinnedCount}`;
-  pinnedCountText.style.display = "inline-flex";
-  pinnedCountText.style.alignItems = "center";
-  pinnedCountText.style.justifyContent = "center";
-  pinnedCountText.style.width = "12px";
-  pinnedCountText.style.flex = "0 0 auto";
-  pinnedCountText.style.transform = "translateY(-1px)";
-  pinnedCountText.style.fontSize = "11px";
-  pinnedCountText.style.fontWeight = "600";
-  pinnedCountText.style.lineHeight = "1";
-  statusSide.appendChild(pinnedCountText);
-
-  const divider = document.createElement("div");
-  divider.style.width = "1px";
-  divider.style.height = "20px";
-  divider.style.background = "#d1d5db";
-  divider.style.opacity = "0.3";
-
-  const unpinBtn = document.createElement("button");
-  unpinBtn.type = "button";
-  unpinBtn.textContent = "Unpin All";
-  unpinBtn.style.display = "flex";
-  unpinBtn.style.alignItems = "center";
-  unpinBtn.style.justifyContent = "center";
-  unpinBtn.style.padding = "6px 8px";
-  unpinBtn.style.fontSize = "11px";
-  unpinBtn.style.fontWeight = "600";
-  unpinBtn.style.border = "none";
-  unpinBtn.style.background = "transparent";
-  unpinBtn.style.color = "#374151";
-  unpinBtn.style.cursor = hasPinnedRules ? "pointer" : "not-allowed";
-  unpinBtn.style.outline = "none";
-  unpinBtn.style.transition = "all 120ms ease";
-  unpinBtn.disabled = !hasPinnedRules;
-  unpinBtn.style.opacity = hasPinnedRules ? "1" : "0.55";
-
-  pinControlContainer.appendChild(statusSide);
-  pinControlContainer.appendChild(divider);
-  pinControlContainer.appendChild(unpinBtn);
-
-  unpinBtn.addEventListener("pointerdown", (e) => e.stopPropagation());
-  unpinBtn.addEventListener("click", () => {
-    if (!state.hasPinnedRules()) return;
-    deps.onUnpinAll();
-  });
-  unpinBtn.addEventListener("focus", () => {
-    pinControlContainer.style.borderColor = "#6366f1";
-    pinControlContainer.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.22)";
-  });
-  unpinBtn.addEventListener("blur", () => {
-    pinControlContainer.style.borderColor = "#d1d5db";
-    pinControlContainer.style.boxShadow = "none";
-  });
-  unpinBtn.addEventListener("pointerenter", () => {
-    if (!hasPinnedRules) return;
-    unpinBtn.style.background = "#e5e7eb";
-  });
-  unpinBtn.addEventListener("pointerleave", () => {
-    unpinBtn.style.background = "transparent";
-  });
-
-  const evaluateBtn = document.createElement("button");
-  evaluateBtn.type = "button";
-  evaluateBtn.style.display = "inline-flex";
-  evaluateBtn.style.alignItems = "center";
-  evaluateBtn.style.justifyContent = "center";
-  evaluateBtn.style.gap = "6px";
-  evaluateBtn.style.width = "100%";
-  evaluateBtn.style.padding = "6px 8px";
-  evaluateBtn.style.fontSize = "11px";
-  evaluateBtn.style.fontWeight = "600";
-  evaluateBtn.style.border = "1px solid #d1d5db";
-  evaluateBtn.style.borderRadius = "6px";
-  evaluateBtn.style.background = "#f3f4f6";
-  evaluateBtn.style.color = "#374151";
-  evaluateBtn.style.cursor = "pointer";
-  evaluateBtn.style.transition = "all 120ms ease";
-  evaluateBtn.style.outline = "none";
-
-  const refreshIcon = createRotateCcwIcon(13);
-  const refreshText = document.createElement("span");
-  refreshText.textContent = "Refresh Results";
-  evaluateBtn.appendChild(refreshIcon);
-  evaluateBtn.appendChild(refreshText);
-
-  evaluateBtn.addEventListener("pointerdown", (e) => e.stopPropagation());
-  evaluateBtn.addEventListener("click", () => {
-    void deps.onRefreshRequested();
-  });
-  evaluateBtn.addEventListener("focus", () => {
-    evaluateBtn.style.borderColor = "#6366f1";
-    evaluateBtn.style.boxShadow = "0 0 0 2px rgba(99, 102, 241, 0.22)";
-  });
-  evaluateBtn.addEventListener("blur", () => {
-    evaluateBtn.style.borderColor = "#d1d5db";
-    evaluateBtn.style.boxShadow = "none";
-  });
-  evaluateBtn.addEventListener("pointerenter", () => {
-    evaluateBtn.style.background = "#e5e7eb";
-    evaluateBtn.style.borderColor = "#9ca3af";
-  });
-  evaluateBtn.addEventListener("pointerleave", () => {
-    evaluateBtn.style.background = "#f3f4f6";
-    evaluateBtn.style.borderColor = "#d1d5db";
-  });
-
   renderFooterStatusBar(status, footerStatusMode, passed, results.length, footerStatusActionLabel, footerDiagnosticsSummary);
   status.style.marginTop = "6px";
   status.style.marginLeft = "0";
   status.style.marginRight = "0";
   status.style.marginBottom = "0";
-
-  refreshWrap.appendChild(evaluateBtn);
-  actionButtons.appendChild(pinControlContainer);
-  footerRow.appendChild(refreshWrap);
-  footerRow.appendChild(actionButtons);
-  buttonContainer.appendChild(footerRow);
-  buttonContainer.appendChild(status);
-  body.appendChild(buttonContainer);
+  if (status.parentElement !== footer) footer.appendChild(status);
+  if (footer.parentElement !== body) body.appendChild(footer);
 
   constraintsScroll.scrollTop = newRuleAppended
     ? constraintsScroll.scrollHeight

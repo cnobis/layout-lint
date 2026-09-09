@@ -11,6 +11,7 @@ import { createWidgetDragController } from "./drag-controller.js";
 import { createWidgetStatusController } from "./status-controller.js";
 import { createWidgetResizeController } from "./resize-controller.js";
 import { EDITOR_CSS } from "./highlighted-editor-view.js";
+import { renderFooterStatusBar } from "./footer-status.js";
 import type { FooterDiagnosticsSummary } from "./footer-status.js";
 import {
   DEFAULT_WIDGET_SETTINGS,
@@ -141,6 +142,10 @@ export function createLayoutLintWidget(
   let settingsOpen = false;
   let specEditor: ReturnType<typeof createSpecEditor> | null = null;
   let requestRerender = () => {};
+  // results behind the body on screen; identical results skip the rebuild
+  let renderedResultsSignature: string | null = null;
+  const computeResultsSignature = (results: RuleResult[], diagnostics: FooterDiagnosticsSummary): string =>
+    JSON.stringify([results, diagnostics]);
   const statusController = createWidgetStatusController({
     defaultReadyActionLabel: REEVALUATE_STATUS_LABEL,
     requestRerender: () => {
@@ -574,11 +579,34 @@ export function createLayoutLintWidget(
     monitor.pauseObserver();
     try {
       renderBody(results);
+      renderedResultsSignature = computeResultsSignature(results, latestDiagnosticsSummary);
       clampWidgetIntoViewport();
       renderActiveHighlight();
     } finally {
       monitor.resumeObserver();
     }
+  };
+
+  const renderActiveHighlightWithObserverPaused = () => {
+    monitor.pauseObserver();
+    try {
+      renderActiveHighlight();
+    } finally {
+      monitor.resumeObserver();
+    }
+  };
+
+  // status bar only, the surrounding panel stays
+  const refreshFooterStatus = () => {
+    const { passed, total } = summarizeResults(latestResults);
+    renderFooterStatusBar(
+      status,
+      statusController.getMode(),
+      passed,
+      total,
+      statusController.getActionLabel(),
+      latestDiagnosticsSummary
+    );
   };
 
   requestRerender = () => {
@@ -655,6 +683,17 @@ export function createLayoutLintWidget(
       // never interrupted. A clean draft may still follow spec changes made
       // through the monitor API (e.g. the tutorial growing the spec).
       if (specEditor.syncExternalSpec()) renderBodyWithObserverPaused(latestResults);
+      return;
+    }
+    if (settingsOpen) {
+      // never rebuild the settings panel on results, it would drop input focus
+      refreshFooterStatus();
+      renderActiveHighlightWithObserverPaused();
+      return;
+    }
+    if (computeResultsSignature(latestResults, latestDiagnosticsSummary) === renderedResultsSignature) {
+      // same verdicts, overlays may still have moved
+      renderActiveHighlightWithObserverPaused();
       return;
     }
     renderBodyWithObserverPaused(latestResults);
